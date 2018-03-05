@@ -5,7 +5,7 @@ import 'zeppelin-solidity/contracts/token/ERC20/MintableToken.sol';
 
 
 contract IcoToken is MintableToken {
-  string public name = "ICOT";
+  string public name = "Ico Token";
 
   string public symbol = "ICOT";
 

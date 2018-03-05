@@ -1,14 +1,21 @@
 <template>
   <div id="app">
     <div id="header" class="header-branding">
-      ICO Dashboard <current-network></current-network>
+      ICO Dashboard
     </div>
 
     <div id="content">
       <router-view></router-view>
     </div>
 
+    <div id="links">
+      <router-link :to="{ name: 'token' }">Token</router-link> |
+      <router-link :to="{ name: 'account' }">Account</router-link>
+    </div>
+
+
     <div id="footer">
+      <current-network></current-network>
     </div>
 
   </div>
@@ -28,7 +35,6 @@
     components: {CurrentNetwork},
     computed: {
       ...mapGetters([]),
-      ...mapState([]),
     },
     mounted() {
       // Checking if Web3 has been injected by the browser (Mist/MetaMask)
@@ -87,7 +93,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     color: #2c3e50;
-    max-width: 600px;
+    max-width: 1200px;
     margin: 0 auto !important;
     float: none !important;
     background-color: #f2f2f2;

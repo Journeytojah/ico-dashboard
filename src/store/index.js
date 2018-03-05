@@ -1,14 +1,11 @@
-import Vue from 'vue';
-import Vuex from 'vuex';
-import * as actions from './actions'
-import * as mutations from './mutation-types'
-import _ from 'lodash'
-import Web3 from 'web3'
-import axios from 'axios'
-import createLogger from 'vuex/dist/logger'
+import Vue from "vue";
+import Vuex from "vuex";
+import * as actions from "./actions";
+import * as mutations from "./mutation-types";
+import createLogger from "vuex/dist/logger";
 import {getNetIdString} from "../utils";
 
-import {IcoToken} from '../contracts/index'
+import {IcoToken} from "../contracts/index";
 
 const utils = require('../utils');
 
