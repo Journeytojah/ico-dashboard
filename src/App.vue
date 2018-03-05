@@ -1,7 +1,6 @@
 <template>
   <div id="app">
-    <div id="header" class="header-branding">
-      ICO Dashboard
+    <div id="header">
     </div>
 
     <div id="content">
@@ -60,15 +59,15 @@
   }
 </script>
 
-<style>
+<style lang="scss">
   h1 {
     display: block;
-    font-size: 38px;
+    font-size: 28px;
   }
 
   h2 {
     display: block;
-    font-size: 24px;
+    font-size: 18px;
   }
 
   .btn {
@@ -77,16 +76,14 @@
     font-size: 20px;
     padding: 10px 20px 10px 20px;
     text-decoration: none;
-  }
-
-  .btn:hover {
-    background: #3e27d9;
-    text-decoration: none;
-  }
-
-  .btn:disabled {
-    background: grey;
-    text-decoration: none;
+    &:hover {
+      background: #3e27d9;
+      text-decoration: none;
+    }
+    &:disabled {
+      background: grey;
+      text-decoration: none;
+    }
   }
 
   #app {
@@ -100,7 +97,7 @@
     background-color: #f2f2f2;
   }
 
-  #content {
+  #content, #links {
     margin: 20px;
   }
 
@@ -116,12 +113,13 @@
 
   #footer {
     background-color: #3e27d9;
-    color: #f2f2f2;;
-    padding: 10px;
-  }
-
-  #footer a {
     color: #f2f2f2;
+    padding: 10px;
+    margin-top: 50px;
+
+    a {
+      color: #f2f2f2;
+    }
   }
 
   .header-branding {
@@ -133,5 +131,4 @@
     text-transform: none;
     color: #3e27d9;
   }
-
 </style>

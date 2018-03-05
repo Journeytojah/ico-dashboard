@@ -17,7 +17,7 @@
   }
 </script>
 
-<style>
+<style lang="scss" scoped>
   .current-network {
     font-size: 12px;
   }

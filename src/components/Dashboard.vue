@@ -7,7 +7,6 @@
       <ul>
         <li>Rate: {{ rate }}</li>
         <li>Raised: {{ weiRaised }}</li>
-        <li>Token: {{ token }}</li>
       </ul>
     </div>
 
@@ -16,6 +15,7 @@
 
 <script>
 
+  /* global web3:true */
   import {mapGetters, mapState} from 'vuex'
 
   export default {
@@ -36,6 +36,6 @@
   }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 
 </style>
