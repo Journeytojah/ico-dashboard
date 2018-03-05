@@ -11,6 +11,5 @@ contract IcoToken is MintableToken {
 
   uint8 public decimals = 18;
 
-  function IcoToken() public {
-  }
+  function IcoToken() public {}
 }
