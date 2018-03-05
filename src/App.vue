@@ -9,6 +9,7 @@
     </div>
 
     <div id="links">
+      <router-link :to="{ name: 'dashboard' }">Dashboard</router-link> |
       <router-link :to="{ name: 'token' }">Token</router-link> |
       <router-link :to="{ name: 'account' }">Account</router-link>
     </div>

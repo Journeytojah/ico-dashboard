@@ -1,9 +1,9 @@
 <template>
   <div id="token">
 
-    <h1>Token name: {{ contractName }}</h1>
+    <h1>Token name: {{ tokenName }}</h1>
 
-    <h2>Symbol: {{ contractSymbol }}</h2>
+    <h2>Symbol: {{ tokenSymbol }}</h2>
 
   </div>
 </template>
@@ -22,8 +22,8 @@
     },
     computed: {
       ...mapState([
-        'contractName',
-        'contractSymbol',
+        'tokenName',
+        'tokenSymbol',
       ])
     }
   }

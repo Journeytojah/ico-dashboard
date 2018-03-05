@@ -3,7 +3,12 @@
 
     <div id="splash">
       <h1>{{ title }}</h1>
-      <p>Our token:</p>
+
+      <ul>
+        <li>Rate: {{ rate }}</li>
+        <li>Raised: {{ weiRaised }}</li>
+        <li>Token: {{ token }}</li>
+      </ul>
     </div>
 
   </div>
@@ -18,11 +23,14 @@
     components: {},
     data() {
       return {
-        title: 'Hello',
+        title: 'Ico Sample Crowdfunding',
       }
     },
     computed: {
       ...mapState([
+        'rate',
+        'weiRaised',
+        'token'
       ])
     }
   }
