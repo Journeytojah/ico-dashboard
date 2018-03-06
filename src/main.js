@@ -5,8 +5,10 @@ import App from './App'
 import router from './router'
 import store from './store';
 import logging from './logging';
+import BootstrapVue from 'bootstrap-vue'
 
 Vue.config.productionTip = false
+Vue.use(BootstrapVue);
 
 ;(async () => {
   try {

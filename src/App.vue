@@ -1,21 +1,32 @@
 <template>
   <div id="app">
-    <div id="header">
-    </div>
+    <div class="container">
 
-    <div id="content">
+      <div class="header clearfix">
+        <nav>
+          <ul class="nav float-right">
+            <li class="nav-item">
+              <router-link :to="{ name: 'dashboard' }" class="nav-link">Dashboard</router-link>
+            </li>
+            <li class="nav-item">
+              <router-link :to="{ name: 'token' }" class="nav-link">Token</router-link>
+            </li>
+            <li class="nav-item">
+              <router-link :to="{ name: 'account' }" class="nav-link">Account</router-link>
+            </li>
+          </ul>
+        </nav>
+
+        <h3 class="text-muted">ABC Project</h3>
+      </div>
+
       <router-view></router-view>
-    </div>
 
-    <div id="links">
-      <router-link :to="{ name: 'dashboard' }">Dashboard</router-link> |
-      <router-link :to="{ name: 'token' }">Token</router-link> |
-      <router-link :to="{ name: 'account' }">Account</router-link>
-    </div>
+      <div class="footer">
+        <hr/>
+        <current-network></current-network>
+      </div>
 
-
-    <div id="footer">
-      <current-network></current-network>
     </div>
 
   </div>
@@ -25,7 +36,7 @@
   /* global web3:true */
 
   import Web3 from 'web3'
-  import {mapGetters, mapState} from 'vuex'
+  import { mapGetters, mapState } from 'vuex'
   import * as actions from './store/actions'
   import * as mutations from './store/mutation-types'
   import CurrentNetwork from './components/CurrentNetwork'
@@ -60,75 +71,12 @@
 </script>
 
 <style lang="scss">
-  h1 {
-    display: block;
-    font-size: 28px;
-  }
-
-  h2 {
-    display: block;
-    font-size: 18px;
-  }
-
-  .btn {
-    background: #3e27d9;
-    color: #f2f2f2;
-    font-size: 20px;
-    padding: 10px 20px 10px 20px;
-    text-decoration: none;
-    &:hover {
-      background: #3e27d9;
-      text-decoration: none;
-    }
-    &:disabled {
-      background: grey;
-      text-decoration: none;
-    }
-  }
 
   #app {
-    font-family: 'Avenir', Helvetica, Arial, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    color: #2c3e50;
-    max-width: 1200px;
-    margin: 0 auto !important;
-    float: none !important;
-    background-color: #f2f2f2;
+
   }
 
-  #content, #links {
+  .header {
     margin: 20px;
-  }
-
-  a {
-    color: #3e27d9;
-  }
-
-  #header {
-    background-color: white;
-    color: #3e27d9;
-    padding: 10px;
-  }
-
-  #footer {
-    background-color: #3e27d9;
-    color: #f2f2f2;
-    padding: 10px;
-    margin-top: 50px;
-
-    a {
-      color: #f2f2f2;
-    }
-  }
-
-  .header-branding {
-    font-weight: 600;
-    font-style: normal;
-    font-size: 34px;
-    letter-spacing: 0em;
-    line-height: 1em;
-    text-transform: none;
-    color: #3e27d9;
   }
 </style>
