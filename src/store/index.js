@@ -24,6 +24,7 @@ const store = new Vuex.Store({
     token: '',
     tokenName: '',
     tokenSymbol: '',
+    balance: null,
 
     // crowdsale
     rate: null,
@@ -58,10 +59,11 @@ const store = new Vuex.Store({
       state.start = start
       state.end = end
     },
-    [mutations.SET_CONTRACT_DETAILS](state, {name, symbol, totalSupply}) {
+    [mutations.SET_CONTRACT_DETAILS](state, {name, symbol, totalSupply, balance}) {
       state.totalSupply = totalSupply
       state.tokenSymbol = symbol
       state.tokenName = name
+      state.balance = balance
     },
     [mutations.SET_ACCOUNT](state, account) {
       state.account = account
@@ -92,13 +94,19 @@ const store = new Vuex.Store({
     [actions.REFRESH_CONTRACT_DETAILS]({commit, dispatch, state}) {
       ABCToken.deployed()
         .then((contract) => {
-          return Promise.all([contract.name(), contract.symbol(), contract.totalSupply()])
+          return Promise.all([
+            contract.name(),
+            contract.symbol(),
+            contract.totalSupply(),
+            contract.balanceOf(this.state.account),
+          ])
         })
         .then((results) => {
           commit(mutations.SET_CONTRACT_DETAILS, {
             name: results[0],
             symbol: results[1],
-            totalSupply: results[2].toString()
+            totalSupply: results[2].toString(10),
+            balance: results[3].toString(10),
           })
         })
     },

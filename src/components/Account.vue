@@ -1,15 +1,15 @@
 <template>
   <div id="account">
 
-    <b-jumbotron header="ABC Account" lead="Building ABC for Internet 3.0">
+    <b-jumbotron :header="tokenName" lead="Account details">
       <div class="row">
         <div class="col-lg-6">
           <h4>Account</h4>
           <p>{{ account }}</p>
         </div>
         <div class="col-lg-6">
-          <h4>Balance</h4>
-          <p></p>
+          <h4>Token Balance</h4>
+          <p>{{ balance }} {{ tokenSymbol }}</p>
         </div>
       </div>
     </b-jumbotron>
@@ -31,7 +31,10 @@
     },
     computed: {
       ...mapState([
-        'account'
+        'account',
+        'balance',
+        'tokenSymbol',
+        'tokenName'
       ])
     }
   }

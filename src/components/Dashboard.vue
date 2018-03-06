@@ -1,7 +1,8 @@
 <template>
   <div id="dashboard">
 
-    <b-jumbotron header="ABC Token Generation Event" lead="Building ABC for Internet 3.0">
+    <b-jumbotron header="Token Generation Event" lead="Building Internet 3.0">
+      <p>Generating a new {{ tokenName }} supply</p>
       <b-btn variant="primary" href="#">View whitepaper</b-btn>
     </b-jumbotron>
 
@@ -56,6 +57,7 @@
     },
     computed: {
       ...mapState([
+        'tokenName',
         'rate',
         'raised',
         'token',

@@ -1,7 +1,7 @@
 <template>
   <div id="token">
 
-    <b-jumbotron header="ABC Token" lead="Building ABC for Internet 3.0">
+    <b-jumbotron :header="tokenName" lead="All about our token">
       <div class="row">
         <div class="col-lg-6">
           <h4>Token name</h4>
