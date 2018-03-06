@@ -7,10 +7,13 @@ import store from './store'
 import logging from './logging'
 import BootstrapVue from 'bootstrap-vue'
 import { Badge } from 'bootstrap-vue/es/components'
+import VueMoment from 'vue-moment/vue-moment'
 
 Vue.config.productionTip = false
+
 Vue.use(BootstrapVue)
 Vue.use(Badge)
+Vue.use(VueMoment)
 
 ;(async () => {
   try {

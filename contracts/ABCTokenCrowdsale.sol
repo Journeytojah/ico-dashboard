@@ -7,9 +7,9 @@ import "zeppelin-solidity/contracts/crowdsale/distribution/RefundableCrowdsale.s
 import "zeppelin-solidity/contracts/crowdsale/emission/MintedCrowdsale.sol";
 
 
-contract IcoTokenCrowdsale is CappedCrowdsale, RefundableCrowdsale, MintedCrowdsale {
+contract ABCTokenCrowdsale is CappedCrowdsale, RefundableCrowdsale, MintedCrowdsale {
 
-  function IcoTokenCrowdsale(uint256 _openingTime, uint256 _closingTime, uint256 _rate, address _wallet, uint256 _cap, MintableToken _token, uint256 _goal) public
+  function ABCTokenCrowdsale(uint256 _openingTime, uint256 _closingTime, uint256 _rate, address _wallet, uint256 _cap, MintableToken _token, uint256 _goal) public
   Crowdsale(_rate, _wallet, _token)
   CappedCrowdsale(_cap)
   TimedCrowdsale(_openingTime, _closingTime)

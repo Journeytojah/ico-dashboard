@@ -7,7 +7,7 @@ import * as mutations from './mutation-types'
 import createLogger from 'vuex/dist/logger'
 import { getNetIdString } from '../utils'
 
-import { IcoToken, IcoTokenCrowdsale } from '../contracts/index'
+import { ABCTokenCrowdsale, ABCToken } from '../contracts/index'
 
 const utils = require('../utils')
 
@@ -31,6 +31,8 @@ const store = new Vuex.Store({
     cap: null,
     goal: null,
     wallet: null,
+    start: null,
+    end: null,
 
     // contract totals
     totalSupply: null
@@ -43,7 +45,9 @@ const store = new Vuex.Store({
       token,
       cap,
       goal,
-      wallet
+      wallet,
+      start,
+      end
     }) {
       state.rate = rate
       state.raised = raised
@@ -51,6 +55,8 @@ const store = new Vuex.Store({
       state.cap = cap
       state.goal = goal
       state.wallet = wallet
+      state.start = start
+      state.end = end
     },
     [mutations.SET_CONTRACT_DETAILS](state, {name, symbol, totalSupply}) {
       state.totalSupply = totalSupply
@@ -84,7 +90,7 @@ const store = new Vuex.Store({
         })
     },
     [actions.REFRESH_CONTRACT_DETAILS]({commit, dispatch, state}) {
-      IcoToken.deployed()
+      ABCToken.deployed()
         .then((contract) => {
           return Promise.all([contract.name(), contract.symbol(), contract.totalSupply()])
         })
@@ -97,7 +103,7 @@ const store = new Vuex.Store({
         })
     },
     [actions.REFRESH_CROWDSALE_DETAILS]({commit, dispatch, state}) {
-      IcoTokenCrowdsale.deployed()
+      ABCTokenCrowdsale.deployed()
         .then((contract) => {
           return Promise.all([
             contract.rate(),
@@ -105,17 +111,21 @@ const store = new Vuex.Store({
             contract.token(),
             contract.cap(),
             contract.goal(),
-            contract.wallet()
+            contract.wallet(),
+            contract.openingTime(),
+            contract.closingTime()
           ])
         })
         .then((results) => {
           commit(mutations.SET_CROWDSALE_DETAILS, {
-            rate: results[0].toString(),
-            raised: Web3.utils.fromWei(results[1].toString(10), 'ether'),
+            rate: Web3.utils.fromWei(results[0].toString(10), 'ether'),
+            raised: parseInt(Web3.utils.fromWei(results[1].toString(10), 'ether'), 10), // hmmm?
             token: results[2].toString(),
-            cap: Web3.utils.fromWei(results[3].toString(10), 'ether'),
-            goal: Web3.utils.fromWei(results[4].toString(10), 'ether'),
-            wallet: results[5].toString()
+            cap: parseInt(Web3.utils.fromWei(results[3].toString(10), 'ether'), 10), // whole ether
+            goal: parseInt(Web3.utils.fromWei(results[4].toString(10), 'ether'), 10), // whole ether
+            wallet: results[5].toString(),
+            start: results[6].toNumber(10),
+            end: results[7].toNumber(10),
           })
         })
     }

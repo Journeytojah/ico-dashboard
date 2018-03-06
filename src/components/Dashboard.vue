@@ -7,22 +7,21 @@
 
     <h2>So far</h2>
 
-    <b-progress show-value :max="max" class="mb-3 thermometer" height="50px">
-      <b-progress-bar variant="primary" :value="values[0]"></b-progress-bar>
-      <b-progress-bar variant="success" :value="values[1]"></b-progress-bar>
-      <b-progress-bar variant="info" :value="values[2]"></b-progress-bar>
+    <b-progress show-value :max="goal" class="mb-3 thermometer" height="50px">
+      <b-progress-bar variant="primary" :value="privateSale"></b-progress-bar>
+      <b-progress-bar variant="success" :value="preIco"></b-progress-bar>
     </b-progress>
 
     <div class="row marketing">
       <div class="col-lg-6">
         <h4>Rate</h4>
-        <p>{{ rate }}</p>
+        <p>{{ rate }} <eth-symbol></eth-symbol> per ABC Token</p>
 
         <h4>Cap</h4>
         <p>{{ cap }} <eth-symbol></eth-symbol></p>
 
         <h4>Start</h4>
-        <p>{{ cap }}</p>
+        <p>{{ start | moment("from") }}</p>
       </div>
       <div class="col-lg-6">
         <h4>Raised</h4>
@@ -32,7 +31,7 @@
         <p>{{ goal }} <eth-symbol></eth-symbol></p>
 
         <h4>End</h4>
-        <p>{{ cap }}</p>
+        <p>{{ end | moment("from") }}</p>
       </div>
     </div>
   </div>
@@ -52,8 +51,8 @@
     components: {Jumbotron, EthSymbol},
     data () {
       return {
-        max: 100,
-        values: [15, 30, 20]
+        privateSale: 2504,
+        preIco: 1234,
       }
     },
     computed: {
@@ -62,7 +61,9 @@
         'raised',
         'token',
         'cap',
-        'goal'
+        'goal',
+        'start',
+        'end'
       ])
     }
   }

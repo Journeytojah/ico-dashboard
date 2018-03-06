@@ -3,17 +3,17 @@
 import contract from 'truffle-contract'
 
 // import artifacts
-import icoToken from '../../build/contracts/IcoToken.json'
-import icoTokenCrowdsale from '../../build/contracts/IcoTokenCrowdsale.json'
+import abcToken from '../../build/contracts/ABCToken.json'
+import abcTokenCrowdsale from '../../build/contracts/ABCTokenCrowdsale.json'
 
 // create contracts
-const IcoToken = contract(icoToken);
-IcoToken.setProvider(web3.currentProvider);
+const ABCToken = contract(abcToken);
+ABCToken.setProvider(web3.currentProvider);
 
-const IcoTokenCrowdsale = contract(icoTokenCrowdsale);
-IcoTokenCrowdsale.setProvider(web3.currentProvider);
+const ABCTokenCrowdsale = contract(abcTokenCrowdsale);
+ABCTokenCrowdsale.setProvider(web3.currentProvider);
 
 export {
-  IcoToken,
-  IcoTokenCrowdsale
+  ABCToken,
+  ABCTokenCrowdsale
 }
