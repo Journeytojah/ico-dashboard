@@ -39,17 +39,16 @@
 
 <script>
 
-  /* global web3:true */
   import { mapGetters, mapState } from 'vuex'
-  import Jumbotron from 'bootstrap-vue/es/components/jumbotron/jumbotron'
   import Progress from 'bootstrap-vue/es/components/progress/progress'
   import ProgressBar from 'bootstrap-vue/es/components/progress/progress-bar'
   import EthSymbol from './EthSymbol'
 
   export default {
     name: 'dashboard',
-    components: {Jumbotron, EthSymbol},
+    components: {EthSymbol},
     data () {
+      // mock data
       return {
         privateSale: 2504,
         preIco: 1234,
