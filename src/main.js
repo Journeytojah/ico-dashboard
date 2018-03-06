@@ -3,12 +3,14 @@
 import Vue from 'vue'
 import App from './App'
 import router from './router'
-import store from './store';
-import logging from './logging';
+import store from './store'
+import logging from './logging'
 import BootstrapVue from 'bootstrap-vue'
+import { Badge } from 'bootstrap-vue/es/components'
 
 Vue.config.productionTip = false
-Vue.use(BootstrapVue);
+Vue.use(BootstrapVue)
+Vue.use(Badge)
 
 ;(async () => {
   try {
@@ -25,6 +27,6 @@ Vue.use(BootstrapVue);
       logging,
       components: {App},
       template: '<App/>'
-    });
+    })
   }
-})();
+})()

@@ -6,7 +6,7 @@
         <nav>
           <ul class="nav float-right">
             <li class="nav-item">
-              <router-link :to="{ name: 'dashboard' }" class="nav-link">Dashboard</router-link>
+              <router-link :to="{ name: 'dashboard' }" class="nav-link">Home</router-link>
             </li>
             <li class="nav-item">
               <router-link :to="{ name: 'token' }" class="nav-link">Token</router-link>
@@ -24,7 +24,7 @@
 
       <div class="footer">
         <hr/>
-        <current-network></current-network>
+        <b-badge><current-network></current-network></b-badge>
       </div>
 
     </div>
