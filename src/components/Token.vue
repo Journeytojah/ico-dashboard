@@ -2,16 +2,30 @@
   <div id="token">
 
     <b-jumbotron :header="tokenName" lead="All about our token">
+
+
       <div class="row">
-        <div class="col-lg-6">
+        <div class="col-lg-12">
+          <h4>Address</h4>
+          <p>{{ tokenAddress }}</p>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-lg-4">
           <h4>Token name</h4>
           <p>{{ tokenName }}</p>
         </div>
-        <div class="col-lg-6">
+        <div class="col-lg-4">
           <h4>Symbol</h4>
           <p>{{ tokenSymbol }}</p>
         </div>
+        <div class="col-lg-4">
+          <h4>Supply</h4>
+          <p>{{ tokenTotalSupply }} {{ tokenSymbol }}</p>
+        </div>
       </div>
+
     </b-jumbotron>
 
   </div>
@@ -19,7 +33,7 @@
 
 <script>
 
-  import {mapGetters, mapState} from 'vuex'
+  import { mapGetters, mapState } from 'vuex'
 
   export default {
     name: 'dashboard',
@@ -33,6 +47,8 @@
       ...mapState([
         'tokenName',
         'tokenSymbol',
+        'tokenAddress',
+        'tokenTotalSupply'
       ])
     }
   }

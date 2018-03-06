@@ -61,7 +61,7 @@
     data () {
       // mock data
       return {
-        privateSale: 2504,
+        privateSale: 3000,
         preIco: 1234,
       }
     },

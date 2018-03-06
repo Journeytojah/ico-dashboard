@@ -21,10 +21,12 @@ const store = new Vuex.Store({
     currentNetwork: null,
 
     // token metadata
+    tokenAddress: '',
     token: '',
     tokenName: '',
     tokenSymbol: '',
-    balance: null,
+    tokenBalance: null,
+    tokenTotalSupply: null,
 
     // crowdsale
     address: null,
@@ -36,8 +38,6 @@ const store = new Vuex.Store({
     start: null,
     end: null,
 
-    // contract totals
-    totalSupply: null
   },
   getters: {},
   mutations: {
@@ -62,11 +62,12 @@ const store = new Vuex.Store({
       state.end = end
       state.address = address
     },
-    [mutations.SET_CONTRACT_DETAILS](state, {name, symbol, totalSupply, balance}) {
-      state.totalSupply = totalSupply
+    [mutations.SET_CONTRACT_DETAILS](state, {name, symbol, totalSupply, address, balance}) {
+      state.tokenTotalSupply = totalSupply
       state.tokenSymbol = symbol
       state.tokenName = name
-      state.balance = balance
+      state.tokenAddress = address
+      state.tokenBalance = balance
     },
     [mutations.SET_ACCOUNT](state, account) {
       state.account = account
@@ -90,18 +91,20 @@ const store = new Vuex.Store({
           // store the account
           commit(mutations.SET_ACCOUNT, accounts[0])
 
-          store.dispatch(actions.REFRESH_CONTRACT_DETAILS)
+          store.dispatch(actions.REFRESH_CONTRACT_DETAILS, accounts[0])
           store.dispatch(actions.REFRESH_CROWDSALE_DETAILS)
         })
     },
-    [actions.REFRESH_CONTRACT_DETAILS]({commit, dispatch, state}) {
+    [actions.REFRESH_CONTRACT_DETAILS]({commit, dispatch, state}, account) {
+      console.log(account);
       ABCToken.deployed()
         .then((contract) => {
           return Promise.all([
             contract.name(),
             contract.symbol(),
-            contract.totalSupply(),
-            contract.balanceOf(this.state.account),
+            contract.totalSupply({from: account}),
+            contract.address,
+            contract.balanceOf(account, {from: account})
           ])
         })
         .then((results) => {
@@ -109,14 +112,14 @@ const store = new Vuex.Store({
             name: results[0],
             symbol: results[1],
             totalSupply: results[2].toString(10),
-            balance: results[3].toString(10),
+            address: results[3],
+            balance: results[4].toString(10)
           })
         })
     },
     [actions.REFRESH_CROWDSALE_DETAILS]({commit, dispatch, state}) {
       ABCTokenCrowdsale.deployed()
         .then((contract) => {
-          console.log(contract.address)
           return Promise.all([
             contract.rate(),
             contract.weiRaised(),

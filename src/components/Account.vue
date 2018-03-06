@@ -3,13 +3,13 @@
 
     <b-jumbotron :header="tokenName" lead="Account details">
       <div class="row">
-        <div class="col-lg-6">
+        <div class="col-lg-12">
           <h4>Account</h4>
           <p>{{ account }}</p>
         </div>
-        <div class="col-lg-6">
+        <div class="col-lg-4">
           <h4>Token Balance</h4>
-          <p>{{ balance }} {{ tokenSymbol }}</p>
+          <p>{{ tokenBalance }} {{ tokenSymbol }}</p>
         </div>
       </div>
     </b-jumbotron>
@@ -32,9 +32,9 @@
     computed: {
       ...mapState([
         'account',
-        'balance',
         'tokenSymbol',
-        'tokenName'
+        'tokenName',
+        'tokenBalance'
       ])
     }
   }
