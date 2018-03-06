@@ -3,7 +3,17 @@
 
     <b-jumbotron header="Token Generation Event" lead="Building Internet 3.0">
       <p>Generating a new {{ tokenName }} supply</p>
-      <b-btn variant="primary" href="#">View whitepaper</b-btn>
+
+      <div class="row">
+        <div class="col-lg-6">
+          <b-btn variant="primary" href="#">View whitepaper</b-btn>
+        </div>
+        <div class="col-lg-6">
+          <div class="alert alert-success" role="alert">
+            <strong>Buy</strong>  {{ address }}
+          </div>
+        </div>
+      </div>
     </b-jumbotron>
 
     <h2>So far</h2>
@@ -57,6 +67,7 @@
     },
     computed: {
       ...mapState([
+        'address',
         'tokenName',
         'rate',
         'raised',
