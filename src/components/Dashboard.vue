@@ -5,7 +5,7 @@
       <b-btn variant="primary" href="#">View whitepaper</b-btn>
     </b-jumbotron>
 
-    <h2>Total raised:</h2>
+    <h2>So far</h2>
 
     <b-progress show-value :max="max" class="mb-3 thermometer" height="50px">
       <b-progress-bar variant="primary" :value="values[0]"></b-progress-bar>
@@ -18,21 +18,21 @@
         <h4>Rate</h4>
         <p>{{ rate }}</p>
 
-        <h4>Raised</h4>
-        <p>{{ weiRaised }}</p>
+        <h4>Cap</h4>
+        <p>{{ cap }} <eth-symbol></eth-symbol></p>
 
-        <h4>Subheading</h4>
-        <p>Maecenas sed diam eget risus varius blandit sit amet non magna.</p>
+        <h4>Start</h4>
+        <p>{{ cap }}</p>
       </div>
       <div class="col-lg-6">
-        <h4>Rate</h4>
-        <p>{{ rate }}</p>
-
         <h4>Raised</h4>
-        <p>{{ weiRaised }}</p>
+        <p>{{ raised }} <eth-symbol></eth-symbol></p>
 
-        <h4>Subheading</h4>
-        <p>Maecenas sed diam eget risus varius blandit sit amet non magna.</p>
+        <h4>Goal</h4>
+        <p>{{ goal }} <eth-symbol></eth-symbol></p>
+
+        <h4>End</h4>
+        <p>{{ cap }}</p>
       </div>
     </div>
   </div>
@@ -45,10 +45,11 @@
   import Jumbotron from 'bootstrap-vue/es/components/jumbotron/jumbotron'
   import Progress from 'bootstrap-vue/es/components/progress/progress'
   import ProgressBar from 'bootstrap-vue/es/components/progress/progress-bar'
+  import EthSymbol from './EthSymbol'
 
   export default {
     name: 'dashboard',
-    components: {Jumbotron},
+    components: {Jumbotron, EthSymbol},
     data () {
       return {
         max: 100,
@@ -58,8 +59,10 @@
     computed: {
       ...mapState([
         'rate',
-        'weiRaised',
-        'token'
+        'raised',
+        'token',
+        'cap',
+        'goal'
       ])
     }
   }

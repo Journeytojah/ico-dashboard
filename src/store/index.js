@@ -1,15 +1,17 @@
-import Vue from "vue";
-import Vuex from "vuex";
-import * as actions from "./actions";
-import * as mutations from "./mutation-types";
-import createLogger from "vuex/dist/logger";
-import {getNetIdString} from "../utils";
+import Web3 from 'web3'
 
-import {IcoToken, IcoTokenCrowdsale} from "../contracts/index";
+import Vue from 'vue'
+import Vuex from 'vuex'
+import * as actions from './actions'
+import * as mutations from './mutation-types'
+import createLogger from 'vuex/dist/logger'
+import { getNetIdString } from '../utils'
 
-const utils = require('../utils');
+import { IcoToken, IcoTokenCrowdsale } from '../contracts/index'
 
-Vue.use(Vuex);
+const utils = require('../utils')
+
+Vue.use(Vuex)
 
 const store = new Vuex.Store({
   plugins: [createLogger()],
@@ -25,23 +27,35 @@ const store = new Vuex.Store({
 
     // crowdsale
     rate: null,
-    weiRaised: null,
+    raised: null,
+    cap: null,
+    goal: null,
+    wallet: null,
 
     // contract totals
     totalSupply: null
   },
-  getters: {
-  },
+  getters: {},
   mutations: {
-    [mutations.SET_CROWDSALE_DETAILS](state, {rate, weiRaised, token}) {
-      state.rate = rate;
-      state.weiRaised = weiRaised;
-      state.token = token;
+    [mutations.SET_CROWDSALE_DETAILS](state, {
+      rate,
+      raised,
+      token,
+      cap,
+      goal,
+      wallet
+    }) {
+      state.rate = rate
+      state.raised = raised
+      state.token = token
+      state.cap = cap
+      state.goal = goal
+      state.wallet = wallet
     },
     [mutations.SET_CONTRACT_DETAILS](state, {name, symbol, totalSupply}) {
-      state.totalSupply = totalSupply;
-      state.tokenSymbol = symbol;
-      state.tokenName = name;
+      state.totalSupply = totalSupply
+      state.tokenSymbol = symbol
+      state.tokenName = name
     },
     [mutations.SET_ACCOUNT](state, account) {
       state.account = account
@@ -54,8 +68,8 @@ const store = new Vuex.Store({
     [actions.GET_CURRENT_NETWORK]({commit, dispatch, state}) {
       getNetIdString()
         .then((currentNetwork) => {
-          commit(mutations.SET_CURRENT_NETWORK, currentNetwork);
-        });
+          commit(mutations.SET_CURRENT_NETWORK, currentNetwork)
+        })
     },
     [actions.INIT_APP]({commit, dispatch, state}, account) {
       web3.eth.getAccounts()
@@ -63,39 +77,49 @@ const store = new Vuex.Store({
           // TODO add refresh cycle / timeout
 
           // store the account
-          commit(mutations.SET_ACCOUNT, accounts[0]);
+          commit(mutations.SET_ACCOUNT, accounts[0])
 
-          store.dispatch(actions.REFRESH_CONTRACT_DETAILS);
-          store.dispatch(actions.REFRESH_CROWDSALE_DETAILS);
-        });
+          store.dispatch(actions.REFRESH_CONTRACT_DETAILS)
+          store.dispatch(actions.REFRESH_CROWDSALE_DETAILS)
+        })
     },
     [actions.REFRESH_CONTRACT_DETAILS]({commit, dispatch, state}) {
       IcoToken.deployed()
         .then((contract) => {
-          return Promise.all([contract.name(), contract.symbol(), contract.totalSupply()]);
+          return Promise.all([contract.name(), contract.symbol(), contract.totalSupply()])
         })
         .then((results) => {
           commit(mutations.SET_CONTRACT_DETAILS, {
             name: results[0],
             symbol: results[1],
             totalSupply: results[2].toString()
-          });
-        });
+          })
+        })
     },
     [actions.REFRESH_CROWDSALE_DETAILS]({commit, dispatch, state}) {
       IcoTokenCrowdsale.deployed()
         .then((contract) => {
-          return Promise.all([contract.rate(), contract.weiRaised(), contract.token()]);
+          return Promise.all([
+            contract.rate(),
+            contract.weiRaised(),
+            contract.token(),
+            contract.cap(),
+            contract.goal(),
+            contract.wallet()
+          ])
         })
         .then((results) => {
           commit(mutations.SET_CROWDSALE_DETAILS, {
             rate: results[0].toString(),
-            weiRaised: results[1].toString(),
-            token: results[2].toString()
-          });
-        });
+            raised: Web3.utils.fromWei(results[1].toString(10), 'ether'),
+            token: results[2].toString(),
+            cap: Web3.utils.fromWei(results[3].toString(10), 'ether'),
+            goal: Web3.utils.fromWei(results[4].toString(10), 'ether'),
+            wallet: results[5].toString()
+          })
+        })
     }
   }
-});
+})
 
-export default store;
+export default store
