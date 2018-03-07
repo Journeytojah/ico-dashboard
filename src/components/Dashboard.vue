@@ -14,7 +14,7 @@
         </div>
       </div>
 
-      <h2>{{ raised }} <eth-symbol></eth-symbol></h2>
+      <p class="float-right"><strong>{{ raised }}</strong> <eth-symbol></eth-symbol></p>
       <b-progress show-value :max="cap" class="mb-3 thermometer" height="50px">
         <b-progress-bar variant="primary" :value="raised"></b-progress-bar>
       </b-progress>
@@ -26,7 +26,7 @@
         <h4>Rate</h4>
         <p>{{ rate }}
           <eth-symbol></eth-symbol>
-          per ABC Token
+          per {{ tokenSymbol }} Token
         </p>
 
         <h4>Hard Cap</h4>
@@ -79,7 +79,8 @@
         'cap',
         'goal',
         'start',
-        'end'
+        'end',
+        'tokenSymbol'
       ])
     }
   };
