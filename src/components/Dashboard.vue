@@ -32,7 +32,7 @@
           per ABC Token
         </p>
 
-        <h4>Cap</h4>
+        <h4>Hard Cap</h4>
         <p>{{ cap }}
           <eth-symbol></eth-symbol>
         </p>
@@ -46,7 +46,7 @@
           <eth-symbol></eth-symbol>
         </p>
 
-        <h4>Goal</h4>
+        <h4>Soft Cap</h4>
         <p>{{ goal }}
           <eth-symbol></eth-symbol>
         </p>
