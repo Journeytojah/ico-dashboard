@@ -12,12 +12,14 @@ module.exports = function (deployer, network, accounts) {
 
       const rate = 1;
       const wallet = accounts[0];
+      const cap = ICO_SUPPLY * 0.9; // only sell 90%...for now
 
       return deployer.deploy(
         PixieCrowdsale,
         rate,
         wallet,
-        PixieToken.address
+        PixieToken.address,
+        cap
       )
     })
     .then(() => {

@@ -25,19 +25,19 @@ const store = new Vuex.Store({
     token: '',
     tokenName: '',
     tokenSymbol: '',
-    tokenBalance: null,
-    tokenTotalSupply: null,
+    tokenBalance: 0,
+    tokenTotalSupply: 0,
 
     // crowdsale
     address: null,
-    rate: null,
-    raised: null,
-    cap: null,
-    goal: null,
+    rate: 0,
+    raised: 0,
+    cap: 0,
+    goal: 0,
     wallet: null,
-    start: null,
-    end: null,
-    crowdsaleBalance: null,
+    start: 0,
+    end: 0,
+    crowdsaleBalance: 0,
   },
   getters: {},
   mutations: {
@@ -126,7 +126,7 @@ const store = new Vuex.Store({
             contracts[1].rate(),
             contracts[1].weiRaised(),
             contracts[1].token(),
-            contracts[1].weiRaised(), // DUMMY
+            contracts[1].cap(),
             contracts[1].weiRaised(), // DUMMY
             contracts[1].wallet(),
             contracts[1].weiRaised(), // DUMMY

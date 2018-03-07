@@ -7,19 +7,16 @@
           <b-btn variant="secondary" href="#">View whitepaper</b-btn>
         </div>
         <div class="col-lg-6">
-          <h2>
-            {{ raised }}
-            <eth-symbol></eth-symbol>
-          </h2>
           <div class="alert alert-success" role="alert">
-            <strong>Crowdsale contract address:</strong> <eth-address :hex="address"></eth-address>
+            <strong>Crowdsale contract address:</strong>
+            <eth-address :hex="address"></eth-address>
           </div>
         </div>
       </div>
 
-      <b-progress show-value :max="goal" class="mb-3 thermometer" height="50px">
-        <b-progress-bar variant="primary" :value="privateSale"></b-progress-bar>
-        <b-progress-bar variant="success" :value="preIco"></b-progress-bar>
+      <h2>{{ raised }} <eth-symbol></eth-symbol></h2>
+      <b-progress show-value :max="cap" class="mb-3 thermometer" height="50px">
+        <b-progress-bar variant="primary" :value="raised"></b-progress-bar>
       </b-progress>
 
     </b-jumbotron>
@@ -70,11 +67,7 @@
     name: 'dashboard',
     components: {EthSymbol, EthAddress},
     data () {
-      // mock data
-      return {
-        privateSale: 3000,
-        preIco: 1234,
-      };
+      return {};
     },
     computed: {
       ...mapState([

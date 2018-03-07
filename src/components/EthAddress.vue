@@ -8,7 +8,7 @@
     name: 'eth-address',
     props: {
       hex: {
-        required: true,
+        required: false,
         type: String
       },
     },
