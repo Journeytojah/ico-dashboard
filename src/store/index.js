@@ -1,17 +1,17 @@
-import Web3 from 'web3'
+import Web3 from 'web3';
 
-import Vue from 'vue'
-import Vuex from 'vuex'
-import * as actions from './actions'
-import * as mutations from './mutation-types'
-import createLogger from 'vuex/dist/logger'
-import { getNetIdString } from '../utils'
+import Vue from 'vue';
+import Vuex from 'vuex';
+import * as actions from './actions';
+import * as mutations from './mutation-types';
+import createLogger from 'vuex/dist/logger';
+import { getNetIdString } from '../utils';
 
-import { ABCTokenCrowdsale, ABCToken } from '../contracts/index'
+import { ABCTokenCrowdsale, ABCToken } from '../contracts/index';
 
-const utils = require('../utils')
+const utils = require('../utils');
 
-Vue.use(Vuex)
+Vue.use(Vuex);
 
 const store = new Vuex.Store({
   plugins: [createLogger()],
@@ -52,36 +52,36 @@ const store = new Vuex.Store({
       end,
       address
     }) {
-      state.rate = rate
-      state.raised = raised
-      state.token = token
-      state.cap = cap
-      state.goal = goal
-      state.wallet = wallet
-      state.start = start
-      state.end = end
-      state.address = address
+      state.rate = rate;
+      state.raised = raised;
+      state.token = token;
+      state.cap = cap;
+      state.goal = goal;
+      state.wallet = wallet;
+      state.start = start;
+      state.end = end;
+      state.address = address;
     },
     [mutations.SET_CONTRACT_DETAILS](state, {name, symbol, totalSupply, address, balance}) {
-      state.tokenTotalSupply = totalSupply
-      state.tokenSymbol = symbol
-      state.tokenName = name
-      state.tokenAddress = address
-      state.tokenBalance = balance
+      state.tokenTotalSupply = totalSupply;
+      state.tokenSymbol = symbol;
+      state.tokenName = name;
+      state.tokenAddress = address;
+      state.tokenBalance = balance;
     },
     [mutations.SET_ACCOUNT](state, account) {
-      state.account = account
+      state.account = account;
     },
     [mutations.SET_CURRENT_NETWORK](state, currentNetwork) {
-      state.currentNetwork = currentNetwork
+      state.currentNetwork = currentNetwork;
     },
   },
   actions: {
     [actions.GET_CURRENT_NETWORK]({commit, dispatch, state}) {
       getNetIdString()
         .then((currentNetwork) => {
-          commit(mutations.SET_CURRENT_NETWORK, currentNetwork)
-        })
+          commit(mutations.SET_CURRENT_NETWORK, currentNetwork);
+        });
     },
     [actions.INIT_APP]({commit, dispatch, state}, account) {
       web3.eth.getAccounts()
@@ -89,11 +89,11 @@ const store = new Vuex.Store({
           // TODO add refresh cycle / timeout
 
           // store the account
-          commit(mutations.SET_ACCOUNT, accounts[0])
+          commit(mutations.SET_ACCOUNT, accounts[0]);
 
-          store.dispatch(actions.REFRESH_CONTRACT_DETAILS, accounts[0])
-          store.dispatch(actions.REFRESH_CROWDSALE_DETAILS)
-        })
+          store.dispatch(actions.REFRESH_CONTRACT_DETAILS, accounts[0]);
+          store.dispatch(actions.REFRESH_CROWDSALE_DETAILS);
+        });
     },
     [actions.REFRESH_CONTRACT_DETAILS]({commit, dispatch, state}, account) {
       console.log(account);
@@ -105,7 +105,7 @@ const store = new Vuex.Store({
             contract.totalSupply({from: account}),
             contract.address,
             contract.balanceOf(account, {from: account})
-          ])
+          ]);
         })
         .then((results) => {
           commit(mutations.SET_CONTRACT_DETAILS, {
@@ -114,8 +114,8 @@ const store = new Vuex.Store({
             totalSupply: results[2].toString(10),
             address: results[3],
             balance: results[4].toString(10)
-          })
-        })
+          });
+        });
     },
     [actions.REFRESH_CROWDSALE_DETAILS]({commit, dispatch, state}) {
       ABCTokenCrowdsale.deployed()
@@ -130,7 +130,7 @@ const store = new Vuex.Store({
             contract.openingTime(),
             contract.closingTime(),
             contract.address,
-          ])
+          ]);
         })
         .then((results) => {
           commit(mutations.SET_CROWDSALE_DETAILS, {
@@ -143,10 +143,10 @@ const store = new Vuex.Store({
             start: results[6].toNumber(10),
             end: results[7].toNumber(10),
             address: results[8],
-          })
-        })
+          });
+        });
     }
   }
-})
+});
 
-export default store
+export default store;

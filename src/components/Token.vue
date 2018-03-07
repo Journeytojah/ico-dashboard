@@ -33,7 +33,7 @@
 
 <script>
 
-  import { mapGetters, mapState } from 'vuex'
+  import { mapGetters, mapState } from 'vuex';
 
   export default {
     name: 'dashboard',
@@ -41,7 +41,7 @@
     data() {
       return {
         title: 'Hello',
-      }
+      };
     },
     computed: {
       ...mapState([
@@ -51,7 +51,7 @@
         'tokenTotalSupply'
       ])
     }
-  }
+  };
 </script>
 
 <style lang="scss" scoped>

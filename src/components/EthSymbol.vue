@@ -8,7 +8,7 @@
 
   export default {
     name: 'eth-symbol'
-  }
+  };
 </script>
 
 <style lang="scss" scoped>

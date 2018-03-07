@@ -7,14 +7,14 @@
 <script>
   /* global web3:true */
 
-  import {mapState} from 'vuex'
+  import {mapState} from 'vuex';
 
   export default {
     name: 'currentNetwork',
     computed: {
       ...mapState(['currentNetwork']),
     },
-  }
+  };
 </script>
 
 <style lang="scss" scoped>

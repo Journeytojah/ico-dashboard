@@ -1,16 +1,16 @@
 // The Vue build version to load with the `import` command
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
-import Vue from 'vue'
-import App from './App'
-import router from './router'
-import store from './store'
-import logging from './logging'
-import BootstrapVue from 'bootstrap-vue'
-import VueMoment from 'vue-moment/vue-moment'
+import Vue from 'vue';
+import App from './App';
+import router from './router';
+import store from './store';
+import logging from './logging';
+import BootstrapVue from 'bootstrap-vue';
+import VueMoment from 'vue-moment/vue-moment';
 
-Vue.config.productionTip = false
+Vue.config.productionTip = false;
 
-Vue.use(BootstrapVue)
+Vue.use(BootstrapVue);
 Vue.use(VueMoment)
 
 ;(async () => {
@@ -28,6 +28,6 @@ Vue.use(VueMoment)
       logging,
       components: {App},
       template: '<App/>'
-    })
+    });
   }
-})()
+})();

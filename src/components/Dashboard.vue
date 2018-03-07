@@ -50,10 +50,10 @@
 
 <script>
 
-  import { mapGetters, mapState } from 'vuex'
-  import Progress from 'bootstrap-vue/es/components/progress/progress'
-  import ProgressBar from 'bootstrap-vue/es/components/progress/progress-bar'
-  import EthSymbol from './EthSymbol'
+  import { mapGetters, mapState } from 'vuex';
+  import Progress from 'bootstrap-vue/es/components/progress/progress';
+  import ProgressBar from 'bootstrap-vue/es/components/progress/progress-bar';
+  import EthSymbol from './EthSymbol';
 
   export default {
     name: 'dashboard',
@@ -63,7 +63,7 @@
       return {
         privateSale: 3000,
         preIco: 1234,
-      }
+      };
     },
     computed: {
       ...mapState([
@@ -78,7 +78,7 @@
         'end'
       ])
     }
-  }
+  };
 </script>
 
 <style lang="scss" scoped>

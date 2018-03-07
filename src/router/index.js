@@ -1,8 +1,8 @@
-import Vue from 'vue'
-import Router from 'vue-router'
-import Dashboard from '@/components/Dashboard'
-import Account from '@/components/Account'
-import Token from '@/components/Token'
+import Vue from 'vue';
+import Router from 'vue-router';
+import Dashboard from '@/components/Dashboard';
+import Account from '@/components/Account';
+import Token from '@/components/Token';
 
 Vue.use(Router);
 
@@ -26,4 +26,4 @@ export default new Router({
       component: Token
     }
   ]
-})
+});
