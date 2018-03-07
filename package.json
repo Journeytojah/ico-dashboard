@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "node scripts/dev-server.js",
     "clean": "node ./node_modules/.bin/cleandir ./build",
-    "start": "npm run dev",
+    "start": "npm run dev --network ganache",
     "build": "node scripts/build.js",
     "unit": "console.log('not implemented yet'); exit 1; ",
     "test/contracts": "test/test_truffle.sh",
