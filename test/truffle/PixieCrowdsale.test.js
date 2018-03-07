@@ -21,14 +21,14 @@ contract('PixieCrowdsale', function ([_, investor, wallet, purchaser]) {
 
   beforeEach(async function () {
     this.token = await PixieToken.new();
-    this.crowdsale = await PixieCrowdsale.new(rate, wallet, this.token.address);
 
     initialSupply = await this.token.initialSupply();
     amountAvailableForPurchase = initialSupply / 2;
 
+    this.crowdsale = await PixieCrowdsale.new(rate, wallet, this.token.address, initialSupply);
+
     await this.token.transfer(this.crowdsale.address, amountAvailableForPurchase);
   });
-
 
   describe('accepting payments', function () {
     it('should accept payments', async function () {
