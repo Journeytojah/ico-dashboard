@@ -86,8 +86,6 @@ const store = new Vuex.Store({
     [actions.INIT_APP]({commit, dispatch, state}, account) {
       web3.eth.getAccounts()
         .then((accounts) => {
-          // TODO add refresh cycle / timeout
-
           // store the account
           commit(mutations.SET_ACCOUNT, accounts[0]);
 

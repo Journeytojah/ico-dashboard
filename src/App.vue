@@ -24,7 +24,9 @@
 
       <div class="footer">
         <hr/>
-        <b-badge><current-network></current-network></b-badge>
+        <b-badge>
+          <current-network></current-network>
+        </b-badge>
       </div>
 
     </div>
@@ -36,13 +38,18 @@
   /* global web3:true */
 
   import Web3 from 'web3';
-  import { mapGetters, mapState } from 'vuex';
+  import {mapGetters, mapState} from 'vuex';
   import * as actions from './store/actions';
   import * as mutations from './store/mutation-types';
   import CurrentNetwork from './components/CurrentNetwork';
 
   export default {
     name: 'app',
+    data() {
+      return {
+        accountInterval: null
+      };
+    },
     components: {CurrentNetwork},
     computed: {
       ...mapGetters([]),
@@ -61,6 +68,10 @@
         // Bootstrap the full app
         this.$store.dispatch(actions.INIT_APP);
 
+        this.accountInterval = setInterval(() => {
+          this.$store.dispatch(actions.INIT_APP);
+        }, 5000);
+
         // Find current network
         this.$store.dispatch(actions.GET_CURRENT_NETWORK);
 
@@ -68,6 +79,9 @@
         // TODO fire action - WEB_3_NOT_FOUND - show error banner
       }
     },
+    beforeDestroy () {
+      clearInterval(this.accountInterval);
+    }
   };
 </script>
 
