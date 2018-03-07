@@ -114,9 +114,6 @@ contract BasicToken is ERC20Basic {
 
 }
 
-
-
-
 /**
  * @title Standard ERC20 token
  *
@@ -252,121 +249,23 @@ contract Ownable {
 
 }
 
+contract PixieToken is StandardToken {
 
-/**
- * @title Mintable token
- * @dev Simple ERC20 Token example, with mintable token creation
- * @dev Issue: * https://github.com/OpenZeppelin/zeppelin-solidity/issues/120
- * Based on code by TokenMarketNet: https://github.com/TokenMarketNet/ico/blob/master/contracts/MintableToken.sol
- */
-contract MintableToken is StandardToken, Ownable {
-  event Mint(address indexed to, uint256 amount);
-  event MintFinished();
+  string public constant name = "Pixie Token";
+  string public constant symbol = "PIX";
+  uint8 public constant decimals = 18;
 
-  bool public mintingFinished = false;
-
-
-  modifier canMint() {
-    require(!mintingFinished);
-    _;
-  }
+  uint256 public constant INITIAL_SUPPLY = 10000000000;
 
   /**
-   * @dev Function to mint tokens
-   * @param _to The address that will receive the minted tokens.
-   * @param _amount The amount of tokens to mint.
-   * @return A boolean that indicates if the operation was successful.
+   * @dev Constructor that gives msg.sender all of existing tokens.
    */
-  function mint(address _to, uint256 _amount) onlyOwner canMint public returns (bool) {
-    totalSupply_ = totalSupply_.add(_amount);
-    balances[_to] = balances[_to].add(_amount);
-    Mint(_to, _amount);
-    Transfer(address(0), _to, _amount);
-    return true;
-  }
-
-  /**
-   * @dev Function to stop minting new tokens.
-   * @return True if the operation was successful.
-   */
-  function finishMinting() onlyOwner canMint public returns (bool) {
-    mintingFinished = true;
-    MintFinished();
-    return true;
+  function PixieToken() public {
+    totalSupply_ = INITIAL_SUPPLY;
+    balances[msg.sender] = INITIAL_SUPPLY;
+    Transfer(0x0, msg.sender, INITIAL_SUPPLY);
   }
 }
-
-contract ABCToken is MintableToken {
-  string public name = "ABC Token";
-
-  string public symbol = "ABC";
-
-  uint8 public decimals = 18;
-
-  function ABCToken() public {}
-}
-
-/**
- * @title RefundVault
- * @dev This contract is used for storing funds while a crowdsale
- * is in progress. Supports refunding the money if crowdsale fails,
- * and forwarding it if crowdsale is successful.
- */
-contract RefundVault is Ownable {
-  using SafeMath for uint256;
-
-  enum State { Active, Refunding, Closed }
-
-  mapping (address => uint256) public deposited;
-  address public wallet;
-  State public state;
-
-  event Closed();
-  event RefundsEnabled();
-  event Refunded(address indexed beneficiary, uint256 weiAmount);
-
-  /**
-   * @param _wallet Vault address
-   */
-  function RefundVault(address _wallet) public {
-    require(_wallet != address(0));
-    wallet = _wallet;
-    state = State.Active;
-  }
-
-  /**
-   * @param investor Investor address
-   */
-  function deposit(address investor) onlyOwner public payable {
-    require(state == State.Active);
-    deposited[investor] = deposited[investor].add(msg.value);
-  }
-
-  function close() onlyOwner public {
-    require(state == State.Active);
-    state = State.Closed;
-    Closed();
-    wallet.transfer(this.balance);
-  }
-
-  function enableRefunds() onlyOwner public {
-    require(state == State.Active);
-    state = State.Refunding;
-    RefundsEnabled();
-  }
-
-  /**
-   * @param investor Investor address
-   */
-  function refund(address investor) public {
-    require(state == State.Refunding);
-    uint256 depositedValue = deposited[investor];
-    deposited[investor] = 0;
-    investor.transfer(depositedValue);
-    Refunded(investor, depositedValue);
-  }
-}
-
 
 /**
  * @title Crowdsale
@@ -522,223 +421,9 @@ contract Crowdsale {
   }
 }
 
-/**
- * @title TimedCrowdsale
- * @dev Crowdsale accepting contributions only within a time frame.
- */
-contract TimedCrowdsale is Crowdsale {
-  using SafeMath for uint256;
+contract PixieCrowdsale is Crowdsale {
 
-  uint256 public openingTime;
-  uint256 public closingTime;
+  function PixieCrowdsale(uint256 _rate, address _wallet, StandardToken _token) public Crowdsale(_rate, _wallet, _token) {
 
-  /**
-   * @dev Reverts if not in crowdsale time range.
-   */
-  modifier onlyWhileOpen {
-    require(now >= openingTime && now <= closingTime);
-    _;
-  }
-
-  /**
-   * @dev Constructor, takes crowdsale opening and closing times.
-   * @param _openingTime Crowdsale opening time
-   * @param _closingTime Crowdsale closing time
-   */
-  function TimedCrowdsale(uint256 _openingTime, uint256 _closingTime) public {
-    require(_openingTime >= now);
-    require(_closingTime >= _openingTime);
-
-    openingTime = _openingTime;
-    closingTime = _closingTime;
-  }
-
-  /**
-   * @dev Checks whether the period in which the crowdsale is open has already elapsed.
-   * @return Whether crowdsale period has elapsed
-   */
-  function hasClosed() public view returns (bool) {
-    return now > closingTime;
-  }
-
-  /**
-   * @dev Extend parent behavior requiring to be within contributing period
-   * @param _beneficiary Token purchaser
-   * @param _weiAmount Amount of wei contributed
-   */
-  function _preValidatePurchase(address _beneficiary, uint256 _weiAmount) internal onlyWhileOpen {
-    super._preValidatePurchase(_beneficiary, _weiAmount);
-  }
-
-}
-
-/**
- * @title FinalizableCrowdsale
- * @dev Extension of Crowdsale where an owner can do extra work
- * after finishing.
- */
-contract FinalizableCrowdsale is TimedCrowdsale, Ownable {
-  using SafeMath for uint256;
-
-  bool public isFinalized = false;
-
-  event Finalized();
-
-  /**
-   * @dev Must be called after crowdsale ends, to do some extra finalization
-   * work. Calls the contract's finalization function.
-   */
-  function finalize() onlyOwner public {
-    require(!isFinalized);
-    require(hasClosed());
-
-    finalization();
-    Finalized();
-
-    isFinalized = true;
-  }
-
-  /**
-   * @dev Can be overridden to add finalization logic. The overriding function
-   * should call super.finalization() to ensure the chain of finalization is
-   * executed entirely.
-   */
-  function finalization() internal {
-  }
-}
-
-
-/**
- * @title RefundableCrowdsale
- * @dev Extension of Crowdsale contract that adds a funding goal, and
- * the possibility of users getting a refund if goal is not met.
- * Uses a RefundVault as the crowdsale's vault.
- */
-contract RefundableCrowdsale is FinalizableCrowdsale {
-  using SafeMath for uint256;
-
-  // minimum amount of funds to be raised in weis
-  uint256 public goal;
-
-  // refund vault used to hold funds while crowdsale is running
-  RefundVault public vault;
-
-  /**
-   * @dev Constructor, creates RefundVault.
-   * @param _goal Funding goal
-   */
-  function RefundableCrowdsale(uint256 _goal) public {
-    require(_goal > 0);
-    vault = new RefundVault(wallet);
-    goal = _goal;
-  }
-
-  /**
-   * @dev Investors can claim refunds here if crowdsale is unsuccessful
-   */
-  function claimRefund() public {
-    require(isFinalized);
-    require(!goalReached());
-
-    vault.refund(msg.sender);
-  }
-
-  /**
-   * @dev Checks whether funding goal was reached.
-   * @return Whether funding goal was reached
-   */
-  function goalReached() public view returns (bool) {
-    return weiRaised >= goal;
-  }
-
-  /**
-   * @dev vault finalization task, called when owner calls finalize()
-   */
-  function finalization() internal {
-    if (goalReached()) {
-      vault.close();
-    } else {
-      vault.enableRefunds();
-    }
-
-    super.finalization();
-  }
-
-  /**
-   * @dev Overrides Crowdsale fund forwarding, sending funds to vault.
-   */
-  function _forwardFunds() internal {
-    vault.deposit.value(msg.value)(msg.sender);
-  }
-
-}
-
-
-/**
- * @title CappedCrowdsale
- * @dev Crowdsale with a limit for total contributions.
- */
-contract CappedCrowdsale is Crowdsale {
-  using SafeMath for uint256;
-
-  uint256 public cap;
-
-  /**
-   * @dev Constructor, takes maximum amount of wei accepted in the crowdsale.
-   * @param _cap Max amount of wei to be contributed
-   */
-  function CappedCrowdsale(uint256 _cap) public {
-    require(_cap > 0);
-    cap = _cap;
-  }
-
-  /**
-   * @dev Checks whether the cap has been reached.
-   * @return Whether the cap was reached
-   */
-  function capReached() public view returns (bool) {
-    return weiRaised >= cap;
-  }
-
-  /**
-   * @dev Extend parent behavior requiring purchase to respect the funding cap.
-   * @param _beneficiary Token purchaser
-   * @param _weiAmount Amount of wei contributed
-   */
-  function _preValidatePurchase(address _beneficiary, uint256 _weiAmount) internal {
-    super._preValidatePurchase(_beneficiary, _weiAmount);
-    require(weiRaised.add(_weiAmount) <= cap);
-  }
-
-}
-
-/**
- * @title MintedCrowdsale
- * @dev Extension of Crowdsale contract whose tokens are minted in each purchase.
- * Token ownership should be transferred to MintedCrowdsale for minting.
- */
-contract MintedCrowdsale is Crowdsale {
-
-  /**
-  * @dev Overrides delivery by minting tokens upon purchase.
-  * @param _beneficiary Token purchaser
-  * @param _tokenAmount Number of tokens to be minted
-  */
-  function _deliverTokens(address _beneficiary, uint256 _tokenAmount) internal {
-    require(MintableToken(token).mint(_beneficiary, _tokenAmount));
-  }
-}
-
-contract ABCTokenCrowdsale is CappedCrowdsale, RefundableCrowdsale, MintedCrowdsale {
-
-  function ABCTokenCrowdsale(uint256 _openingTime, uint256 _closingTime, uint256 _rate, address _wallet, uint256 _cap, MintableToken _token, uint256 _goal) public
-  Crowdsale(_rate, _wallet, _token)
-  CappedCrowdsale(_cap)
-  TimedCrowdsale(_openingTime, _closingTime)
-  RefundableCrowdsale(_goal)
-  {
-    //As goal needs to be met for a successful crowdsale
-    //the value needs to less or equal than a cap which is limit for accepted funds
-    require(_goal <= _cap);
   }
 }

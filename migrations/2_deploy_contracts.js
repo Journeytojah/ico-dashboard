@@ -1,27 +1,20 @@
 /* global web3:true */
 
-const ABCToken = artifacts.require("ABCToken");
-const ABCTokenCrowdsale = artifacts.require("ABCTokenCrowdsale");
+const PixieToken = artifacts.require("PixieToken");
+const PixieCrowdsale = artifacts.require("PixieCrowdsale");
 
 module.exports = function (deployer, network, accounts) {
-  deployer.deploy(ABCToken).then(function () {
+  deployer.deploy(PixieToken)
+    .then(function () {
 
-    const opening = web3.eth.getBlock(web3.eth.blockNumber).timestamp + 1; // one second in the future
-    const closing = opening + (86400 * 20); // 20 days
-    const rate = 1; // TODO think about this...
-    const cap = web3.toWei(50000, 'ether');
-    const goal = web3.toWei(20000, 'ether');
-    const wallet = accounts[0];
+      const rate = 1;
+      const wallet = accounts[0];
 
-    return deployer.deploy(
-      ABCTokenCrowdsale,
-      opening,
-      closing,
-      rate,
-      wallet,
-      cap,
-      ABCToken.address,
-      goal
-    )
-  });
+      return deployer.deploy(
+        ABCTokenCrowdsale,
+        rate,
+        wallet,
+        ABCToken.address
+      )
+    });
 };
