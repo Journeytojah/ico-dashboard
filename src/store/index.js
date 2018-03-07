@@ -5,9 +5,9 @@ import Vuex from 'vuex';
 import * as actions from './actions';
 import * as mutations from './mutation-types';
 import createLogger from 'vuex/dist/logger';
-import { getNetIdString } from '../utils';
+import {getNetIdString} from '../utils';
 
-import { PixieCrowdsale, PixieToken } from '../contracts/index';
+import {PixieCrowdsale, PixieToken} from '../contracts/index';
 
 const utils = require('../utils');
 
@@ -37,7 +37,7 @@ const store = new Vuex.Store({
     wallet: null,
     start: null,
     end: null,
-
+    crowdsaleBalance: null,
   },
   getters: {},
   mutations: {
@@ -50,7 +50,8 @@ const store = new Vuex.Store({
       wallet,
       start,
       end,
-      address
+      address,
+      crowdsaleBalance
     }) {
       state.rate = rate;
       state.raised = raised;
@@ -61,6 +62,7 @@ const store = new Vuex.Store({
       state.start = start;
       state.end = end;
       state.address = address;
+      state.crowdsaleBalance = crowdsaleBalance;
     },
     [mutations.SET_CONTRACT_DETAILS](state, {name, symbol, totalSupply, address, balance}) {
       state.tokenTotalSupply = totalSupply;
@@ -90,7 +92,7 @@ const store = new Vuex.Store({
           commit(mutations.SET_ACCOUNT, accounts[0]);
 
           store.dispatch(actions.REFRESH_CONTRACT_DETAILS, accounts[0]);
-          store.dispatch(actions.REFRESH_CROWDSALE_DETAILS);
+          store.dispatch(actions.REFRESH_CROWDSALE_DETAILS, accounts[0]);
         });
     },
     [actions.REFRESH_CONTRACT_DETAILS]({commit, dispatch, state}, account) {
@@ -114,19 +116,23 @@ const store = new Vuex.Store({
           });
         });
     },
-    [actions.REFRESH_CROWDSALE_DETAILS]({commit, dispatch, state}) {
-      PixieCrowdsale.deployed()
-        .then((contract) => {
+    [actions.REFRESH_CROWDSALE_DETAILS]({commit, dispatch, state}, account) {
+      Promise.all([
+        PixieToken.deployed(),
+        PixieCrowdsale.deployed()
+      ])
+        .then((contracts) => {
           return Promise.all([
-            contract.rate(),
-            contract.weiRaised(),
-            contract.token(),
-            contract.weiRaised(), // DUMMY
-            contract.weiRaised(), // DUMMY
-            contract.wallet(),
-            contract.weiRaised(), // DUMMY
-            contract.weiRaised(), // DUMMY
-            contract.address,
+            contracts[1].rate(),
+            contracts[1].weiRaised(),
+            contracts[1].token(),
+            contracts[1].weiRaised(), // DUMMY
+            contracts[1].weiRaised(), // DUMMY
+            contracts[1].wallet(),
+            contracts[1].weiRaised(), // DUMMY
+            contracts[1].weiRaised(), // DUMMY
+            contracts[1].address,
+            contracts[0].balanceOf(contracts[1].address, {from: account})
           ]);
         })
         .then((results) => {
@@ -140,6 +146,7 @@ const store = new Vuex.Store({
             start: results[6].toNumber(10),
             end: results[7].toNumber(10),
             address: results[8],
+            crowdsaleBalance: results[9].toString(10),
           });
         });
     }
