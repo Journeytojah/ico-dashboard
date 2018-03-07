@@ -1,11 +1,11 @@
 /* global web3:true */
 
-const PixieToken = artifacts.require('PixieToken')
-const PixieCrowdsale = artifacts.require('PixieCrowdsale')
+const PixieToken = artifacts.require('PixieToken');
+const PixieCrowdsale = artifacts.require('PixieCrowdsale');
 
 module.exports = function (deployer, network, accounts) {
 
-  console.log(`Running within network = ${network}`)
+  console.log(`Running within network = ${network}`);
 
   deployer.deploy(PixieToken)
     .then(() => PixieToken.deployed())
@@ -28,11 +28,11 @@ module.exports = function (deployer, network, accounts) {
         ),
         results[0],
         results[1]
-      ])
+      ]);
     })
     .then((results) => {
       const crowdsaleSupply = results[2] * 0.5; // sell upto 50%
       console.log(`Transfer to crowdsale: ${crowdsaleSupply}`);
       results[1].transfer(PixieCrowdsale.address, crowdsaleSupply);
-    })
-}
+    });
+};
