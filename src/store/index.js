@@ -119,38 +119,25 @@ const store = new Vuex.Store({
     [actions.REFRESH_CROWDSALE_DETAILS]({commit, dispatch, state}) {
       PixieCrowdsale.deployed()
         .then((contract) => {
-        //   return Promise.all([
-        //     contract.rate(),
-        //     contract.weiRaised(),
-        //     contract.token(),
-        //     contract.cap(),
-        //     contract.goal(),
-        //     contract.wallet(),
-        //     contract.openingTime(),
-        //     contract.closingTime(),
-        //     contract.address,
-        //   ]);
-        // })
-          //
           return Promise.all([
             contract.rate(),
             contract.weiRaised(),
             contract.token(),
-            "0",
-            "0",
+            contract.weiRaised(), // DUMMY
+            contract.weiRaised(), // DUMMY
             contract.wallet(),
-            contract.weiRaised(),
-            contract.weiRaised(),
+            contract.weiRaised(), // DUMMY
+            contract.weiRaised(), // DUMMY
             contract.address,
           ]);
         })
         .then((results) => {
           commit(mutations.SET_CROWDSALE_DETAILS, {
-            rate: Web3.utils.fromWei(results[0].toString(10), 'ether'),
-            raised: parseInt(Web3.utils.fromWei(results[1].toString(10), 'ether'), 10), // hmmm?
+            rate: results[0].toNumber(10),
+            raised: results[1].toNumber(10), // hmmm?
             token: results[2].toString(),
-            cap: parseInt(Web3.utils.fromWei(results[3].toString(10), 'ether'), 10), // whole ether
-            goal: parseInt(Web3.utils.fromWei(results[4].toString(10), 'ether'), 10), // whole ether
+            cap: results[3].toNumber(10), // whole ether
+            goal: results[4].toNumber(10), // whole ether
             wallet: results[5].toString(),
             start: results[6].toNumber(10),
             end: results[7].toNumber(10),
