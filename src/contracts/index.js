@@ -3,17 +3,17 @@
 import contract from 'truffle-contract';
 
 // import artifacts
-import abcToken from '../../build/contracts/ABCToken.json';
-import abcTokenCrowdsale from '../../build/contracts/ABCTokenCrowdsale.json';
+import pixieToken from '../../build/contracts/PixieToken.json';
+import pixieCrowdsale from '../../build/contracts/PixieCrowdsale.json';
 
 // create contracts
-const ABCToken = contract(abcToken);
-ABCToken.setProvider(web3.currentProvider);
+const PixieToken = contract(pixieToken);
+PixieToken.setProvider(web3.currentProvider);
 
-const ABCTokenCrowdsale = contract(abcTokenCrowdsale);
-ABCTokenCrowdsale.setProvider(web3.currentProvider);
+const PixieCrowdsale = contract(pixieCrowdsale);
+PixieCrowdsale.setProvider(web3.currentProvider);
 
 export {
-  ABCToken,
-  ABCTokenCrowdsale
+  PixieToken,
+  PixieCrowdsale
 };

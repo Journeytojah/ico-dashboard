@@ -35,11 +35,11 @@
 <script>
   /* global web3:true */
 
-  import Web3 from 'web3'
-  import { mapGetters, mapState } from 'vuex'
-  import * as actions from './store/actions'
-  import * as mutations from './store/mutation-types'
-  import CurrentNetwork from './components/CurrentNetwork'
+  import Web3 from 'web3';
+  import { mapGetters, mapState } from 'vuex';
+  import * as actions from './store/actions';
+  import * as mutations from './store/mutation-types';
+  import CurrentNetwork from './components/CurrentNetwork';
 
   export default {
     name: 'app',
@@ -51,8 +51,9 @@
       // Checking if Web3 has been injected by the browser (Mist/MetaMask)
       if (typeof web3 === 'undefined') {
         console.error('No web3 detected...');
-        return
+        return;
       }
+
       if (web3) {
         // Use Mist / MetaMask's / provided provider
         window.web3 = new Web3(web3.currentProvider);
@@ -67,7 +68,7 @@
         // TODO fire action - WEB_3_NOT_FOUND - show error banner
       }
     },
-  }
+  };
 </script>
 
 <style lang="scss">

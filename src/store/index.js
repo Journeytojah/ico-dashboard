@@ -7,7 +7,7 @@ import * as mutations from './mutation-types';
 import createLogger from 'vuex/dist/logger';
 import { getNetIdString } from '../utils';
 
-import { ABCTokenCrowdsale, ABCToken } from '../contracts/index';
+import { PixieCrowdsale, PixieToken } from '../contracts/index';
 
 const utils = require('../utils');
 
@@ -96,8 +96,7 @@ const store = new Vuex.Store({
         });
     },
     [actions.REFRESH_CONTRACT_DETAILS]({commit, dispatch, state}, account) {
-      console.log(account);
-      ABCToken.deployed()
+      PixieToken.deployed()
         .then((contract) => {
           return Promise.all([
             contract.name(),
@@ -118,17 +117,30 @@ const store = new Vuex.Store({
         });
     },
     [actions.REFRESH_CROWDSALE_DETAILS]({commit, dispatch, state}) {
-      ABCTokenCrowdsale.deployed()
+      PixieCrowdsale.deployed()
         .then((contract) => {
+        //   return Promise.all([
+        //     contract.rate(),
+        //     contract.weiRaised(),
+        //     contract.token(),
+        //     contract.cap(),
+        //     contract.goal(),
+        //     contract.wallet(),
+        //     contract.openingTime(),
+        //     contract.closingTime(),
+        //     contract.address,
+        //   ]);
+        // })
+          //
           return Promise.all([
             contract.rate(),
             contract.weiRaised(),
             contract.token(),
-            contract.cap(),
-            contract.goal(),
+            "0",
+            "0",
             contract.wallet(),
-            contract.openingTime(),
-            contract.closingTime(),
+            contract.weiRaised(),
+            contract.weiRaised(),
             contract.address,
           ]);
         })

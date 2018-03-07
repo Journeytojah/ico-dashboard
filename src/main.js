@@ -11,7 +11,7 @@ import VueMoment from 'vue-moment/vue-moment';
 Vue.config.productionTip = false;
 
 Vue.use(BootstrapVue);
-Vue.use(VueMoment)
+Vue.use(VueMoment);
 
 ;(async () => {
   try {
