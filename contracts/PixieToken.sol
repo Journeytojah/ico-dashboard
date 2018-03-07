@@ -10,14 +10,14 @@ contract PixieToken is StandardToken {
   string public constant symbol = "PIX";
   uint8 public constant decimals = 18;
 
-  uint256 public constant INITIAL_SUPPLY = 10000000000;
+  uint256 public constant initialSupply = 10000000000;
 
   /**
    * @dev Constructor that gives msg.sender all of existing tokens.
    */
   function PixieToken() public {
-    totalSupply_ = INITIAL_SUPPLY;
-    balances[msg.sender] = INITIAL_SUPPLY;
-    Transfer(0x0, msg.sender, INITIAL_SUPPLY);
+    totalSupply_ = initialSupply;
+    balances[msg.sender] = initialSupply;
+    Transfer(0x0, msg.sender, initialSupply);
   }
 }

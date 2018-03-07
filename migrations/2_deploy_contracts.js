@@ -3,10 +3,10 @@
 const PixieToken = artifacts.require("PixieToken");
 const PixieCrowdsale = artifacts.require("PixieCrowdsale");
 
-const INITIAL_SUPPLY = 10000000000;
-const ICO_SUPPLY = INITIAL_SUPPLY / 2;
-
 module.exports = function (deployer, network, accounts) {
+
+  console.log(`Running within network = ${network}`);
+
   deployer.deploy(PixieToken)
     .then(function () {
 
@@ -21,6 +21,7 @@ module.exports = function (deployer, network, accounts) {
       )
     })
     .then(() => {
-      return PixieToken.deployed().then((contract) => contract.transfer(PixieCrowdsale.address, ICO_SUPPLY));
+      return PixieToken.deployed()
+        .then((contract) => contract.transfer(PixieCrowdsale.address, contract.initialSupply() / 2));
     });
 };
