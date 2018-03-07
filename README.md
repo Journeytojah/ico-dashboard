@@ -3,10 +3,9 @@
 
 ## Installation
 
-1. Install [Truffle](http://truffleframework.com) and an Ethereum client - like [EthereumJS TestRPC](https://github.com/ethereumjs/testrpc).
+1. Install [Truffle](http://truffleframework.com) and an Ganache [Ganache Testsuite](https://github.com/trufflesuite/ganache).
 	```
 	npm install -g truffle
-	npm install -g ethereumjs-testrpc
 	```
 
 2. Compile and migrate the contracts.
@@ -15,8 +14,6 @@
 	truffle migrate
 	```
 	* use `npm run clean` to clean the build directory
-	* `truffle compile --all` to force compile all
-	* `truffle migrate --reset --all` to force  migrate all 
 
 3. Run the webpack server for front-end hot reloading. Smart contract changes do not support hot reloading for now.
 	```
@@ -24,26 +21,19 @@
 	```
     
 ## Tests
-This box comes with everything bundled for `unit`, `e2e` and `truffle` contracts testing.
+To run tests use the following commands
 
-1. `unit` and `e2e` tests.
-	```
-	npm run test/dapp
-	```
+1. Unit tests: `npm run unit` 
 
-2. `truffle` contracts tests.
-	```
-	npm run test/truffle
-	```
+2. Running tuffle smart contract tests `npm run test/truffle`.
 
-3. Alternatively you can directly run `unit`, `e2e` and `truffle` contracts tests in one command.
-	```
-	npm run test
-	```
+3. Alternatively you can tham all in one command. `npm run test`
+
+*Tests start there own instance of `testrpc` on port `8546`*
 
 ## Build for production
 To build the application for production, use the build command. A production build will be compiled in the `dist` folder.
-```javascript
+```bash
 npm run build
 ```
 
