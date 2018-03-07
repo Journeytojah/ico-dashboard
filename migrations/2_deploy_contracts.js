@@ -1,29 +1,38 @@
 /* global web3:true */
 
-const PixieToken = artifacts.require("PixieToken");
-const PixieCrowdsale = artifacts.require("PixieCrowdsale");
+const PixieToken = artifacts.require('PixieToken')
+const PixieCrowdsale = artifacts.require('PixieCrowdsale')
 
 module.exports = function (deployer, network, accounts) {
 
-  console.log(`Running within network = ${network}`);
+  console.log(`Running within network = ${network}`)
 
   deployer.deploy(PixieToken)
-    .then(function () {
+    .then(() => PixieToken.deployed())
+    .then((contract) => Promise.all([contract, contract.initialSupply()]))
+    .then((results) => {
 
       const rate = 1;
       const wallet = accounts[0];
-      const cap = ICO_SUPPLY * 0.9; // only sell 90%...for now
+      const cap = results[1] * 0.5; // cap 100%...for now of total
 
-      return deployer.deploy(
-        PixieCrowdsale,
-        rate,
-        wallet,
-        PixieToken.address,
-        cap
-      )
+      console.log(`Hard cap: ${cap}`);
+
+      return Promise.all([
+        deployer.deploy(
+          PixieCrowdsale,
+          rate,
+          wallet,
+          PixieToken.address,
+          cap
+        ),
+        results[0],
+        results[1]
+      ])
     })
-    .then(() => {
-      return PixieToken.deployed()
-        .then((contract) => contract.transfer(PixieCrowdsale.address, contract.initialSupply() / 2));
-    });
-};
+    .then((results) => {
+      const crowdsaleSupply = results[2] * 0.5; // sell upto 50%
+      console.log(`Transfer to crowdsale: ${crowdsaleSupply}`);
+      results[1].transfer(PixieCrowdsale.address, crowdsaleSupply);
+    })
+}
