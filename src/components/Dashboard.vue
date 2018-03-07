@@ -12,7 +12,7 @@
             <eth-symbol></eth-symbol>
           </h2>
           <div class="alert alert-success" role="alert">
-            <strong>Buy</strong> {{ address }}
+            <strong>Crowdsale contract address:</strong> <eth-address :hex="address"></eth-address>
           </div>
         </div>
       </div>
@@ -64,10 +64,11 @@
   import Progress from 'bootstrap-vue/es/components/progress/progress';
   import ProgressBar from 'bootstrap-vue/es/components/progress/progress-bar';
   import EthSymbol from './EthSymbol';
+  import EthAddress from './EthAddress.vue';
 
   export default {
     name: 'dashboard',
-    components: {EthSymbol},
+    components: {EthSymbol, EthAddress},
     data () {
       // mock data
       return {

@@ -7,7 +7,7 @@
       <div class="row">
         <div class="col-lg-12">
           <h4>Address</h4>
-          <p>{{ tokenAddress }}</p>
+          <eth-address :hex="tokenAddress"></eth-address>
         </div>
       </div>
 
@@ -44,11 +44,12 @@
 
 <script>
 
-  import { mapGetters, mapState } from 'vuex';
+  import {mapGetters, mapState} from 'vuex';
+  import EthAddress from './EthAddress.vue';
 
   export default {
     name: 'dashboard',
-    components: {},
+    components: {EthAddress},
     data() {
       return {
         title: 'Hello',
