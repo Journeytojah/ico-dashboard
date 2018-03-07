@@ -37,3 +37,7 @@ To build the application for production, use the build command. A production bui
 npm run build
 ```
 
+#### History
+
+* Original project based on https://github.com/wespr/truffle-vue
+* Contracts based on https://github.com/OpenZeppelin/zeppelin-solidity
