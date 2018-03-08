@@ -14,9 +14,7 @@ module.exports = function (deployer, network, accounts) {
 
       const rate = 1;
       const wallet = accounts[0];
-      const cap = results[1] * 0.5; // cap 100%...for now of total
-
-      console.log(`Hard cap: ${cap}`);
+      const cap = results[1].times(0.5); // cap 50%...for now of total
 
       return Promise.all([
         deployer.deploy(
@@ -31,8 +29,7 @@ module.exports = function (deployer, network, accounts) {
       ]);
     })
     .then((results) => {
-      const crowdsaleSupply = results[2] * 0.5; // sell upto 50%
-      console.log(`Transfer to crowdsale: ${crowdsaleSupply}`);
+      const crowdsaleSupply = results[2].times(0.5); // sell upto 50%
       results[1].transfer(PixieCrowdsale.address, crowdsaleSupply);
     });
 };
