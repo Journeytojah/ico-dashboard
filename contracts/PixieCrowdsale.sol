@@ -24,14 +24,6 @@ contract PixieCrowdsale is CappedCrowdsale, FinalizableCrowdsale {
   }
 
   /**
-     * @dev Checks whether the period in which the crowdsale is before close time passed.
-     * @return Whether crowdsale period close time has passed
-     */
-  function isBeforeCloseTime() public view returns (bool) {
-    return now <= closingTime;
-  }
-
-  /**
      * @dev gets current time
      * @return the current blocktime
      */

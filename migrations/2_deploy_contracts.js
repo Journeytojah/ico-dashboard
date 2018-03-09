@@ -1,6 +1,4 @@
 /* global web3:true */
-const moment = require('moment');
-
 const PixieToken = artifacts.require('PixieToken');
 const PixieCrowdsale = artifacts.require('PixieCrowdsale');
 

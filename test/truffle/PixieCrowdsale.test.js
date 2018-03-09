@@ -60,7 +60,6 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser]) {
     console.log("test wallet", wallet);
     console.log("test purchaser", purchaser);
     console.log("getNow", await this.crowdsale.getNow());
-    console.log("isBeforeCloseTime", await this.crowdsale.isBeforeCloseTime());
     console.log("hasClosed", await this.crowdsale.hasClosed());
     console.log("isCrowdsaleOpen", await this.crowdsale.isCrowdsaleOpen());
     console.log("isFinalized", await this.crowdsale.isFinalized());
@@ -272,4 +271,30 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser]) {
 
   });
 
+  describe('Ownable', function () {
+
+    it('should have an owner', async function () {
+      let owner = await this.crowdsale.owner();
+      assert.isTrue(owner !== 0);
+    });
+
+    it('changes owner after transfer', async function () {
+      await this.crowdsale.transferOwnership(investor);
+      let newOwner = await this.crowdsale.owner();
+
+      assert.isTrue(newOwner === investor);
+    });
+
+    it('should prevent non-owners from transfering', async function () {
+      const other = purchaser;
+      const owner = await this.crowdsale.owner.call();
+      assert.isTrue(owner !== other);
+      await assertRevert(this.crowdsale.transferOwnership(other, {from: other}));
+    });
+
+    it('should guard ownership against stuck state', async function () {
+      let originalOwner = await this.crowdsale.owner();
+      await assertRevert(this.crowdsale.transferOwnership(null, {from: originalOwner}));
+    });
+  });
 });
