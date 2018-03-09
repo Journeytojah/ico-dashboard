@@ -10,6 +10,8 @@ import VueMoment from 'vue-moment/vue-moment';
 
 import 'vue-awesome/icons';
 import Icon from 'vue-awesome/components/Icon';
+import 'bootstrap/dist/css/bootstrap.css';
+import 'bootstrap-vue/dist/bootstrap-vue.css';
 
 Vue.config.productionTip = false;
 
