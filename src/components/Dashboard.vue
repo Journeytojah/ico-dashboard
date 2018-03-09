@@ -29,27 +29,27 @@
           per {{ tokenSymbol }} Token
         </p>
 
+        <!--<h4>Start</h4>-->
+        <!--<p>{{ start | moment("from") }}</p>-->
+      </div>
+      <div class="col-lg-6">
         <h4>Hard Cap</h4>
         <p>{{ cap }}
           <eth-symbol></eth-symbol>
         </p>
 
-        <h4>Start</h4>
-        <p>{{ start | moment("from") }}</p>
-      </div>
-      <div class="col-lg-6">
-        <h4>Raised</h4>
-        <p>{{ raised }}
-          <eth-symbol></eth-symbol>
-        </p>
+        <!--<h4>Raised</h4>-->
+        <!--<p>{{ raised }}-->
+          <!--<eth-symbol></eth-symbol>-->
+        <!--</p>-->
 
-        <h4>Soft Cap</h4>
-        <p>{{ goal }}
-          <eth-symbol></eth-symbol>
-        </p>
+        <!--<h4>Soft Cap</h4>-->
+        <!--<p>{{ goal }}-->
+          <!--<eth-symbol></eth-symbol>-->
+        <!--</p>-->
 
-        <h4>End</h4>
-        <p>{{ end | moment("from") }}</p>
+        <!--<h4>End</h4>-->
+        <!--<p>{{ end | moment("from") }}</p>-->
       </div>
     </div>
   </div>

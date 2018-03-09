@@ -17,7 +17,7 @@
           </ul>
         </nav>
 
-        <h3 class="text-muted">ABC Project</h3>
+        <h3 class="text-muted">ICO Dashboard</h3>
       </div>
 
       <router-view></router-view>
@@ -38,7 +38,6 @@
   /* global web3:true */
 
   import Web3 from 'web3';
-  import {mapGetters, mapState} from 'vuex';
   import * as actions from './store/actions';
   import * as mutations from './store/mutation-types';
   import CurrentNetwork from './components/CurrentNetwork';
@@ -51,9 +50,6 @@
       };
     },
     components: {CurrentNetwork},
-    computed: {
-      ...mapGetters([]),
-    },
     mounted() {
       // Checking if Web3 has been injected by the browser (Mist/MetaMask)
       if (typeof web3 === 'undefined') {

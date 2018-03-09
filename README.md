@@ -1,5 +1,7 @@
 # ICO Dashboard
 
+An Dapp that simulates a crowdsale
+
 
 ## Installation
 
@@ -8,8 +10,9 @@
 	npm install -g truffle
 	```
 
-2. Compile and migrate the contracts.
+2. Clean, compile and migrate the contracts.
 	```
+	npm run clean
 	truffle compile
 	truffle migrate
 	```
@@ -23,15 +26,12 @@
 ## Tests
 To run tests use the following commands
 
-1. Unit tests: `npm run unit` 
+1. Truffle test: `npm run test`
 
-2. Running tuffle smart contract tests `npm run test/truffle`.
-
-3. Alternatively you can tham all in one command. `npm run test`
-
-*Tests start there own instance of `testrpc` on port `8546`*
+*Tests start their own instance of `testrpc` on port `8546`*
 
 ## Build for production
+
 To build the application for production, use the build command. A production build will be compiled in the `dist` folder.
 ```bash
 npm run build
@@ -40,4 +40,4 @@ npm run build
 #### History
 
 * Original project based on https://github.com/wespr/truffle-vue
-* Contracts based on https://github.com/OpenZeppelin/zeppelin-solidity
+* Base contracts based on https://github.com/OpenZeppelin/zeppelin-solidity
