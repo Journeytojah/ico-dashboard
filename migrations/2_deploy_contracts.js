@@ -31,5 +31,8 @@ module.exports = function (deployer, network, accounts) {
     .then((results) => {
       const crowdsaleSupply = results[2].times(0.5); // sell upto 50%
       results[1].transfer(PixieCrowdsale.address, crowdsaleSupply);
-    });
+
+      return PixieCrowdsale.deployed();
+    })
+    .then((contract) => contract.addManyToWhitelist([accounts[0], accounts[1]]));
 };

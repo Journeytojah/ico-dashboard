@@ -38,6 +38,7 @@ const store = new Vuex.Store({
     start: 0,
     end: 0,
     crowdsaleBalance: 0,
+    owner: null
   },
   getters: {},
   mutations: {
@@ -51,7 +52,8 @@ const store = new Vuex.Store({
       start,
       end,
       address,
-      crowdsaleBalance
+      crowdsaleBalance,
+      owner
     }) {
       state.rate = rate;
       state.raised = raised;
@@ -63,6 +65,7 @@ const store = new Vuex.Store({
       state.end = end;
       state.address = address;
       state.crowdsaleBalance = crowdsaleBalance;
+      state.owner = owner;
     },
     [mutations.SET_CONTRACT_DETAILS](state, {name, symbol, totalSupply, address, balance}) {
       state.tokenTotalSupply = totalSupply;
@@ -132,7 +135,8 @@ const store = new Vuex.Store({
             contracts[1].weiRaised(), // DUMMY
             contracts[1].weiRaised(), // DUMMY
             contracts[1].address,
-            contracts[0].balanceOf(contracts[1].address, {from: account})
+            contracts[0].balanceOf(contracts[1].address, {from: account}),
+            contracts[1].owner(),
           ]);
         })
         .then((results) => {
@@ -147,6 +151,7 @@ const store = new Vuex.Store({
             end: results[7].toNumber(10),
             address: results[8],
             crowdsaleBalance: results[9].toString(10),
+            owner: results[10]
           });
         });
     }

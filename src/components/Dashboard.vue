@@ -29,8 +29,8 @@
           per {{ tokenSymbol }} Token
         </p>
 
-        <!--<h4>Start</h4>-->
-        <!--<p>{{ start | moment("from") }}</p>-->
+        <h4>Owner</h4>
+        <p class="small"><eth-address :hex="owner"></eth-address></p>
       </div>
       <div class="col-lg-6">
         <h4>Hard Cap</h4>
@@ -51,6 +51,10 @@
         <!--<h4>End</h4>-->
         <!--<p>{{ end | moment("from") }}</p>-->
       </div>
+    </div>
+
+    <div>
+
     </div>
   </div>
 </template>
@@ -80,7 +84,8 @@
         'goal',
         'start',
         'end',
-        'tokenSymbol'
+        'tokenSymbol',
+        'owner'
       ])
     }
   };

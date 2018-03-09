@@ -37,11 +37,13 @@ contract('PixieCrowdsale', function ([_, investor, wallet, purchaser, authorized
 
     await this.token.transfer(this.crowdsale.address, amountAvailableForPurchase);
 
-    // whitelist investor and purchaser otherwise they can invest in crowdsale
+    // approve so they can invest in crowdsale
     await this.crowdsale.addToWhitelist(_);
     await this.crowdsale.addToWhitelist(investor);
     await this.crowdsale.addToWhitelist(wallet);
     await this.crowdsale.addToWhitelist(purchaser);
+
+    // used in whitelist testing
     await this.crowdsale.addToWhitelist(authorized);
   });
 
@@ -191,7 +193,10 @@ contract('PixieCrowdsale', function ([_, investor, wallet, purchaser, authorized
     });
 
     it('should reject payments to not whitelisted (with whichever buyers)', async function () {
+
+      // TODO FIX this is sent from an authorised address - how to set {from: unauthorized}?
       // await this.crowdsale.send(value).should.be.rejected;
+
       await this.crowdsale.buyTokens(unauthorized, {value: valueToPurchase, from: unauthorized}).should.be.rejected;
       await this.crowdsale.buyTokens(unauthorized, {value: valueToPurchase, from: authorized}).should.be.rejected;
     });
