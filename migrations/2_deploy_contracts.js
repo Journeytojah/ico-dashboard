@@ -1,4 +1,5 @@
 /* global web3:true */
+const moment = require('moment');
 
 const PixieToken = artifacts.require('PixieToken');
 const PixieCrowdsale = artifacts.require('PixieCrowdsale');
@@ -12,20 +13,29 @@ module.exports = function (deployer, network, accounts) {
     .then((contract) => Promise.all([contract, contract.initialSupply()]))
     .then((results) => {
 
-      const rate = 1;
-      const wallet = accounts[0];
-      const cap = results[1].times(0.5); // cap 50%...for now of total
+      const _rate = 1;
+      const _initialSupply = results[1];
+      const _wallet = accounts[0];
+      const _token = PixieToken.address;
+      const _cap = _initialSupply.times(0.5); // cap 50%...for now of total
+
+      const _openingTime = web3.eth.getBlock(web3.eth.blockNumber).timestamp + 1; // one second in the future
+      const _closingTime = _openingTime + (86400 * 20); // 20 days
+
+      const PixieTokenContract = results[0];
 
       return Promise.all([
         deployer.deploy(
           PixieCrowdsale,
-          rate,
-          wallet,
-          PixieToken.address,
-          cap
+          _rate,
+          _wallet,
+          _token,
+          _cap,
+          _openingTime,
+          _closingTime
         ),
-        results[0],
-        results[1]
+        PixieTokenContract,
+        _initialSupply
       ]);
     })
     .then((results) => {
