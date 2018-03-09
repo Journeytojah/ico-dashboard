@@ -10,14 +10,14 @@ const EVMRevert = require('../helpers/EVMRevert');
 const BigNumber = web3.BigNumber;
 
 const should = require('chai')
-  .use(require('chai-as-promised'))
-  .use(require('chai-bignumber')(BigNumber))
-  .should();
+.use(require('chai-as-promised'))
+.use(require('chai-bignumber')(BigNumber))
+.should();
 
 const PixieCrowdsale = artifacts.require('PixieCrowdsale');
 const PixieToken = artifacts.require('PixieToken');
 
-contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser]) {
+contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, authorized, unauthorized, anotherAuthorized]) {
 
   const rate = new BigNumber(1);
 
@@ -27,9 +27,9 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser]) {
   let cap;
   let lessThanCap;
 
-  const valueToPurchase = ether(0.0000000005);
+  const value = ether(0.0000000005);
 
-  const expectedTokenAmount = rate.mul(valueToPurchase);
+  const expectedTokenAmount = rate.mul(value);
 
   before(async function () {
     // Advance to the next block to correctly read time in the solidity "now" function interpreted by testrpc
@@ -51,19 +51,28 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser]) {
     this.crowdsale = await PixieCrowdsale.new(rate, wallet, this.token.address, cap, this.openingTime, this.closingTime, {from: owner});
 
     await this.token.transfer(this.crowdsale.address, amountAvailableForPurchase);
+
+    // approve so they can invest in crowdsale
+    await this.crowdsale.addToWhitelist(owner);
+    await this.crowdsale.addToWhitelist(investor);
+    await this.crowdsale.addToWhitelist(wallet);
+    await this.crowdsale.addToWhitelist(purchaser);
+
+    // used in whitelist testing
+    await this.crowdsale.addToWhitelist(authorized);
   });
 
   after(async function () {
-    console.log("Crowdsale Owner", await this.crowdsale.owner());
-    console.log("test owner", owner);
-    console.log("test investor", investor);
-    console.log("test wallet", wallet);
-    console.log("test purchaser", purchaser);
-    console.log("getNow", await this.crowdsale.getNow());
-    console.log("hasClosed", await this.crowdsale.hasClosed());
-    console.log("isCrowdsaleOpen", await this.crowdsale.isCrowdsaleOpen());
-    console.log("isFinalized", await this.crowdsale.isFinalized());
-    console.log("capReached", await this.crowdsale.capReached());
+    console.log('Crowdsale Owner', await this.crowdsale.owner());
+    console.log('test owner', owner);
+    console.log('test investor', investor);
+    console.log('test wallet', wallet);
+    console.log('test purchaser', purchaser);
+    console.log('getNow', await this.crowdsale.getNow());
+    console.log('hasClosed', await this.crowdsale.hasClosed());
+    console.log('isCrowdsaleOpen', await this.crowdsale.isCrowdsaleOpen());
+    console.log('isFinalized', await this.crowdsale.isFinalized());
+    console.log('capReached', await this.crowdsale.capReached());
   });
 
   describe('Crowdsale', function () {
@@ -74,58 +83,58 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser]) {
 
     describe('accepting payments', function () {
       it('should accept payments', async function () {
-        await this.crowdsale.send(valueToPurchase).should.be.fulfilled;
-        await this.crowdsale.buyTokens(investor, {value: valueToPurchase, from: purchaser}).should.be.fulfilled;
+        await this.crowdsale.send(value).should.be.fulfilled;
+        await this.crowdsale.buyTokens(investor, {value: value, from: purchaser}).should.be.fulfilled;
       });
     });
 
     describe('high-level purchase', function () {
       it('should log purchase', async function () {
-        const {logs} = await this.crowdsale.sendTransaction({value: valueToPurchase, from: investor});
+        const {logs} = await this.crowdsale.sendTransaction({value: value, from: investor});
         const event = logs.find(e => e.event === 'TokenPurchase');
         should.exist(event);
         event.args.purchaser.should.equal(investor);
         event.args.beneficiary.should.equal(investor);
-        event.args.value.should.be.bignumber.equal(valueToPurchase);
+        event.args.value.should.be.bignumber.equal(value);
         event.args.amount.should.be.bignumber.equal(expectedTokenAmount);
       });
 
       it('should assign tokens to sender', async function () {
-        await this.crowdsale.sendTransaction({value: valueToPurchase, from: investor});
+        await this.crowdsale.sendTransaction({value: value, from: investor});
         let balance = await this.token.balanceOf(investor);
         balance.should.be.bignumber.equal(expectedTokenAmount);
       });
 
       it('should forward funds to wallet', async function () {
         const pre = web3.eth.getBalance(wallet);
-        await this.crowdsale.sendTransaction({value: valueToPurchase, from: investor});
+        await this.crowdsale.sendTransaction({value: value, from: investor});
         const post = web3.eth.getBalance(wallet);
-        post.minus(pre).should.be.bignumber.equal(valueToPurchase);
+        post.minus(pre).should.be.bignumber.equal(value);
       });
     });
 
     describe('low-level purchase', function () {
       it('should log purchase', async function () {
-        const {logs} = await this.crowdsale.buyTokens(investor, {value: valueToPurchase, from: purchaser});
+        const {logs} = await this.crowdsale.buyTokens(investor, {value: value, from: purchaser});
         const event = logs.find(e => e.event === 'TokenPurchase');
         should.exist(event);
         event.args.purchaser.should.equal(purchaser);
         event.args.beneficiary.should.equal(investor);
-        event.args.value.should.be.bignumber.equal(valueToPurchase);
+        event.args.value.should.be.bignumber.equal(value);
         event.args.amount.should.be.bignumber.equal(expectedTokenAmount);
       });
 
       it('should assign tokens to beneficiary', async function () {
-        await this.crowdsale.buyTokens(investor, {value: valueToPurchase, from: purchaser});
+        await this.crowdsale.buyTokens(investor, {value: value, from: purchaser});
         const balance = await this.token.balanceOf(investor);
         balance.should.be.bignumber.equal(expectedTokenAmount);
       });
 
       it('should forward funds to wallet', async function () {
         const pre = web3.eth.getBalance(wallet);
-        await this.crowdsale.buyTokens(investor, {value: valueToPurchase, from: purchaser});
+        await this.crowdsale.buyTokens(investor, {value: value, from: purchaser});
         const post = web3.eth.getBalance(wallet);
-        post.minus(pre).should.be.bignumber.equal(valueToPurchase);
+        post.minus(pre).should.be.bignumber.equal(value);
       });
     });
   });
@@ -236,24 +245,24 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser]) {
     describe('accepting payments', function () {
 
       it('should reject payments before start', async function () {
-        await this.crowdsale.send(valueToPurchase).should.be.rejectedWith(EVMRevert);
+        await this.crowdsale.send(value).should.be.rejectedWith(EVMRevert);
         await this.crowdsale.buyTokens(investor, {
           from: purchaser,
-          value: valueToPurchase
+          value: value
         }).should.be.rejectedWith(EVMRevert);
       });
 
       it('should accept payments after start', async function () {
         await increaseTimeTo(this.openingTime);
-        await this.crowdsale.send(valueToPurchase).should.be.fulfilled;
-        await this.crowdsale.buyTokens(investor, {value: valueToPurchase, from: purchaser}).should.be.fulfilled;
+        await this.crowdsale.send(value).should.be.fulfilled;
+        await this.crowdsale.buyTokens(investor, {value: value, from: purchaser}).should.be.fulfilled;
       });
 
       it('should reject payments after end', async function () {
         await increaseTimeTo(this.afterClosingTime);
-        await this.crowdsale.send(valueToPurchase).should.be.rejectedWith(EVMRevert);
+        await this.crowdsale.send(value).should.be.rejectedWith(EVMRevert);
         await this.crowdsale.buyTokens(investor, {
-          value: valueToPurchase,
+          value: value,
           from: purchaser
         }).should.be.rejectedWith(EVMRevert);
       });
@@ -295,6 +304,92 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser]) {
     it('should guard ownership against stuck state', async function () {
       let originalOwner = await this.crowdsale.owner();
       await assertRevert(this.crowdsale.transferOwnership(null, {from: originalOwner}));
+    });
+  });
+
+  describe('Whitelisting', function () {
+    // ** WHITELIST crowdsale tests **
+
+    beforeEach(async function () {
+      await increaseTimeTo(latestTime() + duration.seconds(1)); // force time to move on to 1 seconds
+
+      // ensure whitelisted
+      await this.crowdsale.addManyToWhitelist([authorized, anotherAuthorized]);
+    });
+
+    describe('accepting payments', function () {
+      it('should accept payments to whitelisted (from whichever buyers)', async function () {
+        await this.crowdsale.buyTokens(authorized, {value: value, from: authorized}).should.be.fulfilled;
+        await this.crowdsale.buyTokens(authorized, {value: value, from: unauthorized}).should.be.fulfilled;
+      });
+
+      it('should reject payments to not whitelisted (from whichever buyers)', async function () {
+        await this.crowdsale.send({value: value, from: unauthorized}).should.be.rejected;
+
+        await this.crowdsale.buyTokens(unauthorized, {value: value, from: unauthorized}).should.be.rejected;
+        await this.crowdsale.buyTokens(unauthorized, {value: value, from: authorized}).should.be.rejected;
+      });
+
+      it('should reject payments to addresses removed from whitelist', async function () {
+        await this.crowdsale.removeFromWhitelist(authorized);
+        await this.crowdsale.buyTokens(authorized, {value: value, from: authorized}).should.be.rejected;
+      });
+    });
+
+    describe('reporting whitelisted', function () {
+      it('should correctly report whitelisted addresses', async function () {
+        let isAuthorized = await this.crowdsale.whitelist(authorized);
+        isAuthorized.should.equal(true);
+
+        let isntAuthorized = await this.crowdsale.whitelist(unauthorized);
+        isntAuthorized.should.equal(false);
+      });
+    });
+
+    describe('accepting payments', function () {
+      it('should accept payments to whitelisted (from whichever buyers)', async function () {
+
+        await this.crowdsale.buyTokens(authorized, {value: value, from: authorized}).should.be.fulfilled;
+        await this.crowdsale.buyTokens(authorized, {value: value, from: unauthorized}).should.be.fulfilled;
+        await this.crowdsale.buyTokens(anotherAuthorized, {
+          value: value,
+          from: authorized
+        }).should.be.fulfilled;
+        await this.crowdsale.buyTokens(anotherAuthorized, {
+          value: value,
+          from: unauthorized
+        }).should.be.fulfilled;
+      });
+
+      it('should reject payments to not whitelisted (with whichever buyers)', async function () {
+
+        await this.crowdsale.send({value: value, from: unauthorized}).should.be.rejected;
+
+        await this.crowdsale.buyTokens(unauthorized, {value: value, from: unauthorized}).should.be.rejected;
+        await this.crowdsale.buyTokens(unauthorized, {value: value, from: authorized}).should.be.rejected;
+      });
+
+      it('should reject payments to addresses removed from whitelist', async function () {
+        await this.crowdsale.removeFromWhitelist(anotherAuthorized);
+        await this.crowdsale.buyTokens(authorized, {value: value, from: authorized}).should.be.fulfilled;
+        await this.crowdsale.buyTokens(anotherAuthorized, {
+          value: value,
+          from: authorized
+        }).should.be.rejected;
+      });
+    });
+
+    describe('reporting whitelisted', function () {
+      it('should correctly report whitelisted addresses', async function () {
+        let isAuthorized = await this.crowdsale.whitelist(authorized);
+        isAuthorized.should.equal(true);
+
+        let isAnotherAuthorized = await this.crowdsale.whitelist(anotherAuthorized);
+        isAnotherAuthorized.should.equal(true);
+
+        let isntAuthorized = await this.crowdsale.whitelist(unauthorized);
+        isntAuthorized.should.equal(false);
+      });
     });
   });
 });

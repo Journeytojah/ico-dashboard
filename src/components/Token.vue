@@ -3,7 +3,6 @@
 
     <b-jumbotron :header="tokenName" lead="All about our token">
 
-
       <div class="row">
         <div class="col-lg-12">
           <h4>Address</h4>

@@ -8,10 +8,15 @@ import logging from './logging';
 import BootstrapVue from 'bootstrap-vue';
 import VueMoment from 'vue-moment/vue-moment';
 
+import 'vue-awesome/icons';
+import Icon from 'vue-awesome/components/Icon';
+
 Vue.config.productionTip = false;
 
 Vue.use(BootstrapVue);
 Vue.use(VueMoment);
+
+Vue.component('icon', Icon);
 
 ;(async () => {
   try {
