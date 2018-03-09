@@ -12,6 +12,9 @@
               <router-link :to="{ name: 'token' }" class="nav-link">Token</router-link>
             </li>
             <li class="nav-item">
+              <router-link :to="{ name: 'kyc' }" class="nav-link">KYC</router-link>
+            </li>
+            <li class="nav-item">
               <router-link :to="{ name: 'account' }" class="nav-link">Account</router-link>
             </li>
           </ul>

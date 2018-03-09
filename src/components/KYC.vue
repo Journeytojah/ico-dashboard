@@ -1,7 +1,7 @@
 <template>
-  <div id="account">
+  <div id="kyc">
+    <b-jumbotron header="KYC" lead="Get whitelised and approved to buy">
 
-    <b-jumbotron :header="tokenName" lead="Account details">
       <div class="row">
         <div class="col-lg-6">
           <h4>My Account</h4>
@@ -10,12 +10,8 @@
 
         <whitelisted :whitelisted="whitelisted"></whitelisted>
 
-        <div class="col-lg-4">
-          <h4>Token Balance</h4>
-          <p>{{ tokenBalance }} {{ tokenSymbol }}</p>
-        </div>
-
       </div>
+
     </b-jumbotron>
 
   </div>
@@ -28,18 +24,16 @@
   import Whitelisted from './Whitelisted.vue';
 
   export default {
-    name: 'dashboard',
+    name: 'kyc',
     components: {EthAddress, Whitelisted},
     computed: {
       ...mapState([
         'account',
-        'tokenSymbol',
-        'tokenName',
-        'tokenBalance',
         'whitelisted'
       ])
     }
   };
+
 </script>
 
 <style lang="scss" scoped>

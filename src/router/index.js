@@ -3,6 +3,7 @@ import Router from 'vue-router';
 import Dashboard from '@/components/Dashboard';
 import Account from '@/components/Account';
 import Token from '@/components/Token';
+import KYC from '@/components/KYC';
 
 Vue.use(Router);
 
@@ -24,6 +25,11 @@ export default new Router({
       path: '/token',
       name: 'token',
       component: Token
+    },
+    {
+      path: '/kyc',
+      name: 'kyc',
+      component: KYC
     }
   ]
 });
