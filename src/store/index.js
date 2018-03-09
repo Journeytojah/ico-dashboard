@@ -40,7 +40,9 @@ const store = new Vuex.Store({
     crowdsaleBalance: 0,
     owner: null,
 
-    whitelisted: null
+    whitelisted: null,
+
+    kycWaitingList: []
   },
   getters: {},
   mutations: {
@@ -83,6 +85,10 @@ const store = new Vuex.Store({
     },
     [mutations.SET_CURRENT_NETWORK](state, currentNetwork) {
       state.currentNetwork = currentNetwork;
+    },
+    [mutations.PUSH_TO_KYC_WAITING_LIST](state, kycAccount) {
+      state.kycWaitingList.push(kycAccount);
+      Vue.set(state, 'kycWaitingList', state.kycWaitingList);
     },
   },
   actions: {
@@ -160,6 +166,9 @@ const store = new Vuex.Store({
             whitelisted: results[11]
           });
         });
+    },
+    [actions.ADD_TO_KYC_WAITING_LIST]({commit, dispatch, state}, kycAccount) {
+      commit(mutations.PUSH_TO_KYC_WAITING_LIST, kycAccount);
     }
   }
 });

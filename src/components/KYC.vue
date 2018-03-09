@@ -52,11 +52,13 @@
 
     </b-jumbotron>
 
+    <pre>{{ kycWaitingList }}</pre>
   </div>
 </template>
 
 <script>
 
+  import * as actions from '@/store/actions';
   import { mapGetters, mapState } from 'vuex';
   import EthAddress from './EthAddress.vue';
   import Whitelisted from './Whitelisted.vue';
@@ -79,13 +81,17 @@
         evt.preventDefault();
 
         // check is validate form data
-        this.submitted = Web3.utils.isAddress(this.form.myAccount) && (this.form.checked === 'true');
+        if (Web3.utils.isAddress(this.form.myAccount) && (this.form.checked === 'true')) {
+          this.submitted = true;
+          this.$store.dispatch(actions.ADD_TO_KYC_WAITING_LIST, this.form.myAccount);
+        }
       }
     },
     computed: {
       ...mapState([
         'account',
-        'whitelisted'
+        'whitelisted',
+        'kycWaitingList'
       ])
     }
   };
