@@ -11,11 +11,11 @@
         <whitelisted :whitelisted="whitelisted" v-if="whitelisted != null"></whitelisted>
       </div>
 
-      <div class="row justify-content-lg-center" v-if="!whitelisted">
+      <div class="row justify-content-lg-center" v-if="!whitelisted && !submitted">
         <div class="col-lg-6">
           <h2>Complete KYC</h2>
 
-          <b-form @submit="onSubmit" novalidate="true">
+          <b-form @submit="onSubmit" novalidate>
             <b-form-group id="myAccount"
                           label=""
                           label-for="myAccount"
@@ -40,6 +40,16 @@
         </div>
       </div>
 
+      <div class="row justify-content-lg-center" v-if="!whitelisted && submitted">
+        <div class="col-lg-6">
+          <h2>Complete KYC</h2>
+
+          <div class="alert alert-info" role="alert">
+            <strong>KYC Submitted</strong> We will review your submission...
+          </div>
+        </div>
+      </div>
+
     </b-jumbotron>
 
   </div>
@@ -50,6 +60,7 @@
   import { mapGetters, mapState } from 'vuex';
   import EthAddress from './EthAddress.vue';
   import Whitelisted from './Whitelisted.vue';
+  import Web3 from 'web3';
 
   export default {
     name: 'kyc',
@@ -58,14 +69,17 @@
       return {
         form: {
           myAccount: '',
-          checked: []
-        }
+          checked: 'false'
+        },
+        submitted: false
       };
     },
     methods: {
       onSubmit (evt) {
         evt.preventDefault();
-        alert(JSON.stringify(this.form));
+
+        // check is validate form data
+        this.submitted = Web3.utils.isAddress(this.form.myAccount) && (this.form.checked === 'true');
       }
     },
     computed: {
