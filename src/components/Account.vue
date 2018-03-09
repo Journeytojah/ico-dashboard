@@ -11,6 +11,13 @@
           <h4>Token Balance</h4>
           <p>{{ tokenBalance }} {{ tokenSymbol }}</p>
         </div>
+        <div class="col-lg-4">
+          <h4 class="text-center">Whitelisted</h4>
+          <p class="text-center">
+            <icon name="check" v-if="whitelisted" scale="4" class="text-success"></icon>
+            <icon name="times" v-if="!whitelisted" scale="4" class="text-danger"></icon>
+          </p>
+        </div>
       </div>
     </b-jumbotron>
 
@@ -35,7 +42,8 @@
         'account',
         'tokenSymbol',
         'tokenName',
-        'tokenBalance'
+        'tokenBalance',
+        'whitelisted'
       ])
     }
   };
