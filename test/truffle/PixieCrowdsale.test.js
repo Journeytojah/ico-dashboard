@@ -51,7 +51,6 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser]) {
     this.crowdsale = await PixieCrowdsale.new(rate, wallet, this.token.address, cap, this.openingTime, this.closingTime, {from: owner});
 
     await this.token.transfer(this.crowdsale.address, amountAvailableForPurchase);
-    await increaseTimeTo(latestTime() + duration.seconds(2)); // force time to move on to 2 seconds - after opening time
   });
 
   after(async function () {
@@ -68,112 +67,131 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser]) {
     console.log("capReached", await this.crowdsale.capReached());
   });
 
-  describe('accepting payments', function () {
-    it('should accept payments', async function () {
-      await this.crowdsale.send(valueToPurchase).should.be.fulfilled;
-      await this.crowdsale.buyTokens(investor, {value: valueToPurchase, from: purchaser}).should.be.fulfilled;
-    });
-  });
+  describe('Crowdsale', function () {
 
-  describe('high-level purchase', function () {
-    it('should log purchase', async function () {
-      const {logs} = await this.crowdsale.sendTransaction({value: valueToPurchase, from: investor});
-      const event = logs.find(e => e.event === 'TokenPurchase');
-      should.exist(event);
-      event.args.purchaser.should.equal(investor);
-      event.args.beneficiary.should.equal(investor);
-      event.args.value.should.be.bignumber.equal(valueToPurchase);
-      event.args.amount.should.be.bignumber.equal(expectedTokenAmount);
+    beforeEach(async function () {
+      await increaseTimeTo(latestTime() + duration.seconds(1)); // force time to move on to 1 seconds
     });
 
-    it('should assign tokens to sender', async function () {
-      await this.crowdsale.sendTransaction({value: valueToPurchase, from: investor});
-      let balance = await this.token.balanceOf(investor);
-      balance.should.be.bignumber.equal(expectedTokenAmount);
+    describe('accepting payments', function () {
+      it('should accept payments', async function () {
+        await this.crowdsale.send(valueToPurchase).should.be.fulfilled;
+        await this.crowdsale.buyTokens(investor, {value: valueToPurchase, from: purchaser}).should.be.fulfilled;
+      });
     });
 
-    it('should forward funds to wallet', async function () {
-      const pre = web3.eth.getBalance(wallet);
-      await this.crowdsale.sendTransaction({value: valueToPurchase, from: investor});
-      const post = web3.eth.getBalance(wallet);
-      post.minus(pre).should.be.bignumber.equal(valueToPurchase);
-    });
-  });
+    describe('high-level purchase', function () {
+      it('should log purchase', async function () {
+        const {logs} = await this.crowdsale.sendTransaction({value: valueToPurchase, from: investor});
+        const event = logs.find(e => e.event === 'TokenPurchase');
+        should.exist(event);
+        event.args.purchaser.should.equal(investor);
+        event.args.beneficiary.should.equal(investor);
+        event.args.value.should.be.bignumber.equal(valueToPurchase);
+        event.args.amount.should.be.bignumber.equal(expectedTokenAmount);
+      });
 
-  describe('low-level purchase', function () {
-    it('should log purchase', async function () {
-      const {logs} = await this.crowdsale.buyTokens(investor, {value: valueToPurchase, from: purchaser});
-      const event = logs.find(e => e.event === 'TokenPurchase');
-      should.exist(event);
-      event.args.purchaser.should.equal(purchaser);
-      event.args.beneficiary.should.equal(investor);
-      event.args.value.should.be.bignumber.equal(valueToPurchase);
-      event.args.amount.should.be.bignumber.equal(expectedTokenAmount);
+      it('should assign tokens to sender', async function () {
+        await this.crowdsale.sendTransaction({value: valueToPurchase, from: investor});
+        let balance = await this.token.balanceOf(investor);
+        balance.should.be.bignumber.equal(expectedTokenAmount);
+      });
+
+      it('should forward funds to wallet', async function () {
+        const pre = web3.eth.getBalance(wallet);
+        await this.crowdsale.sendTransaction({value: valueToPurchase, from: investor});
+        const post = web3.eth.getBalance(wallet);
+        post.minus(pre).should.be.bignumber.equal(valueToPurchase);
+      });
     });
 
-    it('should assign tokens to beneficiary', async function () {
-      await this.crowdsale.buyTokens(investor, {value: valueToPurchase, from: purchaser});
-      const balance = await this.token.balanceOf(investor);
-      balance.should.be.bignumber.equal(expectedTokenAmount);
-    });
+    describe('low-level purchase', function () {
+      it('should log purchase', async function () {
+        const {logs} = await this.crowdsale.buyTokens(investor, {value: valueToPurchase, from: purchaser});
+        const event = logs.find(e => e.event === 'TokenPurchase');
+        should.exist(event);
+        event.args.purchaser.should.equal(purchaser);
+        event.args.beneficiary.should.equal(investor);
+        event.args.value.should.be.bignumber.equal(valueToPurchase);
+        event.args.amount.should.be.bignumber.equal(expectedTokenAmount);
+      });
 
-    it('should forward funds to wallet', async function () {
-      const pre = web3.eth.getBalance(wallet);
-      await this.crowdsale.buyTokens(investor, {value: valueToPurchase, from: purchaser});
-      const post = web3.eth.getBalance(wallet);
-      post.minus(pre).should.be.bignumber.equal(valueToPurchase);
+      it('should assign tokens to beneficiary', async function () {
+        await this.crowdsale.buyTokens(investor, {value: valueToPurchase, from: purchaser});
+        const balance = await this.token.balanceOf(investor);
+        balance.should.be.bignumber.equal(expectedTokenAmount);
+      });
+
+      it('should forward funds to wallet', async function () {
+        const pre = web3.eth.getBalance(wallet);
+        await this.crowdsale.buyTokens(investor, {value: valueToPurchase, from: purchaser});
+        const post = web3.eth.getBalance(wallet);
+        post.minus(pre).should.be.bignumber.equal(valueToPurchase);
+      });
     });
   });
 
   // ** CAPPED crowdsale tests **
 
-  describe('creating a valid crowdsale', function () {
-    it('should fail with zero cap', async function () {
-      await assertRevert(PixieCrowdsale.new(rate, wallet, 0, this.token.address, this.openingTime, this.closingTime, {from: owner}));
+  describe('CappedCrowdsale', function () {
+
+    beforeEach(async function () {
+      await increaseTimeTo(latestTime() + duration.seconds(1)); // force time to move on to 1 seconds
     });
+
+    describe('creating a valid crowdsale', function () {
+      it('should fail with zero cap', async function () {
+        await assertRevert(PixieCrowdsale.new(rate, wallet, 0, this.token.address, this.openingTime, this.closingTime, {from: owner}));
+      });
+    });
+
+    describe('accepting payments', function () {
+      it('should accept payments within cap', async function () {
+        await this.crowdsale.send(cap.minus(lessThanCap)).should.be.fulfilled;
+        await this.crowdsale.send(lessThanCap).should.be.fulfilled;
+      });
+
+      it('should reject payments outside cap', async function () {
+        await this.crowdsale.send(cap);
+        await assertRevert(this.crowdsale.send(1));
+      });
+
+      it('should reject payments that exceed cap', async function () {
+        await assertRevert(this.crowdsale.send(cap.plus(1)));
+      });
+    });
+
+    describe('ending', function () {
+      it('should not reach cap if sent under cap', async function () {
+        let capReached = await this.crowdsale.capReached();
+        capReached.should.equal(false);
+        await this.crowdsale.send(lessThanCap);
+        capReached = await this.crowdsale.capReached();
+        capReached.should.equal(false);
+      });
+
+      it('should not reach cap if sent just under cap', async function () {
+        await this.crowdsale.send(cap.minus(1));
+        let capReached = await this.crowdsale.capReached();
+        capReached.should.equal(false);
+      });
+
+      it('should reach cap if cap sent', async function () {
+        await this.crowdsale.send(cap);
+        let capReached = await this.crowdsale.capReached();
+        capReached.should.equal(true);
+      });
+    });
+
   });
 
-  describe('accepting payments', function () {
-    it('should accept payments within cap', async function () {
-      await this.crowdsale.send(cap.minus(lessThanCap)).should.be.fulfilled;
-      await this.crowdsale.send(lessThanCap).should.be.fulfilled;
+  // ** FinalizableCrowdsale tests **
+
+  describe('FinalizableCrowdsale', function () {
+
+    beforeEach(async function () {
+      await increaseTimeTo(latestTime() + duration.seconds(1)); // force time to move on to 1 seconds
     });
-
-    it('should reject payments outside cap', async function () {
-      await this.crowdsale.send(cap);
-      await assertRevert(this.crowdsale.send(1));
-    });
-
-    it('should reject payments that exceed cap', async function () {
-      await assertRevert(this.crowdsale.send(cap.plus(1)));
-    });
-  });
-
-  describe('ending', function () {
-    it('should not reach cap if sent under cap', async function () {
-      let capReached = await this.crowdsale.capReached();
-      capReached.should.equal(false);
-      await this.crowdsale.send(lessThanCap);
-      capReached = await this.crowdsale.capReached();
-      capReached.should.equal(false);
-    });
-
-    it('should not reach cap if sent just under cap', async function () {
-      await this.crowdsale.send(cap.minus(1));
-      let capReached = await this.crowdsale.capReached();
-      capReached.should.equal(false);
-    });
-
-    it('should reach cap if cap sent', async function () {
-      await this.crowdsale.send(cap);
-      let capReached = await this.crowdsale.capReached();
-      capReached.should.equal(true);
-    });
-  });
-
-  // ** FinalizableCrowdsale crowdsale tests **
-
-  describe('FinalizableCrowdsale with timed open/close', function () {
 
     it('cannot be finalized before ending', async function () {
       await this.crowdsale.finalize({from: owner}).should.be.rejectedWith(EVMRevert);
@@ -202,7 +220,48 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser]) {
       should.exist(event);
     });
 
-    describe('creating a valid finalizable', function () {
+  });
+
+  // ** TimedCrowdsale tests **
+
+  describe('TimedCrowdsale with timed open/close', function () {
+
+    it('should be ended only after end', async function () {
+      let ended = await this.crowdsale.hasClosed();
+      ended.should.equal(false);
+      await increaseTimeTo(this.afterClosingTime);
+      ended = await this.crowdsale.hasClosed();
+      ended.should.equal(true);
+    });
+
+    describe('accepting payments', function () {
+
+      it('should reject payments before start', async function () {
+        await this.crowdsale.send(valueToPurchase).should.be.rejectedWith(EVMRevert);
+        await this.crowdsale.buyTokens(investor, {
+          from: purchaser,
+          value: valueToPurchase
+        }).should.be.rejectedWith(EVMRevert);
+      });
+
+      it('should accept payments after start', async function () {
+        await increaseTimeTo(this.openingTime);
+        await this.crowdsale.send(valueToPurchase).should.be.fulfilled;
+        await this.crowdsale.buyTokens(investor, {value: valueToPurchase, from: purchaser}).should.be.fulfilled;
+      });
+
+      it('should reject payments after end', async function () {
+        await increaseTimeTo(this.afterClosingTime);
+        await this.crowdsale.send(valueToPurchase).should.be.rejectedWith(EVMRevert);
+        await this.crowdsale.buyTokens(investor, {
+          value: valueToPurchase,
+          from: purchaser
+        }).should.be.rejectedWith(EVMRevert);
+      });
+
+    });
+
+    describe('creating a valid timed crowdsale contract', function () {
       it('should fail with zero opening time', async function () {
         await assertRevert(PixieCrowdsale.new(rate, wallet, cap, this.token.address, 0, this.closingTime, {from: owner}));
       });
