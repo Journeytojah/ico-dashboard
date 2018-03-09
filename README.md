@@ -1,6 +1,6 @@
 # ICO Dashboard
 
-An Dapp that simulates a crowdsale
+An Dapp that simulates a crowdsale - build using `VueJs`, `Web3Js`, and `Truffle` using contracts written in `Solidity` 
 
 
 ## Installation
