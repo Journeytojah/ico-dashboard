@@ -39,6 +39,9 @@ const store = new Vuex.Store({
     end: 0,
     crowdsaleBalance: 0,
     owner: null,
+    min: 0,
+    max: 0,
+    contributions: 0,
 
     whitelisted: null,
 
@@ -61,7 +64,10 @@ const store = new Vuex.Store({
       address,
       crowdsaleBalance,
       owner,
-      whitelisted
+      whitelisted,
+      min,
+      max,
+      contributions
     }) {
       state.rate = rate;
       state.raised = raised;
@@ -75,6 +81,9 @@ const store = new Vuex.Store({
       state.crowdsaleBalance = crowdsaleBalance;
       state.owner = owner;
       state.whitelisted = whitelisted;
+      state.min = min;
+      state.max = max;
+      state.contributions = contributions;
     },
     [mutations.SET_CONTRACT_DETAILS](state, {name, symbol, totalSupply, address, balance}) {
       state.tokenTotalSupply = totalSupply;
@@ -154,7 +163,10 @@ const store = new Vuex.Store({
           contracts[1].address,
           contracts[0].balanceOf(contracts[1].address, {from: account}),
           contracts[1].owner(),
-          contracts[1].whitelist(account)
+          contracts[1].whitelist(account),
+          contracts[1].min(),
+          contracts[1].max(),
+          contracts[1].contributions(account, {from: account}),
         ]);
       })
       .then((results) => {
@@ -170,7 +182,10 @@ const store = new Vuex.Store({
           address: results[8],
           crowdsaleBalance: results[9].toString(10),
           owner: results[10],
-          whitelisted: results[11]
+          whitelisted: results[11],
+          min: results[12].toNumber(10),
+          max: results[13].toNumber(10),
+          contributions: results[14].toNumber(10)
         });
       });
     },

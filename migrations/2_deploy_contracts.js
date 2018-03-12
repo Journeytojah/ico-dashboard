@@ -20,6 +20,9 @@ module.exports = function (deployer, network, accounts) {
       const _openingTime = web3.eth.getBlock(web3.eth.blockNumber).timestamp + 1; // one second in the future
       const _closingTime = _openingTime + (86400 * 20); // 20 days
 
+      const _minContribution = 100; // 100 WEI
+      const _maxContribution = 1000000000000000000; // 1 ETHER
+
       const PixieTokenContract = results[0];
 
       return Promise.all([
@@ -30,7 +33,9 @@ module.exports = function (deployer, network, accounts) {
           _token,
           _cap,
           _openingTime,
-          _closingTime
+          _closingTime,
+          _minContribution,
+          _maxContribution
         ),
         PixieTokenContract,
         _initialSupply

@@ -15,6 +15,11 @@
           <p>{{ tokenBalance }} {{ tokenSymbol }}</p>
         </div>
 
+        <div class="col-lg-4">
+          <h4>Contribution Total</h4>
+          <p>{{ contributions }} <eth-symbol></eth-symbol></p>
+        </div>
+
       </div>
     </b-jumbotron>
 
@@ -26,17 +31,19 @@
   import {mapGetters, mapState} from 'vuex';
   import EthAddress from './EthAddress.vue';
   import Whitelisted from './Whitelisted.vue';
+  import EthSymbol from './EthSymbol';
 
   export default {
     name: 'dashboard',
-    components: {EthAddress, Whitelisted},
+    components: {EthAddress, Whitelisted, EthSymbol},
     computed: {
       ...mapState([
         'account',
         'tokenSymbol',
         'tokenName',
         'tokenBalance',
-        'whitelisted'
+        'whitelisted',
+        'contributions'
       ])
     }
   };

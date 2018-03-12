@@ -1,4 +1,4 @@
-const ether = require('../helpers/ether');
+const etherToWei = require('../helpers/etherToWei');
 const assertRevert = require('../helpers/assertRevert');
 
 const advanceBlock = require('../helpers/advanceToBlock');
@@ -27,7 +27,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
   let cap;
   let lessThanCap;
 
-  const value = ether(0.0000000005);
+  const value = etherToWei(0.0000000005);
 
   const expectedTokenAmount = rate.mul(value);
 
@@ -48,7 +48,20 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     this.closingTime = this.openingTime + duration.weeks(1);
     this.afterClosingTime = this.closingTime + duration.seconds(1);
 
-    this.crowdsale = await PixieCrowdsale.new(rate, wallet, this.token.address, cap, this.openingTime, this.closingTime, {from: owner});
+    this.minContribution = new BigNumber(100);
+    this.maxContribution = new BigNumber(cap);
+
+    this.crowdsale = await PixieCrowdsale.new(
+      rate,
+      wallet,
+      this.token.address,
+      cap,
+      this.openingTime,
+      this.closingTime,
+      this.minContribution,
+      this.maxContribution,
+      {from: owner}
+    );
 
     await this.token.transfer(this.crowdsale.address, amountAvailableForPurchase);
 
@@ -68,11 +81,13 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     console.log('test investor', investor);
     console.log('test wallet', wallet);
     console.log('test purchaser', purchaser);
-    console.log('getNow', await this.crowdsale.getNow());
+    console.log('getNow', await this.crowdsale.getNow().toString(10));
     console.log('hasClosed', await this.crowdsale.hasClosed());
     console.log('isCrowdsaleOpen', await this.crowdsale.isCrowdsaleOpen());
     console.log('isFinalized', await this.crowdsale.isFinalized());
     console.log('capReached', await this.crowdsale.capReached());
+    console.log('min contribution', await this.crowdsale.min().toString(10));
+    console.log('max contribution', await this.crowdsale.max().toString(10));
   });
 
   describe('Crowdsale', function () {
@@ -139,8 +154,6 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     });
   });
 
-  // ** CAPPED crowdsale tests **
-
   describe('CappedCrowdsale', function () {
 
     beforeEach(async function () {
@@ -149,7 +162,19 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
 
     describe('creating a valid crowdsale', function () {
       it('should fail with zero cap', async function () {
-        await assertRevert(PixieCrowdsale.new(rate, wallet, 0, this.token.address, this.openingTime, this.closingTime, {from: owner}));
+        await assertRevert(
+          PixieCrowdsale.new(
+            rate,
+            wallet,
+            0,
+            this.token.address,
+            this.openingTime,
+            this.closingTime,
+            this.minContribution,
+            this.maxContribution,
+            {from: owner}
+          )
+        );
       });
     });
 
@@ -193,8 +218,6 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
 
   });
 
-  // ** FinalizableCrowdsale tests **
-
   describe('FinalizableCrowdsale', function () {
 
     beforeEach(async function () {
@@ -229,8 +252,6 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     });
 
   });
-
-  // ** TimedCrowdsale tests **
 
   describe('TimedCrowdsale with timed open/close', function () {
 
@@ -271,10 +292,33 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
 
     describe('creating a valid timed crowdsale contract', function () {
       it('should fail with zero opening time', async function () {
-        await assertRevert(PixieCrowdsale.new(rate, wallet, cap, this.token.address, 0, this.closingTime, {from: owner}));
+        await assertRevert(
+          PixieCrowdsale.new(
+            rate,
+            wallet,
+            cap,
+            this.token.address,
+            0,
+            this.closingTime,
+            this.minContribution,
+            this.maxContribution,
+            {from: owner}
+          )
+        );
       });
       it('should fail with zero closing time', async function () {
-        await assertRevert(PixieCrowdsale.new(rate, wallet, cap, this.token.address, this.openingTime, 0, {from: owner}));
+        await assertRevert(
+          PixieCrowdsale.new(
+            rate,
+            wallet,
+            cap,
+            this.token.address,
+            this.openingTime,
+            0,
+            this.minContribution,
+            this.maxContribution,
+            {from: owner})
+        );
       });
     });
 
@@ -308,7 +352,6 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
   });
 
   describe('Whitelisting', function () {
-    // ** WHITELIST crowdsale tests **
 
     beforeEach(async function () {
       await increaseTimeTo(latestTime() + duration.seconds(1)); // force time to move on to 1 seconds
@@ -391,5 +434,74 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
         isntAuthorized.should.equal(false);
       });
     });
+  });
+
+  describe('Min and max contributions', function () {
+
+    beforeEach(async function () {
+      await increaseTimeTo(latestTime() + duration.seconds(1)); // force time to move on to 1 seconds
+    });
+
+    describe('creating a valid crowdsale', function () {
+      it('should fail with zero minimum', async function () {
+        await assertRevert(
+          PixieCrowdsale.new(
+            rate,
+            wallet,
+            cap,
+            this.token.address,
+            this.openingTime,
+            this.closingTime,
+            0,
+            this.maxContribution,
+            {from: owner}
+          )
+        );
+      });
+
+      it('should fail with zero maximum', async function () {
+        await assertRevert(
+          PixieCrowdsale.new(
+            rate,
+            wallet,
+            cap,
+            this.token.address,
+            this.openingTime,
+            this.closingTime,
+            this.minContribution,
+            0,
+            {from: owner}
+          )
+        );
+      });
+    });
+
+    describe('sending minimum', function () {
+      it('should fail if below limit', async function () {
+        await assertRevert(this.crowdsale.send(1));
+        await assertRevert(this.crowdsale.send(this.minContribution.minus(1)));
+      });
+
+      it('should allow if exactly min limit', async function () {
+        await this.crowdsale.send(this.minContribution).should.be.fulfilled;
+        await this.crowdsale.buyTokens(investor, {value: this.minContribution, from: purchaser}).should.be.fulfilled;
+      });
+
+      it('should allow if over min limit but less than max limit', async function () {
+        await this.crowdsale.send(this.minContribution.plus(100)).should.be.fulfilled;
+        await this.crowdsale.buyTokens(investor, {value: this.minContribution.plus(100), from: purchaser}).should.be.fulfilled;
+      });
+    });
+
+    describe.only('tracks contributions', function () {
+      it('should report amount of wei contributed', async function () {
+        await this.crowdsale.send(this.minContribution).should.be.fulfilled;
+
+        let purchaserContributions = await this.crowdsale.contributions(purchaser).should.be.fulfilled;
+        console.log(purchaserContributions.toString(10));
+      });
+
+    });
+
   });
 });

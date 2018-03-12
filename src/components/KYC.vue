@@ -1,6 +1,6 @@
 <template>
   <div id="kyc">
-    <b-jumbotron header="KYC" lead="Get whitelised and approved to buy">
+    <b-jumbotron header="KYC" lead="Get whitelisted and approved to buy">
 
       <div class="row">
         <div class="col-lg-6">
