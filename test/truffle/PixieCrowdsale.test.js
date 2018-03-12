@@ -81,13 +81,13 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     console.log('test investor', investor);
     console.log('test wallet', wallet);
     console.log('test purchaser', purchaser);
-    console.log('getNow', await this.crowdsale.getNow().toString(10));
+    console.log('getNow', await this.crowdsale.getNow());
     console.log('hasClosed', await this.crowdsale.hasClosed());
     console.log('isCrowdsaleOpen', await this.crowdsale.isCrowdsaleOpen());
     console.log('isFinalized', await this.crowdsale.isFinalized());
     console.log('capReached', await this.crowdsale.capReached());
-    console.log('min contribution', await this.crowdsale.min().toString(10));
-    console.log('max contribution', await this.crowdsale.max().toString(10));
+    console.log('min contribution', await this.crowdsale.min());
+    console.log('max contribution', await this.crowdsale.max());
   });
 
   describe('Crowdsale', function () {
@@ -493,14 +493,36 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
       });
     });
 
-    describe.only('tracks contributions', function () {
-      it('should report amount of wei contributed', async function () {
+    describe('tracks contributions', function () {
+      it('should report amount of wei contributed via default function', async function () {
+        const preContribution = await this.crowdsale.contributions(owner);
+        preContribution.should.be.bignumber.equal(0);
+
         await this.crowdsale.send(this.minContribution).should.be.fulfilled;
 
-        let purchaserContributions = await this.crowdsale.contributions(purchaser).should.be.fulfilled;
-        console.log(purchaserContributions.toString(10));
+        const postContribution = await this.crowdsale.contributions(owner);
+        postContribution.should.be.bignumber.equal(this.minContribution);
+
+        await this.crowdsale.send(this.minContribution).should.be.fulfilled;
+
+        const secondPostContribution = await this.crowdsale.contributions(owner);
+        secondPostContribution.should.be.bignumber.equal(this.minContribution.times(2));
       });
 
+      it('should report amount of wei contributed via buyTokens', async function () {
+        const preContribution = await this.crowdsale.contributions(purchaser);
+        preContribution.should.be.bignumber.equal(0);
+
+        await this.crowdsale.buyTokens(purchaser, {value: this.minContribution, from: purchaser}).should.be.fulfilled;
+
+        const postContribution = await this.crowdsale.contributions(purchaser);
+        postContribution.should.be.bignumber.equal(this.minContribution);
+
+        await this.crowdsale.buyTokens(purchaser, {value: this.minContribution, from: purchaser}).should.be.fulfilled;
+
+        const secondPostContribution = await this.crowdsale.contributions(purchaser);
+        secondPostContribution.should.be.bignumber.equal(this.minContribution.times(2));
+      });
     });
 
   });
