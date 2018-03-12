@@ -36,7 +36,7 @@
         <p>{{ min }} <eth-symbol></eth-symbol></p>
 
         <h4>Start</h4>
-        <p>{{ start }}</p>
+        <p>{{ start | moment('from') }}</p>
       </div>
       <div class="col-lg-6">
         <h4>Hard Cap</h4>
@@ -51,7 +51,7 @@
         <p>{{ max }} <eth-symbol></eth-symbol></p>
 
         <h4>End</h4>
-        <p>{{ end }}</p>
+        <p>{{ end | moment('from') }}</p>
       </div>
     </div>
 

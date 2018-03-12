@@ -165,11 +165,13 @@ const store = new Vuex.Store({
       .then((contract) => {
         return Promise.all([
           contract.balanceOf(account, {from: account})
+          // contract.balanceOf(state.address, {from: account}),
         ]);
       })
       .then((results) => {
         commit(mutations.SET_CONTRACT_DETAILS, {
-          tokenBalance: results[0].toString(10)
+          tokenBalance: results[0].toNumber(10)
+          // crowdsaleBalance: results[0].toNumber(10)
         });
       });
     },
@@ -216,7 +218,7 @@ const store = new Vuex.Store({
           contracts[1].weiRaised(),
           contracts[0].balanceOf(contracts[1].address, {from: account}), // PixieToken call
           contracts[1].whitelist(account),
-          contracts[1].contributions(account)
+          contracts[1].contributions(account, {from: account})
         ]);
       })
       .then((results) => {
