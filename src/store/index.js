@@ -79,12 +79,10 @@ const store = new Vuex.Store({
     },
     [mutations.SET_CROWDSALE_DETAILS](state, {
       raised,
-      crowdsaleBalance,
       whitelisted,
       contributions
     }) {
       state.raised = raised;
-      state.crowdsaleBalance = crowdsaleBalance;
       state.whitelisted = whitelisted;
       state.contributions = contributions;
     },
@@ -94,8 +92,9 @@ const store = new Vuex.Store({
       state.tokenName = name;
       state.tokenAddress = address;
     },
-    [mutations.SET_CONTRACT_DETAILS](state, {tokenBalance}) {
+    [mutations.SET_CONTRACT_DETAILS](state, {tokenBalance, crowdsaleBalance}) {
       state.tokenBalance = tokenBalance;
+      state.crowdsaleBalance = crowdsaleBalance;
     },
     [mutations.SET_ACCOUNT](state, account) {
       state.account = account;
@@ -164,14 +163,14 @@ const store = new Vuex.Store({
       PixieToken.deployed()
       .then((contract) => {
         return Promise.all([
-          contract.balanceOf(account, {from: account})
-          // contract.balanceOf(state.address, {from: account}),
+          contract.balanceOf(account, {from: account}),
+          contract.balanceOf(state.address, {from: account}),
         ]);
       })
       .then((results) => {
         commit(mutations.SET_CONTRACT_DETAILS, {
-          tokenBalance: results[0].toNumber(10)
-          // crowdsaleBalance: results[0].toNumber(10)
+          tokenBalance: results[0].toNumber(10),
+          crowdsaleBalance: results[1].toNumber(10)
         });
       });
     },
@@ -216,7 +215,7 @@ const store = new Vuex.Store({
       .then((contracts) => {
         return Promise.all([
           contracts[1].weiRaised(),
-          contracts[0].balanceOf(contracts[1].address, {from: account}), // PixieToken call
+          // contracts[0].balanceOf(contracts[1].address, {from: account}), // PixieToken call
           contracts[1].whitelist(account),
           contracts[1].contributions(account, {from: account})
         ]);
@@ -224,7 +223,7 @@ const store = new Vuex.Store({
       .then((results) => {
         commit(mutations.SET_CROWDSALE_DETAILS, {
           raised: results[0].toNumber(10),
-          crowdsaleBalance: results[1].toNumber(10),
+          // crowdsaleBalance: results[1].toNumber(10),
           whitelisted: results[2],
           contributions: results[3].toNumber(10)
         });
