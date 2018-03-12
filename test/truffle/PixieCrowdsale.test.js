@@ -534,6 +534,19 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
         const secondPostContribution = await this.crowdsale.contributions(purchaser);
         secondPostContribution.should.be.bignumber.equal(this.minContribution.times(2));
       });
+
+      it('should allow multiple contributions if below max limit', async function () {
+
+        // well below max limit
+        await this.crowdsale.send(this.minContribution).should.be.fulfilled;
+        await this.crowdsale.send(this.minContribution).should.be.fulfilled;
+        await this.crowdsale.send(this.minContribution).should.be.fulfilled;
+        await this.crowdsale.send(this.minContribution).should.be.fulfilled;
+        await this.crowdsale.send(this.minContribution).should.be.fulfilled;
+
+        const postContribution = await this.crowdsale.contributions(owner);
+        postContribution.should.be.bignumber.equal(this.minContribution.times(5));
+      });
     });
 
     describe('sending maximum', function () {
@@ -553,19 +566,6 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
         postContribution.should.be.bignumber.equal(this.maxContribution);
 
         await assertRevert(this.crowdsale.buyTokens(purchaser, {value: 1, from: purchaser}));
-      });
-
-      it('should allow multiple contributions if below max limit', async function () {
-
-        // well below max limit
-        await this.crowdsale.send(this.minContribution).should.be.fulfilled;
-        await this.crowdsale.send(this.minContribution).should.be.fulfilled;
-        await this.crowdsale.send(this.minContribution).should.be.fulfilled;
-        await this.crowdsale.send(this.minContribution).should.be.fulfilled;
-        await this.crowdsale.send(this.minContribution).should.be.fulfilled;
-
-        const postContribution = await this.crowdsale.contributions(owner);
-        postContribution.should.be.bignumber.equal(this.minContribution.times(5));
       });
     });
   });
