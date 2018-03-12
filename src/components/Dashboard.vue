@@ -44,8 +44,8 @@
           <eth-symbol></eth-symbol>
         </p>
 
-        <h4>Something</h4>
-        <p>Here</p>
+        <h4>Raised</h4>
+        <p>{{ raised }}</p>
 
         <h4>Max</h4>
         <p>{{ max }} <eth-symbol></eth-symbol></p>
