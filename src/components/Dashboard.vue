@@ -34,6 +34,9 @@
 
         <h4>Min</h4>
         <p>{{ min }} <eth-symbol></eth-symbol></p>
+
+        <h4>Start</h4>
+        <p>{{ start }}</p>
       </div>
       <div class="col-lg-6">
         <h4>Hard Cap</h4>
@@ -47,8 +50,8 @@
         <h4>Max</h4>
         <p>{{ max }} <eth-symbol></eth-symbol></p>
 
-        <!--<h4>End</h4>-->
-        <!--<p>{{ end | moment("from") }}</p>-->
+        <h4>End</h4>
+        <p>{{ end }}</p>
       </div>
     </div>
 
@@ -83,6 +86,8 @@
         'tokenSymbol',
         'min',
         'max',
+        'start',
+        'end',
         'owner'
       ])
     }

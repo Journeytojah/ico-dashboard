@@ -95,7 +95,6 @@ const store = new Vuex.Store({
       state.tokenAddress = address;
     },
     [mutations.SET_CONTRACT_DETAILS](state, {tokenBalance}) {
-      console.log(`BALLLLL ${tokenBalance}`);
       state.tokenBalance = tokenBalance;
     },
     [mutations.SET_ACCOUNT](state, account) {
@@ -138,8 +137,8 @@ const store = new Vuex.Store({
         // store the account
         commit(mutations.SET_ACCOUNT, accounts[0]);
 
-        store.dispatch(actions.REFRESH_CONTRACT_DETAILS, accounts[0]);
-        // store.dispatch(actions.INIT_CROWDSALE_DETAILS, accounts[0]);
+        // store.dispatch(actions.REFRESH_CONTRACT_DETAILS, accounts[0]);
+        // store.dispatch(actions.REFRESH_CROWDSALE_DETAILS, accounts[0]);
       });
     },
     [actions.INIT_CONTRACT_DETAILS]({commit, dispatch, state}, account) {
@@ -175,46 +174,35 @@ const store = new Vuex.Store({
       });
     },
     [actions.INIT_CROWDSALE_DETAILS]({commit, dispatch, state}, account) {
-      Promise.all([
-        PixieToken.deployed(),
-        PixieCrowdsale.deployed()
-      ])
-      .then((contracts) => {
+      PixieCrowdsale.deployed()
+      .then((contract) => {
         return Promise.all([
-          contracts[1].rate(),
-          contracts[1].weiRaised(),
-          contracts[1].token(),
-          contracts[1].cap(),
-          contracts[1].weiRaised(), // DUMMY
-          contracts[1].wallet(),
-          contracts[1].weiRaised(), // DUMMY
-          contracts[1].weiRaised(), // DUMMY
-          contracts[1].address,
-          contracts[0].balanceOf(contracts[1].address, {from: account}),
-          contracts[1].owner(),
-          contracts[1].whitelist(account),
-          contracts[1].min(),
-          contracts[1].max(),
-          contracts[1].contributions(account, {from: account}),
+          contract.rate(),
+          contract.token(),
+          contract.cap(),
+          contract.cap(), // DUMMY
+          contract.wallet(),
+          contract.openingTime(),
+          contract.closingTime(),
+          contract.address,
+          contract.owner(),
+          contract.min(),
+          contract.max(),
         ]);
       })
       .then((results) => {
-        commit(mutations.SET_CROWDSALE_DETAILS, {
+        commit(mutations.SET_STATIC_CROWDSALE_DETAILS, {
           rate: results[0].toNumber(10),
-          raised: results[1].toNumber(10), // hmmm?
-          token: results[2].toString(),
-          cap: results[3].toNumber(10), // whole ether
-          goal: results[4].toNumber(10), // whole ether
-          wallet: results[5].toString(),
-          start: results[6].toNumber(10),
-          end: results[7].toNumber(10),
-          address: results[8],
-          crowdsaleBalance: results[9].toString(10),
-          owner: results[10],
-          whitelisted: results[11],
-          min: results[12].toNumber(10),
-          max: results[13].toNumber(10),
-          contributions: results[14].toNumber(10)
+          token: results[1].toString(),
+          cap: results[2].toNumber(10),
+          goal: results[3].toNumber(10),
+          wallet: results[4].toString(),
+          start: results[5].toNumber(10),
+          end: results[6].toNumber(10),
+          address: results[7],
+          owner: results[8],
+          min: results[9].toNumber(10),
+          max: results[10].toNumber(10)
         });
       });
     },
