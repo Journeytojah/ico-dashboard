@@ -52,9 +52,8 @@ const store = new Vuex.Store({
     inKycWaitingList: (state) => (state.kycWaitingList) ? state.kycWaitingList.includes(state.account) : false
   },
   mutations: {
-    [mutations.SET_CROWDSALE_DETAILS](state, {
+    [mutations.SET_STATIC_CROWDSALE_DETAILS](state, {
       rate,
-      raised,
       token,
       cap,
       goal,
@@ -62,15 +61,11 @@ const store = new Vuex.Store({
       start,
       end,
       address,
-      crowdsaleBalance,
       owner,
-      whitelisted,
       min,
-      max,
-      contributions
+      max
     }) {
       state.rate = rate;
-      state.raised = raised;
       state.token = token;
       state.cap = cap;
       state.goal = goal;
@@ -78,11 +73,19 @@ const store = new Vuex.Store({
       state.start = start;
       state.end = end;
       state.address = address;
-      state.crowdsaleBalance = crowdsaleBalance;
       state.owner = owner;
-      state.whitelisted = whitelisted;
       state.min = min;
       state.max = max;
+    },
+    [mutations.SET_CROWDSALE_DETAILS](state, {
+      raised,
+      crowdsaleBalance,
+      whitelisted,
+      contributions
+    }) {
+      state.raised = raised;
+      state.crowdsaleBalance = crowdsaleBalance;
+      state.whitelisted = whitelisted;
       state.contributions = contributions;
     },
     [mutations.SET_STATIC_CONTRACT_DETAILS](state, {name, symbol, totalSupply, address}) {
