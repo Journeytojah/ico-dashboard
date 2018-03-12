@@ -11,7 +11,7 @@
         <whitelisted :whitelisted="whitelisted" v-if="whitelisted != null"></whitelisted>
       </div>
 
-      <div class="row justify-content-lg-center" v-if="!whitelisted && !submitted">
+      <div class="row justify-content-lg-center" v-if="!whitelisted && !inKycWaitingList">
         <div class="col-lg-6">
           <h2>Complete KYC</h2>
 
@@ -40,7 +40,7 @@
         </div>
       </div>
 
-      <div class="row justify-content-lg-center" v-if="!whitelisted && submitted">
+      <div class="row justify-content-lg-center" v-if="!whitelisted && inKycWaitingList">
         <div class="col-lg-6">
           <h2>Complete KYC</h2>
 
@@ -50,16 +50,33 @@
         </div>
       </div>
 
-    </b-jumbotron>
+      <div class="row justify-content-lg-center" v-if="isOwner">
+        <div class="col-lg-6">
+          <h2>Approve KYC</h2>
 
-    <pre>{{ kycWaitingList }}</pre>
+          <div class="alert alert-warning" role="alert">
+            <p>Note: Only the <strong>owner</strong> of the Smart Contract can perform this action</p>
+          </div>
+
+          <p><b-badge>{{ kycWaitingList.length }}</b-badge> applicant(s) waiting for approval</p>
+          <ul>
+            <li v-for="applicant in kycWaitingList">
+              <eth-address :hex="applicant"></eth-address>
+              <button class="btn btn-outline-success btn-sm" @click="APPROVE_KYC(applicant)">Approve</button>
+            </li>
+          </ul>
+
+        </div>
+      </div>
+
+    </b-jumbotron>
   </div>
 </template>
 
 <script>
 
   import * as actions from '@/store/actions';
-  import { mapGetters, mapState } from 'vuex';
+  import { mapGetters, mapState, mapActions } from 'vuex';
   import EthAddress from './EthAddress.vue';
   import Whitelisted from './Whitelisted.vue';
   import Web3 from 'web3';
@@ -77,6 +94,9 @@
       };
     },
     methods: {
+      ...mapActions([
+        actions.APPROVE_KYC
+      ]),
       onSubmit (evt) {
         evt.preventDefault();
 
@@ -92,6 +112,10 @@
         'account',
         'whitelisted',
         'kycWaitingList'
+      ]),
+      ...mapGetters([
+        'isOwner',
+        'inKycWaitingList'
       ])
     }
   };
