@@ -85,12 +85,15 @@ const store = new Vuex.Store({
       state.max = max;
       state.contributions = contributions;
     },
-    [mutations.SET_CONTRACT_DETAILS](state, {name, symbol, totalSupply, address, balance}) {
+    [mutations.SET_STATIC_CONTRACT_DETAILS](state, {name, symbol, totalSupply, address}) {
       state.tokenTotalSupply = totalSupply;
       state.tokenSymbol = symbol;
       state.tokenName = name;
       state.tokenAddress = address;
-      state.tokenBalance = balance;
+    },
+    [mutations.SET_CONTRACT_DETAILS](state, {tokenBalance}) {
+      console.log(`BALLLLL ${tokenBalance}`);
+      state.tokenBalance = tokenBalance;
     },
     [mutations.SET_ACCOUNT](state, account) {
       state.account = account;
@@ -114,17 +117,29 @@ const store = new Vuex.Store({
         commit(mutations.SET_CURRENT_NETWORK, currentNetwork);
       });
     },
-    [actions.INIT_APP]({commit, dispatch, state}, account) {
+    [actions.INIT_APP]({commit, dispatch, state}) {
       web3.eth.getAccounts()
       .then((accounts) => {
+
+        // store the account
+        commit(mutations.SET_ACCOUNT, accounts[0]);
+
+        store.dispatch(actions.INIT_CONTRACT_DETAILS, accounts[0]);
+        store.dispatch(actions.INIT_CROWDSALE_DETAILS, accounts[0]);
+      });
+    },
+    [actions.REFRESH_APP]({commit, dispatch, state}) {
+      web3.eth.getAccounts()
+      .then((accounts) => {
+
         // store the account
         commit(mutations.SET_ACCOUNT, accounts[0]);
 
         store.dispatch(actions.REFRESH_CONTRACT_DETAILS, accounts[0]);
-        store.dispatch(actions.REFRESH_CROWDSALE_DETAILS, accounts[0]);
+        // store.dispatch(actions.INIT_CROWDSALE_DETAILS, accounts[0]);
       });
     },
-    [actions.REFRESH_CONTRACT_DETAILS]({commit, dispatch, state}, account) {
+    [actions.INIT_CONTRACT_DETAILS]({commit, dispatch, state}, account) {
       PixieToken.deployed()
       .then((contract) => {
         return Promise.all([
@@ -132,20 +147,31 @@ const store = new Vuex.Store({
           contract.symbol(),
           contract.totalSupply({from: account}),
           contract.address,
+        ]);
+      })
+      .then((results) => {
+        commit(mutations.SET_STATIC_CONTRACT_DETAILS, {
+          name: results[0],
+          symbol: results[1],
+          totalSupply: results[2].toString(10),
+          address: results[3]
+        });
+      });
+    },
+    [actions.REFRESH_CONTRACT_DETAILS]({commit, dispatch, state}, account) {
+      PixieToken.deployed()
+      .then((contract) => {
+        return Promise.all([
           contract.balanceOf(account, {from: account})
         ]);
       })
       .then((results) => {
         commit(mutations.SET_CONTRACT_DETAILS, {
-          name: results[0],
-          symbol: results[1],
-          totalSupply: results[2].toString(10),
-          address: results[3],
-          balance: results[4].toString(10)
+          tokenBalance: results[0].toString(10)
         });
       });
     },
-    [actions.REFRESH_CROWDSALE_DETAILS]({commit, dispatch, state}, account) {
+    [actions.INIT_CROWDSALE_DETAILS]({commit, dispatch, state}, account) {
       Promise.all([
         PixieToken.deployed(),
         PixieCrowdsale.deployed()
