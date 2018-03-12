@@ -100,7 +100,7 @@
       onSubmit (evt) {
         evt.preventDefault();
 
-        // check is validate form data
+        // valid data?
         if (Web3.utils.isAddress(this.form.myAccount) && (this.form.checked === 'true')) {
           this.submitted = true;
           this.$store.dispatch(actions.ADD_TO_KYC_WAITING_LIST, this.form.myAccount);
