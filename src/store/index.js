@@ -208,24 +208,19 @@ const store = new Vuex.Store({
       });
     },
     [actions.REFRESH_CROWDSALE_DETAILS]({commit, dispatch, state}, account) {
-      Promise.all([
-        PixieToken.deployed(),
-        PixieCrowdsale.deployed()
-      ])
-      .then((contracts) => {
+      PixieCrowdsale.deployed()
+      .then((contract) => {
         return Promise.all([
-          contracts[1].weiRaised(),
-          // contracts[0].balanceOf(contracts[1].address, {from: account}), // PixieToken call
-          contracts[1].whitelist(account),
-          contracts[1].contributions(account, {from: account})
+          contract.weiRaised(),
+          contract.whitelist(account),
+          contract.contributions(account, {from: account})
         ]);
       })
       .then((results) => {
         commit(mutations.SET_CROWDSALE_DETAILS, {
           raised: results[0].toNumber(10),
-          // crowdsaleBalance: results[1].toNumber(10),
-          whitelisted: results[2],
-          contributions: results[3].toNumber(10)
+          whitelisted: results[1],
+          contributions: results[2].toNumber(10)
         });
       });
     },
