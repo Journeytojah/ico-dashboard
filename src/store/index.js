@@ -137,8 +137,8 @@ const store = new Vuex.Store({
         // store the account
         commit(mutations.SET_ACCOUNT, accounts[0]);
 
-        // store.dispatch(actions.REFRESH_CONTRACT_DETAILS, accounts[0]);
-        // store.dispatch(actions.REFRESH_CROWDSALE_DETAILS, accounts[0]);
+        store.dispatch(actions.REFRESH_CONTRACT_DETAILS, accounts[0]);
+        store.dispatch(actions.REFRESH_CROWDSALE_DETAILS, accounts[0]);
       });
     },
     [actions.INIT_CONTRACT_DETAILS]({commit, dispatch, state}, account) {
@@ -148,7 +148,7 @@ const store = new Vuex.Store({
           contract.name(),
           contract.symbol(),
           contract.totalSupply({from: account}),
-          contract.address,
+          contract.address
         ]);
       })
       .then((results) => {
@@ -187,7 +187,7 @@ const store = new Vuex.Store({
           contract.address,
           contract.owner(),
           contract.min(),
-          contract.max(),
+          contract.max()
         ]);
       })
       .then((results) => {
@@ -203,6 +203,28 @@ const store = new Vuex.Store({
           owner: results[8],
           min: results[9].toNumber(10),
           max: results[10].toNumber(10)
+        });
+      });
+    },
+    [actions.REFRESH_CROWDSALE_DETAILS]({commit, dispatch, state}, account) {
+      Promise.all([
+        PixieToken.deployed(),
+        PixieCrowdsale.deployed()
+      ])
+      .then((contracts) => {
+        return Promise.all([
+          contracts[1].weiRaised(),
+          contracts[0].balanceOf(contracts[1].address, {from: account}), // PixieToken call
+          contracts[1].whitelist(account),
+          contracts[1].contributions(account)
+        ]);
+      })
+      .then((results) => {
+        commit(mutations.SET_CROWDSALE_DETAILS, {
+          raised: results[0].toNumber(10),
+          crowdsaleBalance: results[1].toNumber(10),
+          whitelisted: results[2],
+          contributions: results[3].toNumber(10)
         });
       });
     },
