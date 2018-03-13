@@ -31,17 +31,20 @@ const store = new Vuex.Store({
     // crowdsale
     address: null,
     rate: 0,
-    raised: 0,
     cap: 0,
     goal: 0,
     wallet: null,
     start: 0,
     end: 0,
-    crowdsaleBalance: 0,
     owner: null,
     min: 0,
     max: 0,
+
+    //crowdsale dynamic
+    raised: 0,
+    crowdsaleBalance: 0,
     contributions: 0,
+    goalReached: false,
 
     whitelisted: null,
 
@@ -63,7 +66,7 @@ const store = new Vuex.Store({
       address,
       owner,
       min,
-      max
+      max,
     }) {
       state.rate = rate;
       state.token = token;
@@ -80,11 +83,13 @@ const store = new Vuex.Store({
     [mutations.SET_CROWDSALE_DETAILS](state, {
       raised,
       whitelisted,
-      contributions
+      contributions,
+      goalReached
     }) {
       state.raised = raised;
       state.whitelisted = whitelisted;
       state.contributions = contributions;
+      state.goalReached = goalReached;
     },
     [mutations.SET_STATIC_CONTRACT_DETAILS](state, {name, symbol, totalSupply, address}) {
       state.tokenTotalSupply = totalSupply;
@@ -181,7 +186,7 @@ const store = new Vuex.Store({
           contract.rate(),
           contract.token(),
           contract.cap(),
-          contract.cap(), // DUMMY
+          contract.goal(),
           contract.wallet(),
           contract.openingTime(),
           contract.closingTime(),
@@ -213,14 +218,16 @@ const store = new Vuex.Store({
         return Promise.all([
           contract.weiRaised(),
           contract.whitelist(account),
-          contract.contributions(account, {from: account})
+          contract.contributions(account, {from: account}),
+          contract.goalReached()
         ]);
       })
       .then((results) => {
         commit(mutations.SET_CROWDSALE_DETAILS, {
           raised: results[0].toNumber(10),
           whitelisted: results[1],
-          contributions: results[2].toNumber(10)
+          contributions: results[2].toNumber(10),
+          goalReached: results[3]
         });
       });
     },

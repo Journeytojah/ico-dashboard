@@ -21,7 +21,7 @@ module.exports = function (deployer, network, accounts) {
       const _closingTime = _openingTime + (86400 * 20); // 20 days
 
       const _minContribution = 2;
-      const _maxContribution = 10;
+      const _maxContribution = 100;
 
       const _goal = _initialSupply.times(0.25); // 25% of supply i.e 250 WEI
 
