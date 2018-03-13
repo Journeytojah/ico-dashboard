@@ -269,7 +269,6 @@ const store = new Vuex.Store({
       .then((contract) => {
         return contract.buyTokens(state.account, {value: contributionInWei, from: state.account});
       })
-      .then((res) => console.log(res));
     }
   }
 });
