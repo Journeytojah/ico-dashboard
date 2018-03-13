@@ -14,10 +14,10 @@
           <p>{{ vaultBalance }} <eth-symbol></eth-symbol></p>
         </div>
 
-        <div class="col-lg-4">
-          <h4>Vault State</h4>
-          <p><span class="text-muted">TODO</span></p>
-        </div>
+        <!--<div class="col-lg-4">-->
+          <!--<h4>Vault State</h4>-->
+          <!--<p><span class="text-muted">TODO</span></p>-->
+        <!--</div>-->
       </div>
 
     </b-jumbotron>

@@ -19,7 +19,21 @@
           <h4>Contribution Total</h4>
           <p>{{ contributions }} <eth-symbol></eth-symbol></p>
         </div>
+      </div>
 
+      <hr/>
+
+      <div class="row justify-content-lg-center">
+        <div class="col-lg-6">
+          <strong>Contribute:</strong>
+          <b-button-group>
+            <b-button variant="primary" @click="CONTRIBUTE_WEI(1)">1 <eth-symbol></eth-symbol></b-button>
+            <b-button variant="primary" @click="CONTRIBUTE_WEI(25)">25 <eth-symbol></eth-symbol></b-button>
+            <b-button variant="primary" @click="CONTRIBUTE_WEI(50)">50 <eth-symbol></eth-symbol></b-button>
+            <b-button variant="primary" @click="CONTRIBUTE_WEI(100)">100 <eth-symbol></eth-symbol></b-button>
+            <b-button variant="primary" @click="CONTRIBUTE_WEI(250)">250 <eth-symbol></eth-symbol></b-button>
+          </b-button-group>
+        </div>
       </div>
     </b-jumbotron>
 
@@ -28,10 +42,11 @@
 
 <script>
 
-  import {mapGetters, mapState} from 'vuex';
+  import {mapGetters, mapState, mapActions} from 'vuex';
   import EthAddress from './EthAddress.vue';
   import Whitelisted from './Whitelisted.vue';
   import EthSymbol from './EthSymbol';
+  import * as actions from '@/store/actions';
 
   export default {
     name: 'dashboard',
@@ -45,7 +60,12 @@
         'whitelisted',
         'contributions'
       ])
-    }
+    },
+    methods: {
+      ...mapActions([
+        actions.CONTRIBUTE_WEI
+      ])
+    },
   };
 </script>
 

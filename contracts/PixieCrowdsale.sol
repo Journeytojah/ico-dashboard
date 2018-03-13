@@ -31,19 +31,18 @@ contract PixieCrowdsale is CappedCrowdsale, WhitelistedCrowdsale, IndividualLimi
   }
 
   /**
-     * @dev gets current time
-     * @return the current blocktime
-     */
+   * @dev gets current time
+   * @return the current blocktime
+   */
   function getNow() public view returns (uint) {
     return now;
   }
 
   /**
-     * @dev Checks whether the period in which the crowdsale is open has elapsed.
-     * @return Whether crowdsale period is open
-     */
+   * @dev Checks whether the period in which the crowdsale is open has elapsed.
+   * @return Whether crowdsale period is open
+   */
   function isCrowdsaleOpen() public view returns (bool) {
     return now >= openingTime && now <= closingTime;
   }
-
 }

@@ -263,6 +263,13 @@ const store = new Vuex.Store({
           commit(mutations.SET_VAULT_BALANCE, result.toString(10));
         });
       }
+    },
+    [actions.CONTRIBUTE_WEI]({commit, dispatch, state}, contributionInWei) {
+      PixieCrowdsale.deployed()
+      .then((contract) => {
+        return contract.buyTokens(state.account, {value: contributionInWei, from: state.account});
+      })
+      .then((res) => console.log(res));
     }
   }
 });

@@ -26,7 +26,7 @@
           </ul>
         </nav>
 
-        <h3 class="text-muted">ICO Dashboard</h3>
+        <h3 class="text-muted">Pixie TGE</h3>
       </div>
 
       <router-view></router-view>
