@@ -7,7 +7,7 @@ contract('PixieToken', function ([_, owner, recipient, anotherAccount]) {
   const TOTAl_AMOUNT_OF_TOKENS = 10000000000;
 
   beforeEach(async function () {
-    this.token = await PixieToken.new({from: owner});
+    this.token = await PixieToken.new(TOTAl_AMOUNT_OF_TOKENS, {from: owner});
   });
 
   describe('total supply', function () {
