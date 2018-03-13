@@ -4,20 +4,20 @@
     <b-jumbotron header="Token Generation Event" lead="Building Internet 3.0">
       <div class="row">
         <div class="col-lg-6">
+          <h4>Owner</h4>
+          <eth-address :hex="owner"></eth-address>
+        </div>
+        <div class="col-lg-6">
           <div class="alert alert-success" role="alert">
             <strong>Crowdsale contract address:</strong>
             <eth-address :hex="address"></eth-address>
           </div>
         </div>
-        <div class="col-lg-6">
-          <div class="alert alert-info" role="alert">
-            <strong>Crowdsale <i>Owner</i></strong>
-           <eth-address :hex="owner"></eth-address>
-          </div>
-        </div>
       </div>
 
-      <p class="float-right"><strong>{{ raised }}</strong> <eth-symbol></eth-symbol></p>
+      <p class="float-right"><strong>{{ raised }}</strong>
+        <eth-symbol></eth-symbol>
+      </p>
 
       <b-progress show-value :max="cap" class="mb-3 thermometer" height="50px">
         <b-progress-bar variant="primary" :value="raised"></b-progress-bar>
@@ -40,7 +40,9 @@
         </p>
 
         <h4>Min. Contribution</h4>
-        <p>{{ min }} <eth-symbol></eth-symbol></p>
+        <p>{{ min }}
+          <eth-symbol></eth-symbol>
+        </p>
 
         <h4>Start Date</h4>
         <p>{{ start | moment('from') }}</p>
@@ -63,7 +65,9 @@
         </p>
 
         <h4>Max. Contribution</h4>
-        <p>{{ max }} <eth-symbol></eth-symbol></p>
+        <p>{{ max }}
+          <eth-symbol></eth-symbol>
+        </p>
 
         <h4>End Date</h4>
         <p>{{ end | moment('from') }}</p>
@@ -75,7 +79,7 @@
 
 <script>
 
-  import {mapGetters, mapState} from 'vuex';
+  import { mapGetters, mapState } from 'vuex';
   import Progress from 'bootstrap-vue/es/components/progress/progress';
   import ProgressBar from 'bootstrap-vue/es/components/progress/progress-bar';
   import EthSymbol from './EthSymbol';
@@ -84,9 +88,6 @@
   export default {
     name: 'dashboard',
     components: {EthSymbol, EthAddress},
-    data () {
-      return {};
-    },
     computed: {
       ...mapState([
         'address',

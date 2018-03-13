@@ -39,6 +39,7 @@ const store = new Vuex.Store({
     owner: null,
     min: 0,
     max: 0,
+    vault: null,
 
     //crowdsale dynamic
     raised: 0,
@@ -67,6 +68,7 @@ const store = new Vuex.Store({
       owner,
       min,
       max,
+      vault
     }) {
       state.rate = rate;
       state.token = token;
@@ -79,6 +81,7 @@ const store = new Vuex.Store({
       state.owner = owner;
       state.min = min;
       state.max = max;
+      state.vault = vault;
     },
     [mutations.SET_CROWDSALE_DETAILS](state, {
       raised,
@@ -193,7 +196,8 @@ const store = new Vuex.Store({
           contract.address,
           contract.owner(),
           contract.min(),
-          contract.max()
+          contract.max(),
+          contract.vault()
         ]);
       })
       .then((results) => {
@@ -208,7 +212,8 @@ const store = new Vuex.Store({
           address: results[7],
           owner: results[8],
           min: results[9].toNumber(10),
-          max: results[10].toNumber(10)
+          max: results[10].toNumber(10),
+          vault: results[11],
         });
       });
     },

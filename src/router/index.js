@@ -4,6 +4,7 @@ import Dashboard from '@/components/Dashboard';
 import Account from '@/components/Account';
 import Token from '@/components/Token';
 import KYC from '@/components/KYC';
+import Vault from '@/components/Vault';
 
 Vue.use(Router);
 
@@ -30,6 +31,11 @@ export default new Router({
       path: '/kyc',
       name: 'kyc',
       component: KYC
+    },
+    {
+      path: '/vault',
+      name: 'vault',
+      component: Vault
     }
   ]
 });
