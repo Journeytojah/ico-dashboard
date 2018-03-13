@@ -447,7 +447,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     });
   });
 
-  describe.only('Min and max contributions', function () {
+  describe('Min and max contributions', function () {
 
     beforeEach(async function () {
       await increaseTimeTo(latestTime() + duration.seconds(1)); // force time to move on to 1 seconds
