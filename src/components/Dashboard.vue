@@ -57,8 +57,9 @@
 
         <h4>Goal Reached</h4>
         <p>
-          <icon name="check-circle" v-if="goalReached" scale="2" class="text-success" label="Goal met"></icon>
-          <icon name="minus-circle" v-if="!goalReached" scale="2" class="text-muted" label="Goal not met"></icon>
+          <span v-if="!goalReached">No</span>
+          <span v-if="goalReached">Yes</span>
+          <icon name="check-circle" v-if="goalReached" scale="1" class="text-success" label="Goal met"></icon>
         </p>
 
         <h4>Max. Contribution</h4>
