@@ -25,20 +25,20 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
   });
 
   beforeEach(async function () {
-    this.token = await PixieToken.new();
+    this.token = await PixieToken.new(1000);
 
     this.rate = new BigNumber(1);
 
-    this.initialSupply = await this.token.initialSupply();
-    this.amountAvailableForPurchase = this.initialSupply.times(0.5);
-    this.cap = this.amountAvailableForPurchase;
+    this.initialSupply = await this.token.initialSupply(); // 1000 WEI
+    this.amountAvailableForPurchase = this.initialSupply.times(0.5); // 500 WEI
+    this.cap = this.amountAvailableForPurchase; // 500 WEI
 
     this.openingTime = latestTime() + duration.seconds(1); // opens in 1 second
     this.closingTime = this.openingTime + duration.weeks(1);
     this.afterClosingTime = this.closingTime + duration.seconds(1);
 
-    this.minContribution = new BigNumber(100);
-    this.maxContribution = new BigNumber(this.cap).times(0.5); // 1/2 of cap
+    this.minContribution = new BigNumber(5); // 5 WEI
+    this.maxContribution = new BigNumber(this.cap).times(0.5); // 250 WEI
 
     this.value = this.minContribution;
     this.expectedTokenAmount = this.rate.mul(this.value);
