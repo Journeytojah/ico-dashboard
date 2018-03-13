@@ -5,6 +5,9 @@
       <div class="header clearfix">
         <nav>
           <ul class="nav float-right">
+            <li class="nav-item" v-if="isOwner">
+              <b-badge  pill variant="success">OWNER</b-badge>
+            </li>
             <li class="nav-item">
               <router-link :to="{ name: 'dashboard' }" class="nav-link">Home</router-link>
             </li>
@@ -41,6 +44,7 @@
   /* global web3:true */
 
   import Web3 from 'web3';
+  import {mapGetters, mapState} from 'vuex';
   import * as actions from './store/actions';
   import * as mutations from './store/mutation-types';
   import CurrentNetwork from './components/CurrentNetwork';
@@ -51,6 +55,11 @@
       return {
         accountInterval: null
       };
+    },
+    computed: {
+      ...mapGetters([
+        'isOwner',
+      ])
     },
     components: {CurrentNetwork},
     mounted() {
