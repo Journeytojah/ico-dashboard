@@ -75,9 +75,10 @@
 
         // Bootstrap the full app
         this.$store.dispatch(actions.INIT_APP);
+        this.$store.dispatch(actions.REFRESH_APP);
 
         this.accountInterval = setInterval(() => {
-          this.$store.dispatch(actions.INIT_APP);
+          this.$store.dispatch(actions.REFRESH_APP);
         }, 5000);
 
         // Find current network

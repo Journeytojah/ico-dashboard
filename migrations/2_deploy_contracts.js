@@ -6,7 +6,7 @@ module.exports = function (deployer, network, accounts) {
 
   console.log(`Running within network = ${network}`);
 
-  deployer.deploy(PixieToken)
+  deployer.deploy(PixieToken, 1000)
     .then(() => PixieToken.deployed())
     .then((contract) => Promise.all([contract, contract.initialSupply()]))
     .then((results) => {
@@ -20,6 +20,9 @@ module.exports = function (deployer, network, accounts) {
       const _openingTime = web3.eth.getBlock(web3.eth.blockNumber).timestamp + 1; // one second in the future
       const _closingTime = _openingTime + (86400 * 20); // 20 days
 
+      const _minContribution = 2;
+      const _maxContribution = 10; // 1 ETHER
+
       const PixieTokenContract = results[0];
 
       return Promise.all([
@@ -30,7 +33,9 @@ module.exports = function (deployer, network, accounts) {
           _token,
           _cap,
           _openingTime,
-          _closingTime
+          _closingTime,
+          _minContribution,
+          _maxContribution
         ),
         PixieTokenContract,
         _initialSupply

@@ -1,4 +1,4 @@
-const ether = require('../helpers/ether');
+const etherToWei = require('../helpers/etherToWei');
 const assertRevert = require('../helpers/assertRevert');
 
 const advanceBlock = require('../helpers/advanceToBlock');
@@ -19,38 +19,43 @@ const PixieToken = artifacts.require('PixieToken');
 
 contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, authorized, unauthorized, anotherAuthorized]) {
 
-  const rate = new BigNumber(1);
-
-  let initialSupply;
-  let amountAvailableForPurchase;
-
-  let cap;
-  let lessThanCap;
-
-  const value = ether(0.0000000005);
-
-  const expectedTokenAmount = rate.mul(value);
-
   before(async function () {
     // Advance to the next block to correctly read time in the solidity "now" function interpreted by testrpc
     await advanceBlock();
   });
 
   beforeEach(async function () {
-    this.token = await PixieToken.new();
+    this.token = await PixieToken.new(1000);
 
-    initialSupply = await this.token.initialSupply();
-    amountAvailableForPurchase = initialSupply.times(0.5);
-    cap = amountAvailableForPurchase.times(0.9);
-    lessThanCap = amountAvailableForPurchase.times(0.6);
+    this.rate = new BigNumber(1);
+
+    this.initialSupply = await this.token.initialSupply(); // 1000 WEI
+    this.amountAvailableForPurchase = this.initialSupply.times(0.5); // 500 WEI
+    this.cap = this.amountAvailableForPurchase; // 500 WEI
 
     this.openingTime = latestTime() + duration.seconds(1); // opens in 1 second
     this.closingTime = this.openingTime + duration.weeks(1);
     this.afterClosingTime = this.closingTime + duration.seconds(1);
 
-    this.crowdsale = await PixieCrowdsale.new(rate, wallet, this.token.address, cap, this.openingTime, this.closingTime, {from: owner});
+    this.minContribution = new BigNumber(5); // 5 WEI
+    this.maxContribution = new BigNumber(this.cap).times(0.5); // 250 WEI
 
-    await this.token.transfer(this.crowdsale.address, amountAvailableForPurchase);
+    this.value = this.minContribution;
+    this.expectedTokenAmount = this.rate.mul(this.value);
+
+    this.crowdsale = await PixieCrowdsale.new(
+      this.rate,
+      wallet,
+      this.token.address,
+      this.cap,
+      this.openingTime,
+      this.closingTime,
+      this.minContribution,
+      this.maxContribution,
+      {from: owner}
+    );
+
+    await this.token.transfer(this.crowdsale.address, this.amountAvailableForPurchase);
 
     // approve so they can invest in crowdsale
     await this.crowdsale.addToWhitelist(owner);
@@ -73,6 +78,9 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     console.log('isCrowdsaleOpen', await this.crowdsale.isCrowdsaleOpen());
     console.log('isFinalized', await this.crowdsale.isFinalized());
     console.log('capReached', await this.crowdsale.capReached());
+    console.log('cap', await this.crowdsale.cap());
+    console.log('min contribution', await this.crowdsale.min());
+    console.log('max contribution', await this.crowdsale.max());
   });
 
   describe('Crowdsale', function () {
@@ -83,63 +91,61 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
 
     describe('accepting payments', function () {
       it('should accept payments', async function () {
-        await this.crowdsale.send(value).should.be.fulfilled;
-        await this.crowdsale.buyTokens(investor, {value: value, from: purchaser}).should.be.fulfilled;
+        await this.crowdsale.send(this.value).should.be.fulfilled;
+        await this.crowdsale.buyTokens(investor, {value: this.value, from: purchaser}).should.be.fulfilled;
       });
     });
 
     describe('high-level purchase', function () {
       it('should log purchase', async function () {
-        const {logs} = await this.crowdsale.sendTransaction({value: value, from: investor});
+        const {logs} = await this.crowdsale.sendTransaction({value: this.value, from: investor});
         const event = logs.find(e => e.event === 'TokenPurchase');
         should.exist(event);
         event.args.purchaser.should.equal(investor);
         event.args.beneficiary.should.equal(investor);
-        event.args.value.should.be.bignumber.equal(value);
-        event.args.amount.should.be.bignumber.equal(expectedTokenAmount);
+        event.args.value.should.be.bignumber.equal(this.value);
+        event.args.amount.should.be.bignumber.equal(this.expectedTokenAmount);
       });
 
       it('should assign tokens to sender', async function () {
-        await this.crowdsale.sendTransaction({value: value, from: investor});
+        await this.crowdsale.sendTransaction({value: this.value, from: investor});
         let balance = await this.token.balanceOf(investor);
-        balance.should.be.bignumber.equal(expectedTokenAmount);
+        balance.should.be.bignumber.equal(this.expectedTokenAmount);
       });
 
       it('should forward funds to wallet', async function () {
         const pre = web3.eth.getBalance(wallet);
-        await this.crowdsale.sendTransaction({value: value, from: investor});
+        await this.crowdsale.sendTransaction({value: this.value, from: investor});
         const post = web3.eth.getBalance(wallet);
-        post.minus(pre).should.be.bignumber.equal(value);
+        post.minus(pre).should.be.bignumber.equal(this.value);
       });
     });
 
     describe('low-level purchase', function () {
       it('should log purchase', async function () {
-        const {logs} = await this.crowdsale.buyTokens(investor, {value: value, from: purchaser});
+        const {logs} = await this.crowdsale.buyTokens(investor, {value: this.value, from: purchaser});
         const event = logs.find(e => e.event === 'TokenPurchase');
         should.exist(event);
         event.args.purchaser.should.equal(purchaser);
         event.args.beneficiary.should.equal(investor);
-        event.args.value.should.be.bignumber.equal(value);
-        event.args.amount.should.be.bignumber.equal(expectedTokenAmount);
+        event.args.value.should.be.bignumber.equal(this.value);
+        event.args.amount.should.be.bignumber.equal(this.expectedTokenAmount);
       });
 
       it('should assign tokens to beneficiary', async function () {
-        await this.crowdsale.buyTokens(investor, {value: value, from: purchaser});
+        await this.crowdsale.buyTokens(investor, {value: this.value, from: purchaser});
         const balance = await this.token.balanceOf(investor);
-        balance.should.be.bignumber.equal(expectedTokenAmount);
+        balance.should.be.bignumber.equal(this.expectedTokenAmount);
       });
 
       it('should forward funds to wallet', async function () {
         const pre = web3.eth.getBalance(wallet);
-        await this.crowdsale.buyTokens(investor, {value: value, from: purchaser});
+        await this.crowdsale.buyTokens(investor, {value: this.value, from: purchaser});
         const post = web3.eth.getBalance(wallet);
-        post.minus(pre).should.be.bignumber.equal(value);
+        post.minus(pre).should.be.bignumber.equal(this.value);
       });
     });
   });
-
-  // ** CAPPED crowdsale tests **
 
   describe('CappedCrowdsale', function () {
 
@@ -149,23 +155,47 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
 
     describe('creating a valid crowdsale', function () {
       it('should fail with zero cap', async function () {
-        await assertRevert(PixieCrowdsale.new(rate, wallet, 0, this.token.address, this.openingTime, this.closingTime, {from: owner}));
+        await assertRevert(
+          PixieCrowdsale.new(
+            this.rate,
+            wallet,
+            0,
+            this.token.address,
+            this.openingTime,
+            this.closingTime,
+            this.minContribution,
+            this.maxContribution,
+            {from: owner}
+          )
+        );
       });
     });
 
     describe('accepting payments', function () {
       it('should accept payments within cap', async function () {
-        await this.crowdsale.send(cap.minus(lessThanCap)).should.be.fulfilled;
-        await this.crowdsale.send(lessThanCap).should.be.fulfilled;
+        await this.crowdsale.send(this.maxContribution.minus(this.minContribution)).should.be.fulfilled;
+        await this.crowdsale.send(this.minContribution).should.be.fulfilled;
       });
 
       it('should reject payments outside cap', async function () {
-        await this.crowdsale.send(cap);
-        await assertRevert(this.crowdsale.send(1));
+
+        // cap is twice the max contribution so send that from multiple buyers
+        await this.crowdsale.send(this.maxContribution);
+        await this.crowdsale.buyTokens(purchaser, {value: this.maxContribution, from: purchaser});
+
+        await assertRevert(this.crowdsale.buyTokens(authorized, {value: 1, from: authorized}));
       });
 
       it('should reject payments that exceed cap', async function () {
-        await assertRevert(this.crowdsale.send(cap.plus(1)));
+
+        // cap is twice the max contribution so send that from multiple buyers
+        await this.crowdsale.send(this.maxContribution);
+        await this.crowdsale.buyTokens(purchaser, {value: this.maxContribution, from: purchaser});
+
+        let capReached = await this.crowdsale.capReached();
+        capReached.should.equal(true);
+
+        await assertRevert(this.crowdsale.buyTokens(authorized, {value: 1, from: authorized}));
       });
     });
 
@@ -173,27 +203,31 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
       it('should not reach cap if sent under cap', async function () {
         let capReached = await this.crowdsale.capReached();
         capReached.should.equal(false);
-        await this.crowdsale.send(lessThanCap);
+        await this.crowdsale.send(this.minContribution);
         capReached = await this.crowdsale.capReached();
         capReached.should.equal(false);
       });
 
       it('should not reach cap if sent just under cap', async function () {
-        await this.crowdsale.send(cap.minus(1));
+        // cap is twice the max contribution so send that from multiple buyers
+        await this.crowdsale.send(this.maxContribution);
+        await this.crowdsale.buyTokens(purchaser, {value: this.maxContribution.minus(1), from: purchaser});
+
         let capReached = await this.crowdsale.capReached();
         capReached.should.equal(false);
       });
 
       it('should reach cap if cap sent', async function () {
-        await this.crowdsale.send(cap);
+        // cap is twice the max contribution so send that from multiple buyers
+        await this.crowdsale.send(this.maxContribution);
+        await this.crowdsale.buyTokens(purchaser, {value: this.maxContribution, from: purchaser});
+
         let capReached = await this.crowdsale.capReached();
         capReached.should.equal(true);
       });
     });
 
   });
-
-  // ** FinalizableCrowdsale tests **
 
   describe('FinalizableCrowdsale', function () {
 
@@ -230,8 +264,6 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
 
   });
 
-  // ** TimedCrowdsale tests **
-
   describe('TimedCrowdsale with timed open/close', function () {
 
     it('should be ended only after end', async function () {
@@ -245,24 +277,24 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     describe('accepting payments', function () {
 
       it('should reject payments before start', async function () {
-        await this.crowdsale.send(value).should.be.rejectedWith(EVMRevert);
+        await this.crowdsale.send(this.value).should.be.rejectedWith(EVMRevert);
         await this.crowdsale.buyTokens(investor, {
           from: purchaser,
-          value: value
+          value: this.value
         }).should.be.rejectedWith(EVMRevert);
       });
 
       it('should accept payments after start', async function () {
         await increaseTimeTo(this.openingTime);
-        await this.crowdsale.send(value).should.be.fulfilled;
-        await this.crowdsale.buyTokens(investor, {value: value, from: purchaser}).should.be.fulfilled;
+        await this.crowdsale.send(this.value).should.be.fulfilled;
+        await this.crowdsale.buyTokens(investor, {value: this.value, from: purchaser}).should.be.fulfilled;
       });
 
       it('should reject payments after end', async function () {
         await increaseTimeTo(this.afterClosingTime);
-        await this.crowdsale.send(value).should.be.rejectedWith(EVMRevert);
+        await this.crowdsale.send(this.value).should.be.rejectedWith(EVMRevert);
         await this.crowdsale.buyTokens(investor, {
-          value: value,
+          value: this.value,
           from: purchaser
         }).should.be.rejectedWith(EVMRevert);
       });
@@ -271,10 +303,33 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
 
     describe('creating a valid timed crowdsale contract', function () {
       it('should fail with zero opening time', async function () {
-        await assertRevert(PixieCrowdsale.new(rate, wallet, cap, this.token.address, 0, this.closingTime, {from: owner}));
+        await assertRevert(
+          PixieCrowdsale.new(
+            this.rate,
+            wallet,
+            this.cap,
+            this.token.address,
+            0,
+            this.closingTime,
+            this.minContribution,
+            this.maxContribution,
+            {from: owner}
+          )
+        );
       });
       it('should fail with zero closing time', async function () {
-        await assertRevert(PixieCrowdsale.new(rate, wallet, cap, this.token.address, this.openingTime, 0, {from: owner}));
+        await assertRevert(
+          PixieCrowdsale.new(
+            this.rate,
+            wallet,
+            this.cap,
+            this.token.address,
+            this.openingTime,
+            0,
+            this.minContribution,
+            this.maxContribution,
+            {from: owner})
+        );
       });
     });
 
@@ -308,7 +363,6 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
   });
 
   describe('Whitelisting', function () {
-    // ** WHITELIST crowdsale tests **
 
     beforeEach(async function () {
       await increaseTimeTo(latestTime() + duration.seconds(1)); // force time to move on to 1 seconds
@@ -319,20 +373,20 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
 
     describe('accepting payments', function () {
       it('should accept payments to whitelisted (from whichever buyers)', async function () {
-        await this.crowdsale.buyTokens(authorized, {value: value, from: authorized}).should.be.fulfilled;
-        await this.crowdsale.buyTokens(authorized, {value: value, from: unauthorized}).should.be.fulfilled;
+        await this.crowdsale.buyTokens(authorized, {value: this.value, from: authorized}).should.be.fulfilled;
+        await this.crowdsale.buyTokens(authorized, {value: this.value, from: unauthorized}).should.be.fulfilled;
       });
 
       it('should reject payments to not whitelisted (from whichever buyers)', async function () {
-        await this.crowdsale.send({value: value, from: unauthorized}).should.be.rejected;
+        await this.crowdsale.send({value: this.value, from: unauthorized}).should.be.rejected;
 
-        await this.crowdsale.buyTokens(unauthorized, {value: value, from: unauthorized}).should.be.rejected;
-        await this.crowdsale.buyTokens(unauthorized, {value: value, from: authorized}).should.be.rejected;
+        await this.crowdsale.buyTokens(unauthorized, {value: this.value, from: unauthorized}).should.be.rejected;
+        await this.crowdsale.buyTokens(unauthorized, {value: this.value, from: authorized}).should.be.rejected;
       });
 
       it('should reject payments to addresses removed from whitelist', async function () {
         await this.crowdsale.removeFromWhitelist(authorized);
-        await this.crowdsale.buyTokens(authorized, {value: value, from: authorized}).should.be.rejected;
+        await this.crowdsale.buyTokens(authorized, {value: this.value, from: authorized}).should.be.rejected;
       });
     });
 
@@ -349,31 +403,31 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     describe('accepting payments', function () {
       it('should accept payments to whitelisted (from whichever buyers)', async function () {
 
-        await this.crowdsale.buyTokens(authorized, {value: value, from: authorized}).should.be.fulfilled;
-        await this.crowdsale.buyTokens(authorized, {value: value, from: unauthorized}).should.be.fulfilled;
+        await this.crowdsale.buyTokens(authorized, {value: this.value, from: authorized}).should.be.fulfilled;
+        await this.crowdsale.buyTokens(authorized, {value: this.value, from: unauthorized}).should.be.fulfilled;
         await this.crowdsale.buyTokens(anotherAuthorized, {
-          value: value,
+          value: this.value,
           from: authorized
         }).should.be.fulfilled;
         await this.crowdsale.buyTokens(anotherAuthorized, {
-          value: value,
+          value: this.value,
           from: unauthorized
         }).should.be.fulfilled;
       });
 
       it('should reject payments to not whitelisted (with whichever buyers)', async function () {
 
-        await this.crowdsale.send({value: value, from: unauthorized}).should.be.rejected;
+        await this.crowdsale.send({value: this.value, from: unauthorized}).should.be.rejected;
 
-        await this.crowdsale.buyTokens(unauthorized, {value: value, from: unauthorized}).should.be.rejected;
-        await this.crowdsale.buyTokens(unauthorized, {value: value, from: authorized}).should.be.rejected;
+        await this.crowdsale.buyTokens(unauthorized, {value: this.value, from: unauthorized}).should.be.rejected;
+        await this.crowdsale.buyTokens(unauthorized, {value: this.value, from: authorized}).should.be.rejected;
       });
 
       it('should reject payments to addresses removed from whitelist', async function () {
         await this.crowdsale.removeFromWhitelist(anotherAuthorized);
-        await this.crowdsale.buyTokens(authorized, {value: value, from: authorized}).should.be.fulfilled;
+        await this.crowdsale.buyTokens(authorized, {value: this.value, from: authorized}).should.be.fulfilled;
         await this.crowdsale.buyTokens(anotherAuthorized, {
-          value: value,
+          value: this.value,
           from: authorized
         }).should.be.rejected;
       });
@@ -389,6 +443,129 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
 
         let isntAuthorized = await this.crowdsale.whitelist(unauthorized);
         isntAuthorized.should.equal(false);
+      });
+    });
+  });
+
+  describe('Min and max contributions', function () {
+
+    beforeEach(async function () {
+      await increaseTimeTo(latestTime() + duration.seconds(1)); // force time to move on to 1 seconds
+    });
+
+    describe('creating a valid crowdsale', function () {
+      it('should fail with zero minimum', async function () {
+        await assertRevert(
+          PixieCrowdsale.new(
+            this.rate,
+            wallet,
+            this.cap,
+            this.token.address,
+            this.openingTime,
+            this.closingTime,
+            0,
+            this.maxContribution,
+            {from: owner}
+          )
+        );
+      });
+
+      it('should fail with zero maximum', async function () {
+        await assertRevert(
+          PixieCrowdsale.new(
+            this.rate,
+            wallet,
+            this.cap,
+            this.token.address,
+            this.openingTime,
+            this.closingTime,
+            this.minContribution,
+            0,
+            {from: owner}
+          )
+        );
+      });
+    });
+
+    describe('sending minimum', function () {
+      it('should fail if below limit', async function () {
+        await assertRevert(this.crowdsale.send(1));
+        await assertRevert(this.crowdsale.send(this.minContribution.minus(1)));
+      });
+
+      it('should allow if exactly min limit', async function () {
+        await this.crowdsale.send(this.minContribution).should.be.fulfilled;
+        await this.crowdsale.buyTokens(investor, {value: this.minContribution, from: purchaser}).should.be.fulfilled;
+      });
+
+      it('should allow if over min limit but less than max limit', async function () {
+        await this.crowdsale.send(this.maxContribution.minus(this.minContribution)).should.be.fulfilled;
+        await this.crowdsale.buyTokens(investor, {value: this.maxContribution.minus(this.minContribution), from: purchaser}).should.be.fulfilled;
+      });
+    });
+
+    describe('tracks contributions', function () {
+      it('should report amount of wei contributed via default function', async function () {
+        const preContribution = await this.crowdsale.contributions(owner);
+        preContribution.should.be.bignumber.equal(0);
+
+        await this.crowdsale.send(this.minContribution).should.be.fulfilled;
+
+        const postContribution = await this.crowdsale.contributions(owner);
+        postContribution.should.be.bignumber.equal(this.minContribution);
+
+        await this.crowdsale.send(this.minContribution).should.be.fulfilled;
+
+        const secondPostContribution = await this.crowdsale.contributions(owner);
+        secondPostContribution.should.be.bignumber.equal(this.minContribution.times(2));
+      });
+
+      it('should report amount of wei contributed via buyTokens', async function () {
+        const preContribution = await this.crowdsale.contributions(purchaser);
+        preContribution.should.be.bignumber.equal(0);
+
+        await this.crowdsale.buyTokens(purchaser, {value: this.minContribution, from: purchaser}).should.be.fulfilled;
+
+        const postContribution = await this.crowdsale.contributions(purchaser);
+        postContribution.should.be.bignumber.equal(this.minContribution);
+
+        await this.crowdsale.buyTokens(purchaser, {value: this.minContribution, from: purchaser}).should.be.fulfilled;
+
+        const secondPostContribution = await this.crowdsale.contributions(purchaser);
+        secondPostContribution.should.be.bignumber.equal(this.minContribution.times(2));
+      });
+
+      it('should allow multiple contributions if below max limit', async function () {
+
+        // well below max limit
+        await this.crowdsale.send(this.minContribution).should.be.fulfilled;
+        await this.crowdsale.send(this.minContribution).should.be.fulfilled;
+        await this.crowdsale.send(this.minContribution).should.be.fulfilled;
+        await this.crowdsale.send(this.minContribution).should.be.fulfilled;
+        await this.crowdsale.send(this.minContribution).should.be.fulfilled;
+
+        const postContribution = await this.crowdsale.contributions(owner);
+        postContribution.should.be.bignumber.equal(this.minContribution.times(5));
+      });
+    });
+
+    describe('sending maximum', function () {
+      it('should fail if above limit via default', async function () {
+        await this.crowdsale.send(this.maxContribution).should.be.fulfilled;
+
+        const postContribution = await this.crowdsale.contributions(owner);
+        postContribution.should.be.bignumber.equal(this.maxContribution);
+
+        await assertRevert(this.crowdsale.send(1));
+      });
+
+      it('should fail if above limit via buyTokens', async function () {
+        await this.crowdsale.buyTokens(purchaser, {value: this.maxContribution, from: purchaser}).should.be.fulfilled;
+
+        const postContribution = await this.crowdsale.contributions(purchaser);
+        postContribution.should.be.bignumber.equal(this.maxContribution);
+
+        await assertRevert(this.crowdsale.buyTokens(purchaser, {value: 1, from: purchaser}));
       });
     });
   });
