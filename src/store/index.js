@@ -42,6 +42,7 @@ const store = new Vuex.Store({
     min: 0,
     max: 0,
     contributions: 0,
+    paused: null,
 
     whitelisted: null,
 
@@ -80,11 +81,13 @@ const store = new Vuex.Store({
     [mutations.SET_CROWDSALE_DETAILS](state, {
       raised,
       whitelisted,
-      contributions
+      contributions,
+      paused
     }) {
       state.raised = raised;
       state.whitelisted = whitelisted;
       state.contributions = contributions;
+      state.paused = paused;
     },
     [mutations.SET_STATIC_CONTRACT_DETAILS](state, {name, symbol, totalSupply, address}) {
       state.tokenTotalSupply = totalSupply;
@@ -213,7 +216,8 @@ const store = new Vuex.Store({
         return Promise.all([
           contract.weiRaised(),
           contract.whitelist(account),
-          contract.contributions(account, {from: account})
+          contract.contributions(account, {from: account}),
+          contract.pause()
         ]);
       })
       .then((results) => {
@@ -233,6 +237,19 @@ const store = new Vuex.Store({
         return contract.addToWhitelist(kycAccount, {from: state.account});
       })
       .then((res) => commit(mutations.REMOVE_FROM_KYC_WAITING_LIST, kycAccount));
+    },
+    [actions.PAUSE_CONTRACT] ({commit, dispatch, state}) {
+      PixieCrowdsale.deployed()
+        .then((contract) => {
+          if (!state.paused) {
+            contract.pause({from: state.account});
+          } else {
+            contract.unpause({from: state.account});
+          }
+          return contract;
+        }).then((contract) => {
+          state.paused = contract.paused.call();
+        });
     }
   }
 });

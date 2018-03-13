@@ -447,6 +447,31 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     });
   });
 
+  describe('Pausable', function () {
+    it('should not allow transfer when paused', async function () {
+
+      await this.crowdsale.pause()
+      let contractPaused = await this.crowdsale.paused.call()
+      contractPaused.should.equal(true)
+
+      await assertRevert(this.crowdsale.buyTokens(authorized, {value: this.minContribution, from: authorized}));
+      await this.crowdsale.unpause()
+
+      contractPaused = await this.crowdsale.paused.call()
+      contractPaused.should.equal(false)
+    });
+    it('should allow transfer when unpaused', async function () {
+
+      await this.crowdsale.pause()
+      await this.crowdsale.unpause()
+
+      let contractPaused = await this.crowdsale.paused.call()
+      contractPaused.should.equal(false)
+
+      await this.crowdsale.buyTokens(authorized, {value: this.minContribution, from: authorized}).should.be.fulfilled;
+    });
+  });
+
   describe('Min and max contributions', function () {
 
     beforeEach(async function () {
@@ -551,7 +576,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
 
     describe('sending maximum', function () {
       it('should fail if above limit via default', async function () {
-        await this.crowdsale.send(this.maxContribution).should.be.fulfilled;
+        await this.crowdsale.send(this.maxContribution).should.be.fullfilled;
 
         const postContribution = await this.crowdsale.contributions(owner);
         postContribution.should.be.bignumber.equal(this.maxContribution);
