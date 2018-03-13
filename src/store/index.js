@@ -268,7 +268,7 @@ const store = new Vuex.Store({
       PixieCrowdsale.deployed()
       .then((contract) => {
         return contract.buyTokens(state.account, {value: contributionInWei, from: state.account});
-      })
+      });
     }
   }
 });
