@@ -8,6 +8,16 @@
           <h4>Vault Address</h4>
           <eth-address :hex="vault"></eth-address>
         </div>
+
+        <div class="col-lg-4">
+          <h4>Vault Balance</h4>
+          <p>{{ vaultBalance }} <eth-symbol></eth-symbol></p>
+        </div>
+
+        <div class="col-lg-4">
+          <h4>Vault State</h4>
+          <p><span class="text-muted">TODO</span></p>
+        </div>
       </div>
 
     </b-jumbotron>
@@ -19,18 +29,16 @@
 
   import {mapGetters, mapState} from 'vuex';
   import EthAddress from './EthAddress.vue';
+  import EthSymbol from './EthSymbol';
 
   export default {
     name: 'vault',
-    components: {EthAddress},
-    data() {
-      return {
-        title: 'Hello',
-      };
-    },
+    components: {EthAddress, EthSymbol},
     computed: {
       ...mapState([
-        'vault'
+        'vault',
+        'vaultBalance',
+        'vaultState'
       ])
     }
   };

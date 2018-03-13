@@ -47,6 +47,10 @@ const store = new Vuex.Store({
     contributions: 0,
     goalReached: false,
 
+    // refund vault
+    vaultBalance: 0,
+    vaultState: null,
+
     whitelisted: null,
 
     kycWaitingList: []
@@ -94,6 +98,9 @@ const store = new Vuex.Store({
       state.contributions = contributions;
       state.goalReached = goalReached;
     },
+    [mutations.SET_VAULT_BALANCE](state, vaultBalance) {
+      state.vaultBalance = vaultBalance;
+    },
     [mutations.SET_STATIC_CONTRACT_DETAILS](state, {name, symbol, totalSupply, address}) {
       state.tokenTotalSupply = totalSupply;
       state.tokenSymbol = symbol;
@@ -127,6 +134,7 @@ const store = new Vuex.Store({
       });
     },
     [actions.INIT_APP]({commit, dispatch, state}) {
+      // use Web3?
       web3.eth.getAccounts()
       .then((accounts) => {
 
@@ -138,6 +146,7 @@ const store = new Vuex.Store({
       });
     },
     [actions.REFRESH_APP]({commit, dispatch, state}) {
+      // use Web3?
       web3.eth.getAccounts()
       .then((accounts) => {
 
@@ -146,6 +155,7 @@ const store = new Vuex.Store({
 
         store.dispatch(actions.REFRESH_CONTRACT_DETAILS, accounts[0]);
         store.dispatch(actions.REFRESH_CROWDSALE_DETAILS, accounts[0]);
+        store.dispatch(actions.VAULT_BALANCE);
       });
     },
     [actions.INIT_CONTRACT_DETAILS]({commit, dispatch, state}, account) {
@@ -245,6 +255,14 @@ const store = new Vuex.Store({
         return contract.addToWhitelist(kycAccount, {from: state.account});
       })
       .then((res) => commit(mutations.REMOVE_FROM_KYC_WAITING_LIST, kycAccount));
+    },
+    [actions.VAULT_BALANCE]({commit, dispatch, state}) {
+      if (state.vault) {
+        web3.eth.getBalance(state.vault)
+        .then((result) => {
+          commit(mutations.SET_VAULT_BALANCE, result.toString(10));
+        });
+      }
     }
   }
 });
