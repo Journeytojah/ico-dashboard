@@ -89,13 +89,14 @@ const store = new Vuex.Store({
       raised,
       whitelisted,
       contributions,
-      goalReached
-
+      goalReached,
+      paused
     }) {
       state.raised = raised;
       state.whitelisted = whitelisted;
       state.contributions = contributions;
       state.goalReached = goalReached;
+      state.paused = paused;
     },
     [mutations.SET_VAULT_BALANCE](state, vaultBalance) {
       state.vaultBalance = vaultBalance;
@@ -236,7 +237,8 @@ const store = new Vuex.Store({
           contract.weiRaised(),
           contract.whitelist(account),
           contract.contributions(account, {from: account}),
-          contract.goalReached()
+          contract.goalReached(),
+          contract.paused()
         ]);
       })
       .then((results) => {
@@ -244,7 +246,8 @@ const store = new Vuex.Store({
           raised: results[0].toNumber(10),
           whitelisted: results[1],
           contributions: results[2].toNumber(10),
-          goalReached: results[3]
+          goalReached: results[3],
+          paused: results[4]
         });
       });
     },
@@ -270,6 +273,18 @@ const store = new Vuex.Store({
       PixieCrowdsale.deployed()
       .then((contract) => {
         return contract.buyTokens(state.account, {value: contributionInWei, from: state.account});
+      });
+    },
+    [actions.PAUSE_CONTRACT]({commit, dispatch, state}) {
+      PixieCrowdsale.deployed()
+      .then((contract) => {
+        return contract.pause({from: state.account});
+      });
+    },
+    [actions.UNPAUSE_CONTRACT]({commit, dispatch, state}) {
+      PixieCrowdsale.deployed()
+      .then((contract) => {
+        return contract.unpause({from: state.account});
       });
     }
   }
