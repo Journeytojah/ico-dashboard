@@ -31,17 +31,25 @@ const store = new Vuex.Store({
     // crowdsale
     address: null,
     rate: 0,
-    raised: 0,
     cap: 0,
     goal: 0,
     wallet: null,
     start: 0,
     end: 0,
-    crowdsaleBalance: 0,
     owner: null,
     min: 0,
     max: 0,
+    vault: null,
+
+    //crowdsale dynamic
+    raised: 0,
+    crowdsaleBalance: 0,
     contributions: 0,
+    goalReached: false,
+
+    // refund vault
+    vaultBalance: 0,
+    vaultState: null,
 
     whitelisted: null,
 
@@ -63,7 +71,8 @@ const store = new Vuex.Store({
       address,
       owner,
       min,
-      max
+      max,
+      vault
     }) {
       state.rate = rate;
       state.token = token;
@@ -76,15 +85,21 @@ const store = new Vuex.Store({
       state.owner = owner;
       state.min = min;
       state.max = max;
+      state.vault = vault;
     },
     [mutations.SET_CROWDSALE_DETAILS](state, {
       raised,
       whitelisted,
-      contributions
+      contributions,
+      goalReached
     }) {
       state.raised = raised;
       state.whitelisted = whitelisted;
       state.contributions = contributions;
+      state.goalReached = goalReached;
+    },
+    [mutations.SET_VAULT_BALANCE](state, vaultBalance) {
+      state.vaultBalance = vaultBalance;
     },
     [mutations.SET_STATIC_CONTRACT_DETAILS](state, {name, symbol, totalSupply, address}) {
       state.tokenTotalSupply = totalSupply;
@@ -119,6 +134,7 @@ const store = new Vuex.Store({
       });
     },
     [actions.INIT_APP]({commit, dispatch, state}) {
+      // use Web3?
       web3.eth.getAccounts()
       .then((accounts) => {
 
@@ -130,6 +146,7 @@ const store = new Vuex.Store({
       });
     },
     [actions.REFRESH_APP]({commit, dispatch, state}) {
+      // use Web3?
       web3.eth.getAccounts()
       .then((accounts) => {
 
@@ -138,6 +155,7 @@ const store = new Vuex.Store({
 
         store.dispatch(actions.REFRESH_CONTRACT_DETAILS, accounts[0]);
         store.dispatch(actions.REFRESH_CROWDSALE_DETAILS, accounts[0]);
+        store.dispatch(actions.VAULT_BALANCE);
       });
     },
     [actions.INIT_CONTRACT_DETAILS]({commit, dispatch, state}, account) {
@@ -181,14 +199,15 @@ const store = new Vuex.Store({
           contract.rate(),
           contract.token(),
           contract.cap(),
-          contract.cap(), // DUMMY
+          contract.goal(),
           contract.wallet(),
           contract.openingTime(),
           contract.closingTime(),
           contract.address,
           contract.owner(),
           contract.min(),
-          contract.max()
+          contract.max(),
+          contract.vault()
         ]);
       })
       .then((results) => {
@@ -203,7 +222,8 @@ const store = new Vuex.Store({
           address: results[7],
           owner: results[8],
           min: results[9].toNumber(10),
-          max: results[10].toNumber(10)
+          max: results[10].toNumber(10),
+          vault: results[11],
         });
       });
     },
@@ -213,14 +233,16 @@ const store = new Vuex.Store({
         return Promise.all([
           contract.weiRaised(),
           contract.whitelist(account),
-          contract.contributions(account, {from: account})
+          contract.contributions(account, {from: account}),
+          contract.goalReached()
         ]);
       })
       .then((results) => {
         commit(mutations.SET_CROWDSALE_DETAILS, {
           raised: results[0].toNumber(10),
           whitelisted: results[1],
-          contributions: results[2].toNumber(10)
+          contributions: results[2].toNumber(10),
+          goalReached: results[3]
         });
       });
     },
@@ -233,6 +255,20 @@ const store = new Vuex.Store({
         return contract.addToWhitelist(kycAccount, {from: state.account});
       })
       .then((res) => commit(mutations.REMOVE_FROM_KYC_WAITING_LIST, kycAccount));
+    },
+    [actions.VAULT_BALANCE]({commit, dispatch, state}) {
+      if (state.vault) {
+        web3.eth.getBalance(state.vault)
+        .then((result) => {
+          commit(mutations.SET_VAULT_BALANCE, result.toString(10));
+        });
+      }
+    },
+    [actions.CONTRIBUTE_WEI]({commit, dispatch, state}, contributionInWei) {
+      PixieCrowdsale.deployed()
+      .then((contract) => {
+        return contract.buyTokens(state.account, {value: contributionInWei, from: state.account});
+      });
     }
   }
 });

@@ -49,11 +49,6 @@
   export default {
     name: 'dashboard',
     components: {EthAddress},
-    data() {
-      return {
-        title: 'Hello',
-      };
-    },
     computed: {
       ...mapState([
         'tokenName',

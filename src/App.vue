@@ -15,6 +15,9 @@
               <router-link :to="{ name: 'token' }" class="nav-link">Token</router-link>
             </li>
             <li class="nav-item">
+              <router-link :to="{ name: 'vault' }" class="nav-link">Vault</router-link>
+            </li>
+            <li class="nav-item">
               <router-link :to="{ name: 'kyc' }" class="nav-link">KYC</router-link>
             </li>
             <li class="nav-item">
@@ -23,7 +26,7 @@
           </ul>
         </nav>
 
-        <h3 class="text-muted">ICO Dashboard</h3>
+        <h3 class="text-muted">Pixie TGE</h3>
       </div>
 
       <router-view></router-view>
