@@ -33,6 +33,15 @@ To run tests use the following commands
 
 *Tests start their own instance of `testrpc` on port `8546`*
 
+### Code Coverage
+
+* Code coverage performed by [solidity-coverage](https://github.com/sc-forks/solidity-coverage)
+
+* To run code coverage `npm run coverage` - this will produce the following:
+ * HTML output in `/coverage`
+ * JSON output in `/.coverage.json`
+ * Terminal output
+
 ## Build for production
 
 To build the application for production, use the build command. A production build will be compiled in the `dist` folder.
