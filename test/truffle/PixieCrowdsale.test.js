@@ -93,6 +93,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     console.log('min contribution', await this.crowdsale.min());
     console.log('max contribution', await this.crowdsale.max());
     console.log('goal', await this.crowdsale.goal());
+    console.log('paused', await this.crowdsale.paused());
     console.log('openingTime', await this.crowdsale.openingTime());
     console.log('closingTime', await this.crowdsale.closingTime());
     console.log('privateSaleCloseTime', await this.crowdsale.privateSaleCloseTime());
@@ -475,13 +476,13 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
 
     it('should not allow transfer when paused', async function () {
       await this.crowdsale.pause();
-      let contractPaused = await this.crowdsale.paused.call();
+      let contractPaused = await this.crowdsale.paused();
       contractPaused.should.equal(true);
 
       await assertRevert(this.crowdsale.buyTokens(authorized, {value: this.minContribution, from: authorized}));
       await this.crowdsale.unpause();
 
-      contractPaused = await this.crowdsale.paused.call();
+      contractPaused = await this.crowdsale.paused();
       contractPaused.should.equal(false)
     });
 
@@ -489,7 +490,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
       await this.crowdsale.pause();
       await this.crowdsale.unpause();
 
-      let contractPaused = await this.crowdsale.paused.call();
+      let contractPaused = await this.crowdsale.paused();
       contractPaused.should.equal(false);
 
       await this.crowdsale.buyTokens(authorized, {value: this.minContribution, from: authorized}).should.be.fulfilled;
@@ -700,10 +701,13 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
         let invalidTime = this.closingTime + duration.seconds(1);
         await this.crowdsale.setPrivateSaleCloseTime(invalidTime).should.be.rejectedWith(EVMRevert);
       });
+
+      it('should not allow pre sale time set when not the owner', async function () {
+        await this.crowdsale.setPrivateSaleCloseTime(this.privateSaleCloseTime, {from: investor}).should.be.rejectedWith(EVMRevert);
+      });
     });
 
     describe('setPreSaleCloseTime()', function () {
-
       it('should not allow pre sale time of zero', async function () {
         await this.crowdsale.setPreSaleCloseTime(0).should.be.rejectedWith(EVMRevert);
       });
@@ -718,7 +722,10 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
         await this.crowdsale.setPreSaleCloseTime(invalidTime).should.be.rejectedWith(EVMRevert);
       });
 
+      it('should not allow pre sale time set when not the owner', async function () {
+        await this.crowdsale.setPreSaleCloseTime(this.preSaleCloseTime, {from: investor}).should.be.rejectedWith(EVMRevert);
+      });
     });
-
   });
+
 });

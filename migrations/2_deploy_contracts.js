@@ -67,14 +67,13 @@ module.exports = function (deployer, network, accounts) {
     })
     .then((results) => {
       let contract = results[0];
-      contract.addManyToWhitelist([accounts[0], accounts[1]]);
-
       let _privateSaleCloseTime = results[1];
-      console.log("_privateSaleCloseTime", _privateSaleCloseTime);
-      contract.setPrivateSaleCloseTime(_privateSaleCloseTime);
-
       let _preSaleCloseTime = results[2];
-      console.log("_preSaleCloseTime", _preSaleCloseTime);
-      contract.setPreSaleCloseTime(_preSaleCloseTime);
+
+      return Promise.all([
+        contract.addManyToWhitelist([accounts[0], accounts[1]]),
+        contract.setPrivateSaleCloseTime(_privateSaleCloseTime),
+        contract.setPreSaleCloseTime(_preSaleCloseTime)
+      ])
     });
 };
