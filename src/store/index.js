@@ -136,27 +136,29 @@ const store = new Vuex.Store({
     [actions.INIT_APP]({commit, dispatch, state}) {
       // use Web3?
       web3.eth.getAccounts()
-      .then((accounts) => {
+        .then((accounts) => {
 
-        // store the account
-        commit(mutations.SET_ACCOUNT, accounts[0]);
+          // store the account
+          commit(mutations.SET_ACCOUNT, accounts[0]);
 
-        store.dispatch(actions.INIT_CONTRACT_DETAILS, accounts[0]);
-        store.dispatch(actions.INIT_CROWDSALE_DETAILS, accounts[0]);
-      });
+          store.dispatch(actions.INIT_CONTRACT_DETAILS, accounts[0]);
+          store.dispatch(actions.INIT_CROWDSALE_DETAILS, accounts[0]);
+          return accounts;
+        });
     },
     [actions.REFRESH_APP]({commit, dispatch, state}) {
       // use Web3?
       web3.eth.getAccounts()
-      .then((accounts) => {
+        .then((accounts) => {
 
-        // store the account
-        commit(mutations.SET_ACCOUNT, accounts[0]);
+          // store the account
+          commit(mutations.SET_ACCOUNT, accounts[0]);
 
-        store.dispatch(actions.REFRESH_CONTRACT_DETAILS, accounts[0]);
-        store.dispatch(actions.REFRESH_CROWDSALE_DETAILS, accounts[0]);
-        store.dispatch(actions.VAULT_BALANCE);
-      });
+          store.dispatch(actions.REFRESH_CONTRACT_DETAILS, accounts[0]);
+          store.dispatch(actions.REFRESH_CROWDSALE_DETAILS, accounts[0]);
+          store.dispatch(actions.VAULT_BALANCE);
+          return accounts;
+        });
     },
     [actions.INIT_CONTRACT_DETAILS]({commit, dispatch, state}, account) {
       PixieToken.deployed()

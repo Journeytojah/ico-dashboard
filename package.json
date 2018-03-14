@@ -11,6 +11,7 @@
     "build": "node scripts/build.js",
     "unit": "console.log('not implemented yet'); exit 1; ",
     "test/contracts": "test/test_truffle.sh",
+    "coverage": "test/coverage.sh",
     "test": "npm run test/contracts",
     "lint": "eslint --ext .js,.vue src test/unit/specs test/e2e/specs"
   },
@@ -75,6 +76,7 @@
     "sass-loader": "^6.0.6",
     "semver": "^5.3.0",
     "shelljs": "^0.7.6",
+    "solidity-coverage": "^0.4.12",
     "truffle": "^4.0.0",
     "url-loader": "^0.5.8",
     "vue-loader": "^13.3.0",
