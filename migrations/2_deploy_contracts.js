@@ -21,7 +21,10 @@ module.exports = function (deployer, network, accounts) {
       const _closingTime = _openingTime + (86400 * 20); // 20 days
 
       const _privateSaleCloseTime = _openingTime + (86400 * 5); // 5 days
+      const _privateSaleRate = _rate;
+
       const _preSaleCloseTime = _openingTime + (86400 * 10); // 10 days
+      const _preSaleRate = _rate;
 
       const _minContribution = 2;
       const _maxContribution = 250;
@@ -45,8 +48,14 @@ module.exports = function (deployer, network, accounts) {
         ),
         PixieTokenContract,
         _initialSupply,
-        {privateSaleCloseTime: _privateSaleCloseTime, rate: _rate}, // TODO fix
-        {preSaleCloseTime: _preSaleCloseTime, rate: _rate} // TODO fix
+        {
+          privateSaleCloseTime: _privateSaleCloseTime,
+          rate: _privateSaleRate
+        },
+        {
+          preSaleCloseTime: _preSaleCloseTime,
+          rate: _preSaleRate
+        }
       ]);
     })
     .then((results) => {
@@ -73,7 +82,7 @@ module.exports = function (deployer, network, accounts) {
       return Promise.all([
         contract.addManyToWhitelist([accounts[0], accounts[1]]),
         contract.setPrivateSaleCloseTime(privateSaleDetails.privateSaleCloseTime, privateSaleDetails.rate),
-        contract.setPreSaleCloseTime(preSaleDetails.preSaleCloseTime, privateSaleDetails.rate)
+        contract.setPreSaleCloseTime(preSaleDetails.preSaleCloseTime, preSaleDetails.rate)
       ])
     });
 };
