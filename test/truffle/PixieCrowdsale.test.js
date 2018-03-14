@@ -10,9 +10,9 @@ const EVMRevert = require('../helpers/EVMRevert');
 const BigNumber = web3.BigNumber;
 
 const should = require('chai')
-.use(require('chai-as-promised'))
-.use(require('chai-bignumber')(BigNumber))
-.should();
+  .use(require('chai-as-promised'))
+  .use(require('chai-bignumber')(BigNumber))
+  .should();
 
 const PixieCrowdsale = artifacts.require('PixieCrowdsale');
 const PixieToken = artifacts.require('PixieToken');
@@ -34,11 +34,13 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     this.cap = this.amountAvailableForPurchase; // 500 WEI
 
     this.openingTime = latestTime() + duration.seconds(1); // opens in 1 second
-    this.closingTime = this.openingTime + duration.weeks(1);
+    this.closingTime = this.openingTime + duration.weeks(1); // closes in 1 week & 1 second
     this.afterClosingTime = this.closingTime + duration.seconds(1);
 
     this.minContribution = new BigNumber(5); // 5 WEI
     this.maxContribution = new BigNumber(this.cap).times(0.5); // 250 WEI
+
+    this.goal = new BigNumber(250);
 
     this.value = this.minContribution;
     this.expectedTokenAmount = this.rate.mul(this.value);
@@ -52,6 +54,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
       this.closingTime,
       this.minContribution,
       this.maxContribution,
+      this.goal,
       {from: owner}
     );
 
@@ -65,6 +68,8 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
 
     // used in whitelist testing
     await this.crowdsale.addToWhitelist(authorized);
+
+    this.vault = await this.crowdsale.vault();
   });
 
   after(async function () {
@@ -81,6 +86,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     console.log('cap', await this.crowdsale.cap());
     console.log('min contribution', await this.crowdsale.min());
     console.log('max contribution', await this.crowdsale.max());
+    console.log('goal', await this.crowdsale.goal());
   });
 
   describe('Crowdsale', function () {
@@ -113,10 +119,12 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
         balance.should.be.bignumber.equal(this.expectedTokenAmount);
       });
 
-      it('should forward funds to wallet', async function () {
-        const pre = web3.eth.getBalance(wallet);
+      // when using RefundableCrowdsale the "vault" holds the funds
+      it('should forward funds to vault', async function () {
+        const pre = web3.eth.getBalance(this.vault);
         await this.crowdsale.sendTransaction({value: this.value, from: investor});
-        const post = web3.eth.getBalance(wallet);
+
+        const post = web3.eth.getBalance(this.vault);
         post.minus(pre).should.be.bignumber.equal(this.value);
       });
     });
@@ -138,10 +146,12 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
         balance.should.be.bignumber.equal(this.expectedTokenAmount);
       });
 
-      it('should forward funds to wallet', async function () {
-        const pre = web3.eth.getBalance(wallet);
+      // when using RefundableCrowdsale the "vault" holds the funds
+      it('should forward funds to vault', async function () {
+        const pre = web3.eth.getBalance(this.vault);
         await this.crowdsale.buyTokens(investor, {value: this.value, from: purchaser});
-        const post = web3.eth.getBalance(wallet);
+
+        const post = web3.eth.getBalance(this.vault);
         post.minus(pre).should.be.bignumber.equal(this.value);
       });
     });
@@ -165,6 +175,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
             this.closingTime,
             this.minContribution,
             this.maxContribution,
+            this.goal,
             {from: owner}
           )
         );
@@ -313,6 +324,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
             this.closingTime,
             this.minContribution,
             this.maxContribution,
+            this.goal,
             {from: owner}
           )
         );
@@ -328,6 +340,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
             0,
             this.minContribution,
             this.maxContribution,
+            this.goal,
             {from: owner})
         );
       });
@@ -447,6 +460,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     });
   });
 
+
   describe('Pausable', function () {
     it('should not allow transfer when paused', async function () {
 
@@ -472,8 +486,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     });
   });
 
-  describe('Min and max contributions', function () {
-
+  describe('IndividualLimitsCrowdsale - min & max contributions', function () {
     beforeEach(async function () {
       await increaseTimeTo(latestTime() + duration.seconds(1)); // force time to move on to 1 seconds
     });
@@ -490,6 +503,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
             this.closingTime,
             0,
             this.maxContribution,
+            this.goal,
             {from: owner}
           )
         );
@@ -506,6 +520,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
             this.closingTime,
             this.minContribution,
             0,
+            this.goal,
             {from: owner}
           )
         );
@@ -525,7 +540,10 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
 
       it('should allow if over min limit but less than max limit', async function () {
         await this.crowdsale.send(this.maxContribution.minus(this.minContribution)).should.be.fulfilled;
-        await this.crowdsale.buyTokens(investor, {value: this.maxContribution.minus(this.minContribution), from: purchaser}).should.be.fulfilled;
+        await this.crowdsale.buyTokens(investor, {
+          value: this.maxContribution.minus(this.minContribution),
+          from: purchaser
+        }).should.be.fulfilled;
       });
     });
 
@@ -594,4 +612,66 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
       });
     });
   });
+
+  describe('Refundable with goal', function () {
+
+    describe('creating a valid crowdsale', function () {
+      it('should fail with zero goal', async function () {
+        await assertRevert(PixieCrowdsale.new(
+          this.rate,
+          wallet,
+          this.token.address,
+          this.cap,
+          this.openingTime,
+          this.closingTime,
+          this.minContribution,
+          this.maxContribution,
+          0,
+          {from: owner}
+        ));
+      });
+    });
+
+    it('should deny refunds before end', async function () {
+      await this.crowdsale.claimRefund({from: investor}).should.be.rejectedWith(EVMRevert);
+
+      await increaseTimeTo(this.openingTime);
+      await this.crowdsale.claimRefund({from: investor}).should.be.rejectedWith(EVMRevert);
+    });
+
+    it('should deny refunds after end if goal was reached', async function () {
+      await increaseTimeTo(this.openingTime);
+      await this.crowdsale.sendTransaction({value: this.goal, from: investor});
+      await increaseTimeTo(this.afterClosingTime);
+      await this.crowdsale.claimRefund({from: investor}).should.be.rejectedWith(EVMRevert);
+    });
+
+    it('should allow refunds after end if goal was not reached', async function () {
+      const lessThanGoal = this.goal.minus(1);
+
+      await increaseTimeTo(this.openingTime);
+      await this.crowdsale.sendTransaction({value: lessThanGoal, from: investor});
+
+      await increaseTimeTo(this.afterClosingTime);
+      await this.crowdsale.finalize({from: owner});
+
+      const pre = web3.eth.getBalance(investor);
+      await this.crowdsale.claimRefund({from: investor, gasPrice: 0}).should.be.fulfilled;
+      const post = web3.eth.getBalance(investor);
+      post.minus(pre).should.be.bignumber.equal(lessThanGoal);
+    });
+
+    it('should forward funds to wallet after end if goal was reached', async function () {
+      await increaseTimeTo(this.openingTime);
+      await this.crowdsale.sendTransaction({value: this.goal, from: investor});
+
+      await increaseTimeTo(this.afterClosingTime);
+      const pre = web3.eth.getBalance(wallet);
+
+      await this.crowdsale.finalize({from: owner});
+      const post = web3.eth.getBalance(wallet);
+      post.minus(pre).should.be.bignumber.equal(this.goal);
+    });
+  });
+
 });

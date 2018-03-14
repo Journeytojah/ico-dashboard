@@ -14,6 +14,12 @@ export const ADD_TO_KYC_WAITING_LIST = 'ADD_TO_KYC_WAITING_LIST';
 export const APPROVE_KYC = 'APPROVE_KYC';
 export const PAUSE_CONTRACT = 'PAUSE_CONTRACT';
 
+export const VAULT_BALANCE = 'VAULT_BALANCE';
+
+export const CONTRIBUTE_WEI = 'CONTRIBUTE_WEI';
+
+
+
 
 
 
