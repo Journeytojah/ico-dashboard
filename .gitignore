@@ -16,3 +16,5 @@ build
 *.njsproj
 *.sln
 *.iml
+/coverage.json
+/coverage/
