@@ -33,20 +33,43 @@ contract PixieCrowdsale is CappedCrowdsale, WhitelistedCrowdsale, IndividualLimi
   }
 
   uint256 public privateSaleCloseTime;
-  uint256 public preSaleCloseTime;
+  uint256 public privateSaleRate;
 
-  function setPrivateSaleCloseTime(uint256 _privateSaleCloseTime) public onlyOwner {
+  uint256 public preSaleCloseTime;
+  uint256 public preSaleRate;
+
+  /**
+   * @dev sets the private sale close time
+   */
+  function setPrivateSaleCloseTime(uint256 _privateSaleCloseTime, uint256 _rate) public onlyOwner {
+    require(_rate > 0);
     require(_privateSaleCloseTime > openingTime);
     require(_privateSaleCloseTime <= closingTime);
 
+    privateSaleRate = _rate;
     privateSaleCloseTime = _privateSaleCloseTime;
   }
 
-  function setPreSaleCloseTime(uint256 _preSaleCloseTime) public onlyOwner {
+  /**
+   * @dev sets the pre sale close time
+   */
+  function setPreSaleCloseTime(uint256 _preSaleCloseTime, uint256 _rate) public onlyOwner {
+    require(_rate > 0);
     require(_preSaleCloseTime > privateSaleCloseTime);
     require(_preSaleCloseTime <= closingTime);
 
+    preSaleRate = _rate;
     preSaleCloseTime = _preSaleCloseTime;
+  }
+
+  /**
+   * @dev Overridden method used to allow different rates for private/pre sale
+   * @param _weiAmount Value in wei to be converted into tokens
+   * @return Number of tokens that can be purchased with the specified _weiAmount
+   */
+  function _getTokenAmount(uint256 _weiAmount) internal view returns (uint256) {
+    // TODO populate with differing rates for private/pre sale
+    return _weiAmount.mul(rate);
   }
 
   /**

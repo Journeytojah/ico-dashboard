@@ -61,8 +61,8 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
       {from: owner}
     );
 
-    await this.crowdsale.setPrivateSaleCloseTime(this.privateSaleCloseTime);
-    await this.crowdsale.setPreSaleCloseTime(this.preSaleCloseTime);
+    await this.crowdsale.setPrivateSaleCloseTime(this.privateSaleCloseTime, this.rate);
+    await this.crowdsale.setPreSaleCloseTime(this.preSaleCloseTime, this.rate);
 
     await this.token.transfer(this.crowdsale.address, this.amountAvailableForPurchase);
 
@@ -97,7 +97,9 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     console.log('openingTime', await this.crowdsale.openingTime());
     console.log('closingTime', await this.crowdsale.closingTime());
     console.log('privateSaleCloseTime', await this.crowdsale.privateSaleCloseTime());
+    console.log('privateSaleRate', await this.crowdsale.privateSaleRate());
     console.log('preSaleCloseTime', await this.crowdsale.preSaleCloseTime());
+    console.log('preSaleRate', await this.crowdsale.preSaleRate());
   });
 
   describe('Crowdsale', function () {
@@ -689,41 +691,49 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
 
     describe('setPrivateSaleCloseTime()', function () {
       it('should not allow private sale of zero', async function () {
-        await this.crowdsale.setPrivateSaleCloseTime(0).should.be.rejectedWith(EVMRevert);
+        await this.crowdsale.setPrivateSaleCloseTime(0, this.rate).should.be.rejectedWith(EVMRevert);
       });
 
       it('should not allow private sale time before opening time', async function () {
         let invalidTime = this.openingTime - duration.seconds(1);
-        await this.crowdsale.setPrivateSaleCloseTime(invalidTime).should.be.rejectedWith(EVMRevert);
+        await this.crowdsale.setPrivateSaleCloseTime(invalidTime, this.rate).should.be.rejectedWith(EVMRevert);
       });
 
       it('should not allow private sale time after closing time', async function () {
         let invalidTime = this.closingTime + duration.seconds(1);
-        await this.crowdsale.setPrivateSaleCloseTime(invalidTime).should.be.rejectedWith(EVMRevert);
+        await this.crowdsale.setPrivateSaleCloseTime(invalidTime, this.rate).should.be.rejectedWith(EVMRevert);
+      });
+
+      it('should not allow private sale rate of 0', async function () {
+        await this.crowdsale.setPrivateSaleCloseTime(this.privateSaleCloseTime, 0).should.be.rejectedWith(EVMRevert);
       });
 
       it('should not allow pre sale time set when not the owner', async function () {
-        await this.crowdsale.setPrivateSaleCloseTime(this.privateSaleCloseTime, {from: investor}).should.be.rejectedWith(EVMRevert);
+        await this.crowdsale.setPrivateSaleCloseTime(this.privateSaleCloseTime, this.rate, {from: investor}).should.be.rejectedWith(EVMRevert);
       });
     });
 
     describe('setPreSaleCloseTime()', function () {
       it('should not allow pre sale time of zero', async function () {
-        await this.crowdsale.setPreSaleCloseTime(0).should.be.rejectedWith(EVMRevert);
+        await this.crowdsale.setPreSaleCloseTime(0, this.rate).should.be.rejectedWith(EVMRevert);
       });
 
       it('should not allow pre sale time before private sale time', async function () {
         let invalidTime = this.privateSaleCloseTime - duration.seconds(1);
-        await this.crowdsale.setPreSaleCloseTime(invalidTime).should.be.rejectedWith(EVMRevert);
+        await this.crowdsale.setPreSaleCloseTime(invalidTime, this.rate).should.be.rejectedWith(EVMRevert);
       });
 
       it('should not allow pre sale time after closing time', async function () {
         let invalidTime = this.closingTime + duration.seconds(1);
-        await this.crowdsale.setPreSaleCloseTime(invalidTime).should.be.rejectedWith(EVMRevert);
+        await this.crowdsale.setPreSaleCloseTime(invalidTime, this.rate).should.be.rejectedWith(EVMRevert);
+      });
+
+      it('should not allow private sale rate of 0', async function () {
+        await this.crowdsale.setPreSaleCloseTime(this.preSaleCloseTime, 0).should.be.rejectedWith(EVMRevert);
       });
 
       it('should not allow pre sale time set when not the owner', async function () {
-        await this.crowdsale.setPreSaleCloseTime(this.preSaleCloseTime, {from: investor}).should.be.rejectedWith(EVMRevert);
+        await this.crowdsale.setPreSaleCloseTime(this.preSaleCloseTime, this.rate, {from: investor}).should.be.rejectedWith(EVMRevert);
       });
     });
   });

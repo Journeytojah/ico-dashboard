@@ -45,8 +45,8 @@ module.exports = function (deployer, network, accounts) {
         ),
         PixieTokenContract,
         _initialSupply,
-        _privateSaleCloseTime,
-        _preSaleCloseTime
+        {privateSaleCloseTime: _privateSaleCloseTime, rate: _rate}, // TODO fix
+        {preSaleCloseTime: _preSaleCloseTime, rate: _rate} // TODO fix
       ]);
     })
     .then((results) => {
@@ -56,24 +56,24 @@ module.exports = function (deployer, network, accounts) {
       let pixieToken = results[1];
       pixieToken.transfer(PixieCrowdsale.address, crowdsaleSupply);
 
-      let _privateSaleCloseTime = results[3];
-      let _preSaleCloseTime = results[4];
+      let privateSaleDetails = results[3];
+      let preSaleDetails = results[4];
 
       return Promise.all([
         PixieCrowdsale.deployed(),
-        _privateSaleCloseTime,
-        _preSaleCloseTime
+        privateSaleDetails,
+        preSaleDetails
       ])
     })
     .then((results) => {
       let contract = results[0];
-      let _privateSaleCloseTime = results[1];
-      let _preSaleCloseTime = results[2];
+      let privateSaleDetails = results[1];
+      let preSaleDetails = results[2];
 
       return Promise.all([
         contract.addManyToWhitelist([accounts[0], accounts[1]]),
-        contract.setPrivateSaleCloseTime(_privateSaleCloseTime),
-        contract.setPreSaleCloseTime(_preSaleCloseTime)
+        contract.setPrivateSaleCloseTime(privateSaleDetails.privateSaleCloseTime, privateSaleDetails.rate),
+        contract.setPreSaleCloseTime(preSaleDetails.preSaleCloseTime, privateSaleDetails.rate)
       ])
     });
 };
