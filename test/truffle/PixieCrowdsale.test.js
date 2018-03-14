@@ -27,6 +27,8 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
   beforeEach(async function () {
     this.token = await PixieToken.new(1000);
 
+    this.privateSaleRate = new BigNumber(3);
+    this.preSaleRate = new BigNumber(2);
     this.rate = new BigNumber(1);
 
     this.initialSupply = await this.token.initialSupply(); // 1000 WEI
@@ -61,9 +63,11 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
       {from: owner}
     );
 
-    await this.crowdsale.setPrivateSaleCloseTime(this.privateSaleCloseTime, this.rate);
-    await this.crowdsale.setPreSaleCloseTime(this.preSaleCloseTime, this.rate);
+    // setup default rates
+    await this.crowdsale.setPrivateSaleCloseTime(this.privateSaleCloseTime, this.privateSaleRate);
+    await this.crowdsale.setPreSaleCloseTime(this.preSaleCloseTime, this.preSaleRate);
 
+    // ensure tokens can be transferred from crowdsale
     await this.token.transfer(this.crowdsale.address, this.amountAvailableForPurchase);
 
     // approve so they can invest in crowdsale
@@ -105,7 +109,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
   describe('Crowdsale', function () {
 
     beforeEach(async function () {
-      await increaseTimeTo(latestTime() + duration.seconds(1)); // force time to move on to 1 seconds
+      await increaseTimeTo(this.preSaleCloseTime + duration.seconds(1)); // force time to move on to just after pre-sale
     });
 
     describe('accepting payments', function () {
@@ -173,7 +177,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
   describe('CappedCrowdsale', function () {
 
     beforeEach(async function () {
-      await increaseTimeTo(latestTime() + duration.seconds(1)); // force time to move on to 1 seconds
+      await increaseTimeTo(this.preSaleCloseTime + duration.seconds(1)); // force time to move on to just after pre-sale
     });
 
     describe('creating a valid crowdsale', function () {
@@ -256,7 +260,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
   describe('FinalizableCrowdsale', function () {
 
     beforeEach(async function () {
-      await increaseTimeTo(latestTime() + duration.seconds(1)); // force time to move on to 1 seconds
+      await increaseTimeTo(this.preSaleCloseTime + duration.seconds(1)); // force time to move on to just after pre-sale
     });
 
     it('cannot be finalized before ending', async function () {
@@ -391,7 +395,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
   describe('Whitelisting', function () {
 
     beforeEach(async function () {
-      await increaseTimeTo(latestTime() + duration.seconds(1)); // force time to move on to 1 seconds
+      await increaseTimeTo(this.preSaleCloseTime + duration.seconds(1)); // force time to move on to just after pre-sale
 
       // ensure whitelisted
       await this.crowdsale.addManyToWhitelist([authorized, anotherAuthorized]);
@@ -501,7 +505,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
 
   describe('IndividualLimitsCrowdsale - min & max contributions', function () {
     beforeEach(async function () {
-      await increaseTimeTo(latestTime() + duration.seconds(1)); // force time to move on to 1 seconds
+      await increaseTimeTo(this.preSaleCloseTime + duration.seconds(1)); // force time to move on to just after pre-sale
     });
 
     describe('creating a valid crowdsale', function () {
@@ -653,7 +657,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     });
 
     it('should deny refunds after end if goal was reached', async function () {
-      await increaseTimeTo(this.openingTime);
+      await increaseTimeTo(this.preSaleCloseTime + duration.seconds(1)); // force time to move on to just after pre-sale
       await this.crowdsale.sendTransaction({value: this.goal, from: investor});
       await increaseTimeTo(this.afterClosingTime);
       await this.crowdsale.claimRefund({from: investor}).should.be.rejectedWith(EVMRevert);
@@ -662,7 +666,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     it('should allow refunds after end if goal was not reached', async function () {
       const lessThanGoal = this.goal.minus(1);
 
-      await increaseTimeTo(this.openingTime);
+      await increaseTimeTo(this.preSaleCloseTime + duration.seconds(1)); // force time to move on to just after pre-sale
       await this.crowdsale.sendTransaction({value: lessThanGoal, from: investor});
 
       await increaseTimeTo(this.afterClosingTime);
@@ -675,7 +679,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     });
 
     it('should forward funds to wallet after end if goal was reached', async function () {
-      await increaseTimeTo(this.openingTime);
+      await increaseTimeTo(this.preSaleCloseTime + duration.seconds(1)); // force time to move on to just after pre-sale
       await this.crowdsale.sendTransaction({value: this.goal, from: investor});
 
       await increaseTimeTo(this.afterClosingTime);
