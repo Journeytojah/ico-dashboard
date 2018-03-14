@@ -32,6 +32,23 @@ contract PixieCrowdsale is CappedCrowdsale, WhitelistedCrowdsale, IndividualLimi
   RefundableCrowdsale(_goal) {
   }
 
+  uint256 public privateSaleCloseTime;
+  uint256 public preSaleCloseTime;
+
+  function setPrivateSaleCloseTime(uint256 _privateSaleCloseTime) public onlyOwner {
+    require(_privateSaleCloseTime > openingTime);
+    require(_privateSaleCloseTime <= closingTime);
+
+    privateSaleCloseTime = _privateSaleCloseTime;
+  }
+
+  function setPreSaleCloseTime(uint256 _preSaleCloseTime) public onlyOwner {
+    require(_preSaleCloseTime > privateSaleCloseTime);
+    require(_preSaleCloseTime <= closingTime);
+
+    preSaleCloseTime = _preSaleCloseTime;
+  }
+
   /**
    * @dev gets current time
    * @return the current blocktime
