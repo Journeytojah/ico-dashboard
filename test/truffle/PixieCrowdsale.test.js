@@ -10,9 +10,9 @@ const EVMRevert = require('../helpers/EVMRevert');
 const BigNumber = web3.BigNumber;
 
 const should = require('chai')
-.use(require('chai-as-promised'))
-.use(require('chai-bignumber')(BigNumber))
-.should();
+  .use(require('chai-as-promised'))
+  .use(require('chai-bignumber')(BigNumber))
+  .should();
 
 const PixieCrowdsale = artifacts.require('PixieCrowdsale');
 const PixieToken = artifacts.require('PixieToken');
@@ -34,7 +34,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     this.cap = this.amountAvailableForPurchase; // 500 WEI
 
     this.openingTime = latestTime() + duration.seconds(1); // opens in 1 second
-    this.closingTime = this.openingTime + duration.weeks(1);
+    this.closingTime = this.openingTime + duration.weeks(1); // closes in 1 week & 1 second
     this.afterClosingTime = this.closingTime + duration.seconds(1);
 
     this.minContribution = new BigNumber(5); // 5 WEI
@@ -460,7 +460,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     });
   });
 
-  describe('Min and max contributions', function () {
+  describe('IndividualLimitsCrowdsale - min & max contributions', function () {
 
     beforeEach(async function () {
       await increaseTimeTo(latestTime() + duration.seconds(1)); // force time to move on to 1 seconds
@@ -590,10 +590,6 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
 
   describe('Refundable with goal', function () {
 
-    beforeEach(async function () {
-
-    });
-
     describe('creating a valid crowdsale', function () {
       it('should fail with zero goal', async function () {
         await assertRevert(PixieCrowdsale.new(
@@ -612,46 +608,45 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     });
 
     it('should deny refunds before end', async function () {
-      await this.crowdsale.claimRefund({ from: investor }).should.be.rejectedWith(EVMRevert);
+      await this.crowdsale.claimRefund({from: investor}).should.be.rejectedWith(EVMRevert);
 
       await increaseTimeTo(this.openingTime);
-      await this.crowdsale.claimRefund({ from: investor }).should.be.rejectedWith(EVMRevert);
+      await this.crowdsale.claimRefund({from: investor}).should.be.rejectedWith(EVMRevert);
     });
 
     it('should deny refunds after end if goal was reached', async function () {
       await increaseTimeTo(this.openingTime);
-      await this.crowdsale.sendTransaction({ value: this.goal, from: investor });
+      await this.crowdsale.sendTransaction({value: this.goal, from: investor});
       await increaseTimeTo(this.afterClosingTime);
-      await this.crowdsale.claimRefund({ from: investor }).should.be.rejectedWith(EVMRevert);
+      await this.crowdsale.claimRefund({from: investor}).should.be.rejectedWith(EVMRevert);
     });
 
     it('should allow refunds after end if goal was not reached', async function () {
-
       const lessThanGoal = this.goal.minus(1);
 
       await increaseTimeTo(this.openingTime);
-      await this.crowdsale.sendTransaction({ value: lessThanGoal, from: investor });
+      await this.crowdsale.sendTransaction({value: lessThanGoal, from: investor});
 
       await increaseTimeTo(this.afterClosingTime);
-      await this.crowdsale.finalize({ from: owner });
+      await this.crowdsale.finalize({from: owner});
 
       const pre = web3.eth.getBalance(investor);
-      await this.crowdsale.claimRefund({ from: investor, gasPrice: 0 }).should.be.fulfilled;
+      await this.crowdsale.claimRefund({from: investor, gasPrice: 0}).should.be.fulfilled;
       const post = web3.eth.getBalance(investor);
       post.minus(pre).should.be.bignumber.equal(lessThanGoal);
     });
 
     it('should forward funds to wallet after end if goal was reached', async function () {
-
       await increaseTimeTo(this.openingTime);
-      await this.crowdsale.sendTransaction({ value: this.goal, from: investor });
+      await this.crowdsale.sendTransaction({value: this.goal, from: investor});
 
       await increaseTimeTo(this.afterClosingTime);
       const pre = web3.eth.getBalance(wallet);
 
-      await this.crowdsale.finalize({ from: owner });
+      await this.crowdsale.finalize({from: owner});
       const post = web3.eth.getBalance(wallet);
       post.minus(pre).should.be.bignumber.equal(this.goal);
     });
   });
+
 });
