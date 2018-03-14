@@ -47,6 +47,8 @@ contract PixieCrowdsale is CappedCrowdsale, WhitelistedCrowdsale, IndividualLimi
     require(_privateSaleCloseTime > openingTime);
     require(_privateSaleCloseTime <= closingTime);
 
+    // TODO should there be any validation on rate?
+
     privateSaleRate = _rate;
     privateSaleCloseTime = _privateSaleCloseTime;
   }
@@ -60,6 +62,8 @@ contract PixieCrowdsale is CappedCrowdsale, WhitelistedCrowdsale, IndividualLimi
     require(_preSaleCloseTime > privateSaleCloseTime);
     require(_preSaleCloseTime <= closingTime);
 
+    // TODO should there be any validation on rate?
+
     preSaleRate = _rate;
     preSaleCloseTime = _preSaleCloseTime;
   }
@@ -70,6 +74,8 @@ contract PixieCrowdsale is CappedCrowdsale, WhitelistedCrowdsale, IndividualLimi
    * @return Number of tokens that can be purchased with the specified _weiAmount
    */
   function _getTokenAmount(uint256 _weiAmount) internal view returns (uint256) {
+
+    // TODO should this be optional or do we force private/pre sale rates
 
     if (privateSaleCloseTime != 0 && now < privateSaleCloseTime) {
       return _weiAmount.mul(privateSaleRate);

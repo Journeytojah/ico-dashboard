@@ -27,8 +27,6 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
   beforeEach(async function () {
     this.token = await PixieToken.new(1000);
 
-    this.privateSaleRate = new BigNumber(3);
-    this.preSaleRate = new BigNumber(2);
     this.rate = new BigNumber(1);
 
     this.initialSupply = await this.token.initialSupply(); // 1000 WEI
@@ -40,7 +38,10 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     this.afterClosingTime = this.closingTime + duration.seconds(1);
 
     this.privateSaleCloseTime = this.openingTime + duration.days(1); // private sale to close 1 day after opening
+    this.privateSaleRate = new BigNumber(3);
+
     this.preSaleCloseTime = this.openingTime + duration.days(3); // pre sale to close 3 days after opening
+    this.preSaleRate = new BigNumber(2);
 
     this.minContribution = new BigNumber(5); // 5 WEI
     this.maxContribution = new BigNumber(this.cap).times(0.5); // 250 WEI
@@ -501,6 +502,8 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
 
       await this.crowdsale.buyTokens(authorized, {value: this.minContribution, from: authorized}).should.be.fulfilled;
     });
+
+    // TODO missing test for Pause/Unpause events
   });
 
   describe('IndividualLimitsCrowdsale - min & max contributions', function () {
@@ -738,6 +741,53 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
 
       it('should not allow pre sale time set when not the owner', async function () {
         await this.crowdsale.setPreSaleCloseTime(this.preSaleCloseTime, this.rate, {from: investor}).should.be.rejectedWith(EVMRevert);
+      });
+    });
+
+    describe('overridden _getTokenAmount() method', function () {
+
+      describe('private sale rate', async function () {
+
+        beforeEach(async function () {
+          await increaseTimeTo(this.privateSaleCloseTime - duration.seconds(1)); // set time to just before private sale close
+        });
+
+        it('should assign tokens to sender', async function () {
+          await this.crowdsale.sendTransaction({value: this.value, from: investor});
+          let balance = await this.token.balanceOf(investor);
+          balance.should.be.bignumber.equal(this.expectedTokenAmount * this.privateSaleRate);
+        });
+
+        // when using RefundableCrowdsale the "vault" holds the funds
+        it('should forward funds to vault', async function () {
+          const pre = web3.eth.getBalance(this.vault);
+          await this.crowdsale.sendTransaction({value: this.value, from: investor});
+
+          const post = web3.eth.getBalance(this.vault);
+          post.minus(pre).should.be.bignumber.equal(this.value);
+        });
+      });
+
+      describe('pre sale rate', async function () {
+
+        beforeEach(async function () {
+          await increaseTimeTo(this.preSaleCloseTime - duration.seconds(1)); // set time to just before pre sale close
+        });
+
+        it('should assign tokens to sender', async function () {
+          await this.crowdsale.sendTransaction({value: this.value, from: investor});
+          let balance = await this.token.balanceOf(investor);
+          balance.should.be.bignumber.equal(this.expectedTokenAmount * this.preSaleRate);
+        });
+
+        // when using RefundableCrowdsale the "vault" holds the funds
+        it('should forward funds to vault', async function () {
+          const pre = web3.eth.getBalance(this.vault);
+          await this.crowdsale.sendTransaction({value: this.value, from: investor});
+
+          const post = web3.eth.getBalance(this.vault);
+          post.minus(pre).should.be.bignumber.equal(this.value);
+        });
       });
     });
   });
