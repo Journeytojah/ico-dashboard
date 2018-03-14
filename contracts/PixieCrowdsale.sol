@@ -2,13 +2,14 @@ pragma solidity ^0.4.19;
 
 
 import "zeppelin-solidity/contracts/token/ERC20/StandardToken.sol";
+import "zeppelin-solidity/contracts/lifecycle/Pausable.sol";
 import "zeppelin-solidity/contracts/crowdsale/validation/CappedCrowdsale.sol";
 import "zeppelin-solidity/contracts/crowdsale/validation/WhitelistedCrowdsale.sol";
 import "zeppelin-solidity/contracts/crowdsale/distribution/RefundableCrowdsale.sol";
 import "./IndividualLimitsCrowdsale.sol";
 
 
-contract PixieCrowdsale is CappedCrowdsale, WhitelistedCrowdsale, IndividualLimitsCrowdsale, RefundableCrowdsale {
+contract PixieCrowdsale is CappedCrowdsale, WhitelistedCrowdsale, IndividualLimitsCrowdsale, RefundableCrowdsale, Pausable {
 
   function PixieCrowdsale(
     uint256 _rate,
@@ -27,6 +28,7 @@ contract PixieCrowdsale is CappedCrowdsale, WhitelistedCrowdsale, IndividualLimi
   TimedCrowdsale(_openingTime, _closingTime)
   WhitelistedCrowdsale()
   IndividualLimitsCrowdsale(_minContribution, _maxContribution)
+  Pausable()
   RefundableCrowdsale(_goal) {
   }
 
@@ -44,5 +46,15 @@ contract PixieCrowdsale is CappedCrowdsale, WhitelistedCrowdsale, IndividualLimi
    */
   function isCrowdsaleOpen() public view returns (bool) {
     return now >= openingTime && now <= closingTime;
+  }
+
+  /**
+  * @dev Extend parent behavior requiring contract to not be paused.
+  * @param _beneficiary Token beneficiary
+  * @param _weiAmount Amount of wei contributed
+  */
+  function _preValidatePurchase(address _beneficiary, uint256 _weiAmount) internal {
+    super._preValidatePurchase(_beneficiary, _weiAmount);
+    require(!paused);
   }
 }
