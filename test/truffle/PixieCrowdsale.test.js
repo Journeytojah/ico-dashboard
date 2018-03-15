@@ -33,7 +33,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     this.amountAvailableForPurchase = this.initialSupply.times(0.5); // 500 WEI
     this.cap = this.amountAvailableForPurchase; // 500 WEI
 
-    this.openingTime = latestTime() + duration.seconds(1); // opens in 1 second
+    this.openingTime = latestTime() + duration.seconds(10); // opens in 10 seconds
     this.closingTime = this.openingTime + duration.weeks(1); // closes in 1 week & 1 second
     this.afterClosingTime = this.closingTime + duration.seconds(1);
 
@@ -92,7 +92,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
   describe('Crowdsale', function () {
 
     beforeEach(async function () {
-      await increaseTimeTo(latestTime() + duration.seconds(1)); // force time to move on to 1 seconds
+      await increaseTimeTo(latestTime() + duration.seconds(11)); // force time to move on to 11 seconds
     });
 
     describe('accepting payments', function () {
@@ -160,7 +160,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
   describe('CappedCrowdsale', function () {
 
     beforeEach(async function () {
-      await increaseTimeTo(latestTime() + duration.seconds(1)); // force time to move on to 1 seconds
+      await increaseTimeTo(latestTime() + duration.seconds(11)); // force time to move on to 11 seconds
     });
 
     describe('creating a valid crowdsale', function () {
@@ -243,7 +243,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
   describe('FinalizableCrowdsale', function () {
 
     beforeEach(async function () {
-      await increaseTimeTo(latestTime() + duration.seconds(1)); // force time to move on to 1 seconds
+      await increaseTimeTo(latestTime() + duration.seconds(11)); // force time to move on to 11 seconds
     });
 
     it('cannot be finalized before ending', async function () {
@@ -288,6 +288,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     describe('accepting payments', function () {
 
       it('should reject payments before start', async function () {
+
         await this.crowdsale.send(this.value).should.be.rejectedWith(EVMRevert);
         await this.crowdsale.buyTokens(investor, {
           from: purchaser,
@@ -378,7 +379,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
   describe('Whitelisting', function () {
 
     beforeEach(async function () {
-      await increaseTimeTo(latestTime() + duration.seconds(1)); // force time to move on to 1 seconds
+      await increaseTimeTo(latestTime() + duration.seconds(11)); // force time to move on to 11 seconds
 
       // ensure whitelisted
       await this.crowdsale.addManyToWhitelist([authorized, anotherAuthorized]);
@@ -462,25 +463,30 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
 
 
   describe('Pausable', function () {
+    beforeEach(async function () {
+      await increaseTimeTo(latestTime() + duration.seconds(11)); // force time to move on to 11 seconds
+    });
+
     it('should not allow transfer when paused', async function () {
 
-      await this.crowdsale.pause()
-      let contractPaused = await this.crowdsale.paused.call()
-      contractPaused.should.equal(true)
+      await this.crowdsale.pause();
+      let contractPaused = await this.crowdsale.paused.call();
+      contractPaused.should.equal(true);
 
       await assertRevert(this.crowdsale.buyTokens(authorized, {value: this.minContribution, from: authorized}));
-      await this.crowdsale.unpause()
+      await this.crowdsale.unpause();
 
-      contractPaused = await this.crowdsale.paused.call()
-      contractPaused.should.equal(false)
+      contractPaused = await this.crowdsale.paused.call();
+      contractPaused.should.equal(false);
     });
+
     it('should allow transfer when unpaused', async function () {
 
-      await this.crowdsale.pause()
-      await this.crowdsale.unpause()
+      await this.crowdsale.pause();
+      await this.crowdsale.unpause();
 
-      let contractPaused = await this.crowdsale.paused.call()
-      contractPaused.should.equal(false)
+      let contractPaused = await this.crowdsale.paused.call();
+      contractPaused.should.equal(false);
 
       await this.crowdsale.buyTokens(authorized, {value: this.minContribution, from: authorized}).should.be.fulfilled;
     });
@@ -488,7 +494,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
 
   describe('IndividualLimitsCrowdsale - min & max contributions', function () {
     beforeEach(async function () {
-      await increaseTimeTo(latestTime() + duration.seconds(1)); // force time to move on to 1 seconds
+      await increaseTimeTo(latestTime() + duration.seconds(11)); // force time to move on to 11 seconds
     });
 
     describe('creating a valid crowdsale', function () {
@@ -594,7 +600,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
 
     describe('sending maximum', function () {
       it('should fail if above limit via default', async function () {
-        await this.crowdsale.send(this.maxContribution).should.be.fullfilled;
+        await this.crowdsale.send(this.maxContribution).should.be.fulfilled;
 
         const postContribution = await this.crowdsale.contributions(owner);
         postContribution.should.be.bignumber.equal(this.maxContribution);
