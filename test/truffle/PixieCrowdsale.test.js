@@ -699,6 +699,52 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
 
   describe('Private/Pre ICO date restrictions - setPrivatePreSaleRates()', function () {
 
+    describe('enhanced _preValidatePurchase() checks', function () {
+
+      beforeEach(async function () {
+        this.crowdsale = await PixieCrowdsale.new(
+          this.rate,
+          wallet,
+          this.token.address,
+          this.cap,
+          this.openingTime,
+          this.closingTime,
+          this.minContribution,
+          this.maxContribution,
+          this.goal,
+          {from: owner}
+        );
+
+        // ensure tokens can be transferred from crowdsale
+        await this.token.transfer(this.crowdsale.address, this.amountAvailableForPurchase);
+
+        // approve so they can invest in crowdsale
+        await this.crowdsale.addToWhitelist(owner);
+        await this.crowdsale.addToWhitelist(investor);
+        await this.crowdsale.addToWhitelist(wallet);
+        await this.crowdsale.addToWhitelist(purchaser);
+
+        // used in whitelist testing
+        await this.crowdsale.addToWhitelist(authorized);
+
+        await increaseTimeTo(this.openingTime + duration.seconds(1)); // set time to just after open time
+      });
+
+      it('should fail without private/pre sale rates', async function () {
+        // Failed
+        await this.crowdsale.sendTransaction({value: this.value, from: investor}).should.be.rejectedWith(EVMRevert);
+
+        // Added rates
+        await this.crowdsale.setPrivatePreSaleRates(this.privateSaleCloseTime, this.privateSaleRate, this.preSaleCloseTime, this.preSaleRate).should.be.fulfilled;
+
+        // Success
+        await this.crowdsale.sendTransaction({value: this.value, from: investor});
+        let balance = await this.token.balanceOf(investor);
+        balance.should.be.bignumber.equal(this.expectedTokenAmount * this.privateSaleRate);
+      });
+
+    });
+
     describe('private sale test validation', function () {
       it('should not allow private sale of zero', async function () {
         await this.crowdsale.setPrivatePreSaleRates(0, this.rate, this.preSaleCloseTime, this.preSaleRate).should.be.rejectedWith(EVMRevert);
@@ -722,7 +768,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
         await this.crowdsale.setPrivatePreSaleRates(this.privateSaleCloseTime, this.rate, this.preSaleCloseTime, this.preSaleRate, {from: investor}).should.be.rejectedWith(EVMRevert);
       });
     });
-    
+
     describe('pre sale test validation', function () {
       it('should not allow pre sale time of zero', async function () {
         await this.crowdsale.setPrivatePreSaleRates(this.privateSaleCloseTime, this.privateSaleRate, 0, this.rate).should.be.rejectedWith(EVMRevert);

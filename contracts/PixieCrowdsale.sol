@@ -33,9 +33,11 @@ contract PixieCrowdsale is CappedCrowdsale, WhitelistedCrowdsale, IndividualLimi
   }
 
   uint256 public privateSaleCloseTime;
+
   uint256 public privateSaleRate;
 
   uint256 public preSaleCloseTime;
+
   uint256 public preSaleRate;
 
   /**
@@ -69,9 +71,6 @@ contract PixieCrowdsale is CappedCrowdsale, WhitelistedCrowdsale, IndividualLimi
    * @return Number of tokens that can be purchased with the specified _weiAmount
    */
   function _getTokenAmount(uint256 _weiAmount) internal view returns (uint256) {
-
-    // TODO should this be optional or do we force private/pre sale rates
-
     if (privateSaleCloseTime != 0 && now < privateSaleCloseTime) {
       return _weiAmount.mul(privateSaleRate);
     }
@@ -106,6 +105,14 @@ contract PixieCrowdsale is CappedCrowdsale, WhitelistedCrowdsale, IndividualLimi
   */
   function _preValidatePurchase(address _beneficiary, uint256 _weiAmount) internal {
     super._preValidatePurchase(_beneficiary, _weiAmount);
+
+    // enforce private/pre sale rates to be set
+    require(privateSaleRate != 0);
+    require(privateSaleCloseTime != 0);
+    require(preSaleRate != 0);
+    require(preSaleCloseTime != 0);
+
+    // restrict purchases if paused
     require(!paused);
   }
 }
