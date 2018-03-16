@@ -61,7 +61,17 @@ const store = new Vuex.Store({
   },
   getters: {
     isOwner: (state) => (state.owner && state.account) ? state.owner.toLowerCase() === state.account.toLowerCase() : false,
-    inKycWaitingList: (state) => (state.kycWaitingList) ? state.kycWaitingList.includes(state.account) : false
+    inKycWaitingList: (state) => (state.kycWaitingList) ? state.kycWaitingList.includes(state.account) : false,
+    icoState: (state) => {
+      if (state.start !== 0 && state.end && state.privateSaleCloseTime && state.preSaleCloseTime) {
+        const now = new Date().getTime() / 1000;
+        if (now > state.start) {
+          return 'In TGE';
+        }
+      }
+
+      return '';
+    }
   },
   mutations: {
     [mutations.SET_STATIC_CROWDSALE_DETAILS](state, {
