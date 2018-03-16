@@ -79,30 +79,31 @@ contract('PixieCrowdsale Tokenomics', function ([owner, investor, wallet]) {
       await increaseTimeTo(latestTime() + duration.seconds(11)); // force time to move on to 11 seconds
 
       let vaultBalance = web3.eth.getBalance(this.vault);
-      console.log(`Vault balance ${weiToEther(vaultBalance.toString(10))} ETHER`);
-
       let ownerBalance = await this.token.balanceOf(owner);
-      console.log(`Owner balance ${weiToEther(ownerBalance.toString(10))} PIX`);
-
       let balance = await this.token.balanceOf(investor);
-      console.log(`Token balance ${weiToEther(balance.toString(10))} PIX`);
-
       let contractBalance = await this.token.balanceOf(this.crowdsale.address);
-      console.log(`Contract Token balance ${weiToEther(contractBalance.toString(10))} PIX`);
+
+      console.log(
+        `BEFORE > Vault: ${weiToEther(vaultBalance.toString(10))} ETHER, 
+        Owner: ${weiToEther(ownerBalance.toString(10))} PIX, 
+        Investor: ${weiToEther(balance.toString(10))} PIX, 
+        Contract:${weiToEther(contractBalance.toString(10))} PIX`
+      );
     });
 
     afterEach(async function () {
       let vaultBalance = web3.eth.getBalance(this.vault);
-      console.log(`Vault balance ${weiToEther(vaultBalance.toString(10))} ETHER`);
-
       let ownerBalance = await this.token.balanceOf(owner);
-      console.log(`Owner balance ${weiToEther(ownerBalance.toString(10))} PIX`);
-
       let balance = await this.token.balanceOf(investor);
-      console.log(`Token balance ${weiToEther(balance.toString(10))} PIX`);
-
       let contractBalance = await this.token.balanceOf(this.crowdsale.address);
-      console.log(`Contract Token balance ${weiToEther(contractBalance.toString(10))} PIX`);
+
+
+      console.log(
+        `AFTER > Vault: ${weiToEther(vaultBalance.toString(10))} ETHER, 
+        Owner: ${weiToEther(ownerBalance.toString(10))} PIX, 
+        Investor: ${weiToEther(balance.toString(10))} PIX, 
+        Contract:${weiToEther(contractBalance.toString(10))} PIX`
+      );
     });
 
     describe('purchase all tokens', function () {
@@ -127,9 +128,37 @@ contract('PixieCrowdsale Tokenomics', function ([owner, investor, wallet]) {
       });
 
       it('should not allow more than the hard cap', async function () {
+        let investorBalance = await this.token.balanceOf(investor);
+        investorBalance.should.be.bignumber.equal(0);
+
         await this.crowdsale.buyTokens(investor, {value: pixieHardCapInWei, from: investor}).should.be.fulfilled;
 
+        investorBalance = await this.token.balanceOf(investor);
+
+        // have more than 99.999% i.e. all of it!
+        // because of the figure's it does not divide exactly and a bit of "dust" is left
+        investorBalance.dividedBy(pixieTokensAvailableInIco).should.be.bignumber.greaterThan(0.99999);
+
         await assertRevert(this.crowdsale.buyTokens(investor, {value: 1, from: investor}));
+      });
+    });
+
+    describe('purchase minimum amount of token', function () {
+      it('should according to rate', async function () {
+
+        let vaultBalance = web3.eth.getBalance(this.vault);
+        vaultBalance.should.be.bignumber.equal(0);
+
+        let investorBalance = await this.token.balanceOf(investor);
+        investorBalance.should.be.bignumber.equal(0);
+
+        await this.crowdsale.buyTokens(investor, {value: minContribution, from: investor}).should.be.fulfilled;
+
+        vaultBalance = web3.eth.getBalance(this.vault);
+        vaultBalance.should.be.bignumber.equal(minContribution);
+
+        investorBalance = await this.token.balanceOf(investor);
+        investorBalance.should.be.bignumber.equal(minContribution * pixieTokenRatePerWei);
       });
     });
   });
