@@ -20,13 +20,15 @@ const PixieToken = artifacts.require('PixieToken');
 
 contract('PixieCrowdsale Tokenomics', function ([owner, investor, wallet]) {
 
-  const oneToThePowerEighteen = new BigNumber(1000000000000000000);
+  // 100 billion to 18 decimal places (so we multiply the whole token by 10 to the power 18)
+  const pixieTotalTokenSupply = new BigNumber(100000000000).times(new BigNumber(10).pow(18));
 
-  const pixieTotalTokenSupply = new BigNumber(100000000000).times(oneToThePowerEighteen); // 100 billion to 18 decimal places
-  const pixieTokenRatePerWei = new BigNumber(701754);
   const pixieTokensAvailableInIco = pixieTotalTokenSupply.times(0.4); // 40% of total
-  const pixieHardCapInWei = new BigNumber(57000000000000000000000); // 57000 ETH
-  const pixieSoftCapInWei = new BigNumber(20000000000000000000000); // 20000 ETH
+
+  const pixieHardCapInWei = new BigNumber(etherToWei(65000)); // 65000 ETH
+  const pixieSoftCapInWei = new BigNumber(etherToWei(17500)); // 17500 ETH
+
+  const pixieTokenRatePerWei = pixieTokensAvailableInIco.dividedBy(pixieHardCapInWei).toFixed(0);
 
   const minContribution = new BigNumber(1);
   const maxContribution = pixieHardCapInWei;
