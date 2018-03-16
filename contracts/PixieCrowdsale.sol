@@ -41,30 +41,25 @@ contract PixieCrowdsale is CappedCrowdsale, WhitelistedCrowdsale, IndividualLimi
   /**
    * @dev sets the private sale close time and rate
    */
-  function setPrivateSaleCloseTime(uint256 _privateSaleCloseTime, uint256 _rate) public onlyOwner {
-    require(_rate > 0);
+  function setPrivatePreSaleRates(uint256 _privateSaleCloseTime, uint256 _privateRate, uint256 _preSaleCloseTime, uint256 _preSaleRate)
+  public
+  onlyOwner {
+    // validate private sale
+    require(_privateRate > 0);
     require(_privateSaleCloseTime > 0);
     require(_privateSaleCloseTime > openingTime);
     require(_privateSaleCloseTime <= closingTime);
 
-    // TODO should there be any validation on rate?
-
-    privateSaleRate = _rate;
-    privateSaleCloseTime = _privateSaleCloseTime;
-  }
-
-  /**
-   * @dev sets the pre sale close time and rate
-   */
-  function setPreSaleCloseTime(uint256 _preSaleCloseTime, uint256 _rate) public onlyOwner {
-    require(_rate > 0);
+    // validate public sale
+    require(_preSaleRate > 0);
     require(_preSaleCloseTime > 0);
     require(_preSaleCloseTime > privateSaleCloseTime);
     require(_preSaleCloseTime <= closingTime);
 
-    // TODO should there be any validation on rate?
+    privateSaleRate = _privateRate;
+    privateSaleCloseTime = _privateSaleCloseTime;
 
-    preSaleRate = _rate;
+    preSaleRate = _preSaleRate;
     preSaleCloseTime = _preSaleCloseTime;
   }
 

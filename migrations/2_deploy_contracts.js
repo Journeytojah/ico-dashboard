@@ -81,8 +81,7 @@ module.exports = function (deployer, network, accounts) {
 
       return Promise.all([
         contract.addManyToWhitelist([accounts[0], accounts[1]]),
-        contract.setPrivateSaleCloseTime(privateSaleDetails.privateSaleCloseTime, privateSaleDetails.rate),
-        contract.setPreSaleCloseTime(preSaleDetails.preSaleCloseTime, preSaleDetails.rate)
+        contract.setPrivatePreSaleRates(privateSaleDetails.privateSaleCloseTime, privateSaleDetails.rate, preSaleDetails.preSaleCloseTime, preSaleDetails.rate)
       ])
     });
 };
