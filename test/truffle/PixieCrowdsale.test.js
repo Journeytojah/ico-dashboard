@@ -33,7 +33,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     this.amountAvailableForPurchase = this.initialSupply.times(0.5); // 500 WEI
     this.cap = this.amountAvailableForPurchase; // 500 WEI
 
-    this.openingTime = latestTime() + duration.seconds(1); // opens in 1 second
+    this.openingTime = latestTime() + duration.seconds(10); // opens in 10 seconds
     this.closingTime = this.openingTime + duration.weeks(1); // closes in 1 week & 1 second
     this.afterClosingTime = this.closingTime + duration.seconds(1);
 
@@ -480,16 +480,19 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
 
 
   describe('Pausable', function () {
+    beforeEach(async function () {
+      await increaseTimeTo(this.preSaleCloseTime + duration.seconds(1)); // force time to move on to just after pre-sale
+    });
 
     it('should not allow transfer when paused', async function () {
       await this.crowdsale.pause();
-      let contractPaused = await this.crowdsale.paused();
+      let contractPaused = await this.crowdsale.paused.call();
       contractPaused.should.equal(true);
 
       await assertRevert(this.crowdsale.buyTokens(authorized, {value: this.minContribution, from: authorized}));
       await this.crowdsale.unpause();
 
-      contractPaused = await this.crowdsale.paused();
+      contractPaused = await this.crowdsale.paused.call()
       contractPaused.should.equal(false)
     });
 
@@ -497,13 +500,14 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
       await this.crowdsale.pause();
       await this.crowdsale.unpause();
 
-      let contractPaused = await this.crowdsale.paused();
+      let contractPaused = await this.crowdsale.paused.call();
       contractPaused.should.equal(false);
 
       await this.crowdsale.buyTokens(authorized, {value: this.minContribution, from: authorized}).should.be.fulfilled;
     });
 
     // TODO missing test for Pause/Unpause events
+
   });
 
   describe('IndividualLimitsCrowdsale - min & max contributions', function () {
