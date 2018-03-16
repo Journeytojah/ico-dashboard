@@ -32,6 +32,56 @@ contract PixieCrowdsale is CappedCrowdsale, WhitelistedCrowdsale, IndividualLimi
   RefundableCrowdsale(_goal) {
   }
 
+  uint256 public privateSaleCloseTime;
+
+  uint256 public privateSaleRate;
+
+  uint256 public preSaleCloseTime;
+
+  uint256 public preSaleRate;
+
+  /**
+   * @dev sets the private & pre sale close times and rates
+   */
+  function setPrivatePreSaleRates(uint256 _privateSaleCloseTime, uint256 _privateRate, uint256 _preSaleCloseTime, uint256 _preSaleRate)
+  public
+  onlyOwner {
+    // validate private sale
+    require(_privateRate > 0);
+    require(_privateSaleCloseTime > 0);
+    require(_privateSaleCloseTime > openingTime);
+    require(_privateSaleCloseTime <= closingTime);
+
+    // validate pre sale
+    require(_preSaleRate > 0);
+    require(_preSaleCloseTime > 0);
+    require(_preSaleCloseTime > privateSaleCloseTime);
+    require(_preSaleCloseTime <= closingTime);
+
+    privateSaleRate = _privateRate;
+    privateSaleCloseTime = _privateSaleCloseTime;
+
+    preSaleRate = _preSaleRate;
+    preSaleCloseTime = _preSaleCloseTime;
+  }
+
+  /**
+   * @dev Overridden method used to allow different rates for private/pre sale
+   * @param _weiAmount Value in wei to be converted into tokens
+   * @return Number of tokens that can be purchased with the specified _weiAmount
+   */
+  function _getTokenAmount(uint256 _weiAmount) internal view returns (uint256) {
+    if (now < privateSaleCloseTime) {
+      return _weiAmount.mul(privateSaleRate);
+    }
+
+    if (now < preSaleCloseTime) {
+      return _weiAmount.mul(preSaleRate);
+    }
+
+    return _weiAmount.mul(rate);
+  }
+
   /**
    * @dev gets current time
    * @return the current blocktime
@@ -55,6 +105,14 @@ contract PixieCrowdsale is CappedCrowdsale, WhitelistedCrowdsale, IndividualLimi
   */
   function _preValidatePurchase(address _beneficiary, uint256 _weiAmount) internal {
     super._preValidatePurchase(_beneficiary, _weiAmount);
+
+    // enforce private/pre sale rates & times to be set
+    require(privateSaleRate != 0);
+    require(privateSaleCloseTime != 0);
+    require(preSaleRate != 0);
+    require(preSaleCloseTime != 0);
+
+    // restrict purchases if paused
     require(!paused);
   }
 }

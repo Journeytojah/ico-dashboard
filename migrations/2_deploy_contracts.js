@@ -20,6 +20,12 @@ module.exports = function (deployer, network, accounts) {
       const _openingTime = web3.eth.getBlock(web3.eth.blockNumber).timestamp + 1; // one second in the future
       const _closingTime = _openingTime + (86400 * 20); // 20 days
 
+      const _privateSaleCloseTime = _openingTime + (86400 * 5); // 5 days
+      const _privateSaleRate = _rate;
+
+      const _preSaleCloseTime = _openingTime + (86400 * 10); // 10 days
+      const _preSaleRate = _rate;
+
       const _minContribution = 2;
       const _maxContribution = 250;
 
@@ -41,14 +47,41 @@ module.exports = function (deployer, network, accounts) {
           _goal
         ),
         PixieTokenContract,
-        _initialSupply
+        _initialSupply,
+        {
+          closeTime: _privateSaleCloseTime,
+          rate: _privateSaleRate
+        },
+        {
+          closeTime: _preSaleCloseTime,
+          rate: _preSaleRate
+        }
       ]);
     })
     .then((results) => {
-      const crowdsaleSupply = results[2].times(0.5); // sell upto 50%, i.e. 500 WEI
-      results[1].transfer(PixieCrowdsale.address, crowdsaleSupply);
+      let initialSupply = results[2];
+      const crowdsaleSupply = initialSupply.times(0.5); // sell upto 50%, i.e. 500 WEI
 
-      return PixieCrowdsale.deployed();
+      let pixieToken = results[1];
+      pixieToken.transfer(PixieCrowdsale.address, crowdsaleSupply);
+
+      let privateSaleDetails = results[3];
+      let preSaleDetails = results[4];
+
+      return Promise.all([
+        PixieCrowdsale.deployed(),
+        privateSaleDetails,
+        preSaleDetails
+      ])
     })
-    .then((contract) => contract.addManyToWhitelist([accounts[0], accounts[1]]));
+    .then((results) => {
+      let contract = results[0];
+      let privateSaleDetails = results[1];
+      let preSaleDetails = results[2];
+
+      return Promise.all([
+        contract.addManyToWhitelist([accounts[0], accounts[1]]),
+        contract.setPrivatePreSaleRates(privateSaleDetails.closeTime, privateSaleDetails.rate, preSaleDetails.closeTime, preSaleDetails.rate)
+      ])
+    });
 };
