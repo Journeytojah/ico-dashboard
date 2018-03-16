@@ -75,10 +75,6 @@ contract('PixieCrowdsale Tokenomics', function ([owner, investor, wallet]) {
 
   describe.only('Crowdsale should allow all tokens in ICO to be sold', function () {
 
-    let printBalances = async function () {
-
-    };
-
     beforeEach(async function () {
       await increaseTimeTo(latestTime() + duration.seconds(11)); // force time to move on to 11 seconds
 
@@ -111,7 +107,23 @@ contract('PixieCrowdsale Tokenomics', function ([owner, investor, wallet]) {
 
     describe('purchase all tokens', function () {
       it('should allocate all tokens to investor if they send the hard cap', async function () {
+
+        let vaultBalance = web3.eth.getBalance(this.vault);
+        vaultBalance.should.be.bignumber.equal(0);
+
+        let investorBalance = await this.token.balanceOf(investor);
+        investorBalance.should.be.bignumber.equal(0);
+
         await this.crowdsale.buyTokens(investor, {value: pixieHardCapInWei, from: investor}).should.be.fulfilled;
+
+        vaultBalance = web3.eth.getBalance(this.vault);
+        vaultBalance.should.be.bignumber.equal(pixieHardCapInWei);
+
+        investorBalance = await this.token.balanceOf(investor);
+
+        // have more than 99.999% i.e. all of it!
+        // because of the figure's it does not divide exactly and a bit of "dust" is left
+        investorBalance.dividedBy(pixieTokensAvailableInIco).should.be.bignumber.greaterThan(0.99999);
       });
 
       it('should not allow more than the hard cap', async function () {
