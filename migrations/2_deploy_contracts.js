@@ -49,11 +49,11 @@ module.exports = function (deployer, network, accounts) {
         PixieTokenContract,
         _initialSupply,
         {
-          privateSaleCloseTime: _privateSaleCloseTime,
+          closeTime: _privateSaleCloseTime,
           rate: _privateSaleRate
         },
         {
-          preSaleCloseTime: _preSaleCloseTime,
+          closeTime: _preSaleCloseTime,
           rate: _preSaleRate
         }
       ]);
@@ -81,7 +81,7 @@ module.exports = function (deployer, network, accounts) {
 
       return Promise.all([
         contract.addManyToWhitelist([accounts[0], accounts[1]]),
-        contract.setPrivatePreSaleRates(privateSaleDetails.privateSaleCloseTime, privateSaleDetails.rate, preSaleDetails.preSaleCloseTime, preSaleDetails.rate)
+        contract.setPrivatePreSaleRates(privateSaleDetails.closeTime, privateSaleDetails.rate, preSaleDetails.closeTime, preSaleDetails.rate)
       ])
     });
 };

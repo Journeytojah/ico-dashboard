@@ -41,7 +41,7 @@ contract PixieCrowdsale is CappedCrowdsale, WhitelistedCrowdsale, IndividualLimi
   uint256 public preSaleRate;
 
   /**
-   * @dev sets the private sale close time and rate
+   * @dev sets the private & pre sale close times and rates
    */
   function setPrivatePreSaleRates(uint256 _privateSaleCloseTime, uint256 _privateRate, uint256 _preSaleCloseTime, uint256 _preSaleRate)
   public
@@ -52,7 +52,7 @@ contract PixieCrowdsale is CappedCrowdsale, WhitelistedCrowdsale, IndividualLimi
     require(_privateSaleCloseTime > openingTime);
     require(_privateSaleCloseTime <= closingTime);
 
-    // validate public sale
+    // validate pre sale
     require(_preSaleRate > 0);
     require(_preSaleCloseTime > 0);
     require(_preSaleCloseTime > privateSaleCloseTime);
