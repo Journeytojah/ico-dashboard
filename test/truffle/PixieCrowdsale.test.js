@@ -491,7 +491,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
       await assertRevert(this.crowdsale.buyTokens(authorized, {value: this.minContribution, from: authorized}));
       await this.crowdsale.unpause();
 
-      contractPaused = await this.crowdsale.paused.call()
+      contractPaused = await this.crowdsale.paused.call();
       contractPaused.should.equal(false)
     });
 
@@ -505,8 +505,93 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
       await this.crowdsale.buyTokens(authorized, {value: this.minContribution, from: authorized}).should.be.fulfilled;
     });
 
-    // TODO missing test for Pause/Unpause events
+    it('should not allow send when paused', async function () {
+      await this.crowdsale.pause();
+      let contractPaused = await this.crowdsale.paused.call();
+      contractPaused.should.equal(true);
 
+      await assertRevert(this.crowdsale.send(this.minContribution));
+    });
+
+    describe('pause', function () {
+      describe('when the sender is the token owner', function () {
+        const from = owner;
+
+        describe('when the token is unpaused', function () {
+          it('pauses the token', async function () {
+            await this.crowdsale.pause({ from });
+
+            const paused = await this.crowdsale.paused();
+            assert.equal(paused, true);
+          });
+
+          it('emits a paused event', async function () {
+            const { logs } = await this.crowdsale.pause({ from });
+
+            assert.equal(logs.length, 1);
+            assert.equal(logs[0].event, 'Pause');
+          });
+        });
+
+        describe('when the token is paused', function () {
+          beforeEach(async function () {
+            await this.crowdsale.pause({ from });
+          });
+
+          it('reverts', async function () {
+            await assertRevert(this.crowdsale.pause({ from }));
+          });
+        });
+      });
+
+      describe('when the sender is not the token owner', function () {
+        const from = anotherAuthorized;
+
+        it('reverts', async function () {
+          await assertRevert(this.crowdsale.pause({ from }));
+        });
+      });
+    });
+
+    describe('unpause', function () {
+      describe('when the sender is the token owner', function () {
+        const from = owner;
+
+        describe('when the token is paused', function () {
+          beforeEach(async function () {
+            await this.crowdsale.pause({ from });
+          });
+
+          it('unpauses the token', async function () {
+            await this.crowdsale.unpause({ from });
+
+            const paused = await this.crowdsale.paused();
+            assert.equal(paused, false);
+          });
+
+          it('emits an unpaused event', async function () {
+            const { logs } = await this.crowdsale.unpause({ from });
+
+            assert.equal(logs.length, 1);
+            assert.equal(logs[0].event, 'Unpause');
+          });
+        });
+
+        describe('when the token is unpaused', function () {
+          it('reverts', async function () {
+            await assertRevert(this.crowdsale.unpause({ from }));
+          });
+        });
+      });
+
+      describe('when the sender is not the token owner', function () {
+        const from = anotherAuthorized;
+
+        it('reverts', async function () {
+          await assertRevert(this.crowdsale.unpause({ from }));
+        });
+      });
+    });
   });
 
   describe('IndividualLimitsCrowdsale - min & max contributions', function () {
