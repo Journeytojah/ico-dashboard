@@ -79,8 +79,16 @@ module.exports = function (deployer, network, accounts) {
       let privateSaleDetails = results[1];
       let preSaleDetails = results[2];
 
+      let _contractCreatorAccount = accounts[0];
+      let _secondTestApprovedTestAccount = accounts[1];
+
+      // Load in other accounts for different networks
+      if (network === 'ropsten' || network === 'rinkeby') {
+        _secondTestApprovedTestAccount = new HDWalletProvider(mnemonic, `https://ropsten.infura.io/${infuraApikey}`, 1);
+      }
+
       return Promise.all([
-        contract.addManyToWhitelist([accounts[0], accounts[1]]),
+        contract.addManyToWhitelist([_contractCreatorAccount, _secondTestApprovedTestAccount]),
         contract.setPrivatePreSaleRates(privateSaleDetails.closeTime, privateSaleDetails.rate, preSaleDetails.closeTime, preSaleDetails.rate)
       ])
     });

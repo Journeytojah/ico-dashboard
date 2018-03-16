@@ -1,3 +1,9 @@
+const HDWalletProvider = require('truffle-hdwallet-provider');
+const infuraApikey = 'nbCbdzC6IG9CF6hmvAVQ';
+let mnemonic = require('./mnemonic');
+
+// Check gas prices before live deploy - https://ethgasstation.info/
+
 module.exports = {
   mocha: {
     useColors: true
@@ -25,5 +31,21 @@ module.exports = {
       gas: 0xfffffffffff, // <-- Use this high gas value
       gasPrice: 0x01      // <-- Use this low gas price
     },
+    ropsten: {
+      provider: function () {
+        return new HDWalletProvider(mnemonic, `https://ropsten.infura.io/${infuraApikey}`);
+      },
+      network_id: 3,
+      gas: 4075039, // default = 4712388
+      gasPrice: 10000000000 // default = 100 gwei = 100000000000
+    },
+    rinkeby: {
+      provider: function () {
+        return new HDWalletProvider(mnemonic, `https://rinkeby.infura.io/${infuraApikey}`);
+      },
+      network_id: 4,
+      gas: 3075039, // default = 4712388
+      gasPrice: 10000000000 // default = 100 gwei = 100000000000
+    }
   }
 };
