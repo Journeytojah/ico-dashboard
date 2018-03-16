@@ -15,8 +15,8 @@
         </div>
       </div>
 
-      <h2>{{ icoState }}</h2>
-
+      <h2 class="text-muted">{{ icoState }}</h2>
+      
       <p class="float-right"><strong>{{ raised }}</strong>
         <eth-symbol></eth-symbol>
       </p>

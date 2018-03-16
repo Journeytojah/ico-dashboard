@@ -65,8 +65,24 @@ const store = new Vuex.Store({
     icoState: (state) => {
       if (state.start !== 0 && state.end && state.privateSaleCloseTime && state.preSaleCloseTime) {
         const now = new Date().getTime() / 1000;
-        if (now > state.start) {
-          return 'In TGE';
+        if (now > state.start && now < state.end) {
+          if (now < state.privateSaleCloseTime) {
+            return 'Private Sale';
+          }
+
+          if (now < state.preSaleCloseTime) {
+            return 'Pre-TGE Sale';
+          }
+
+          return 'TGE Sale';
+        }
+
+        if (now > state.end) {
+          return 'Sale Closed';
+        }
+
+        if (now < state.start) {
+          return 'Sale Not Yet Open';
         }
       }
 
