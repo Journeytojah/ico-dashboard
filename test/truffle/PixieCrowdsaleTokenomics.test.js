@@ -63,6 +63,9 @@ contract('PixieCrowdsale Tokenomics', function ([owner, investor, wallet]) {
       {from: owner}
     );
 
+    // setup default rates
+    await this.crowdsale.setPrivatePreSaleRates((latestTime() + duration.seconds(20)), pixieTokenRatePerWei, (latestTime() + duration.seconds(60)), pixieTokenRatePerWei);
+
     await this.token.transfer(this.crowdsale.address, pixieTokensAvailableInIco);
 
     // approve so they can invest in crowdsale
@@ -144,7 +147,7 @@ contract('PixieCrowdsale Tokenomics', function ([owner, investor, wallet]) {
     });
 
     describe('purchase minimum amount of token', function () {
-      it('should according to rate', async function () {
+      it('should return equivalent according to rate', async function () {
 
         let vaultBalance = web3.eth.getBalance(this.vault);
         vaultBalance.should.be.bignumber.equal(0);
