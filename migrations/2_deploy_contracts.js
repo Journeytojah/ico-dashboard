@@ -2,6 +2,10 @@
 const PixieToken = artifacts.require('PixieToken');
 const PixieCrowdsale = artifacts.require('PixieCrowdsale');
 
+const HDWalletProvider = require('truffle-hdwallet-provider');
+const infuraApikey = 'nbCbdzC6IG9CF6hmvAVQ';
+let mnemonic = require('../mnemonic');
+
 module.exports = function (deployer, network, accounts) {
 
   console.log(`Running within network = ${network}`);
@@ -87,8 +91,11 @@ module.exports = function (deployer, network, accounts) {
         _secondTestApprovedTestAccount = new HDWalletProvider(mnemonic, `https://ropsten.infura.io/${infuraApikey}`, 1);
       }
 
+      console.log(`_contractCreatorAccount - [${_contractCreatorAccount.getAddress()}]`);
+      console.log(`_secondTestApprovedTestAccount - [${_secondTestApprovedTestAccount.getAddress()}]`);
+
       return Promise.all([
-        contract.addManyToWhitelist([_contractCreatorAccount, _secondTestApprovedTestAccount]),
+        contract.addManyToWhitelist([_contractCreatorAccount.getAddress(), _secondTestApprovedTestAccount.getAddress()]),
         contract.setPrivatePreSaleRates(privateSaleDetails.closeTime, privateSaleDetails.rate, preSaleDetails.closeTime, preSaleDetails.rate)
       ])
     });
