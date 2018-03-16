@@ -49,7 +49,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     this.goal = new BigNumber(250);
 
     this.value = this.minContribution;
-    this.expectedTokenAmount = this.rate.mul(this.value);
+    this.standardExpectedTokenAmount = this.rate.mul(this.value);
 
     this.crowdsale = await PixieCrowdsale.new(
       this.rate,
@@ -127,13 +127,13 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
         event.args.purchaser.should.equal(investor);
         event.args.beneficiary.should.equal(investor);
         event.args.value.should.be.bignumber.equal(this.value);
-        event.args.amount.should.be.bignumber.equal(this.expectedTokenAmount);
+        event.args.amount.should.be.bignumber.equal(this.standardExpectedTokenAmount);
       });
 
       it('should assign tokens to sender', async function () {
         await this.crowdsale.sendTransaction({value: this.value, from: investor});
         let balance = await this.token.balanceOf(investor);
-        balance.should.be.bignumber.equal(this.expectedTokenAmount);
+        balance.should.be.bignumber.equal(this.standardExpectedTokenAmount);
       });
 
       // when using RefundableCrowdsale the "vault" holds the funds
@@ -154,13 +154,13 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
         event.args.purchaser.should.equal(purchaser);
         event.args.beneficiary.should.equal(investor);
         event.args.value.should.be.bignumber.equal(this.value);
-        event.args.amount.should.be.bignumber.equal(this.expectedTokenAmount);
+        event.args.amount.should.be.bignumber.equal(this.standardExpectedTokenAmount);
       });
 
       it('should assign tokens to beneficiary', async function () {
         await this.crowdsale.buyTokens(investor, {value: this.value, from: purchaser});
         const balance = await this.token.balanceOf(investor);
-        balance.should.be.bignumber.equal(this.expectedTokenAmount);
+        balance.should.be.bignumber.equal(this.standardExpectedTokenAmount);
       });
 
       // when using RefundableCrowdsale the "vault" holds the funds
@@ -806,8 +806,6 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
         // approve so they can invest in crowdsale
         await this.crowdsale.addToWhitelist(owner);
         await this.crowdsale.addToWhitelist(investor);
-        await this.crowdsale.addToWhitelist(wallet);
-        await this.crowdsale.addToWhitelist(purchaser);
 
         // used in whitelist testing
         await this.crowdsale.addToWhitelist(authorized);
@@ -825,7 +823,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
         // Success
         await this.crowdsale.sendTransaction({value: this.value, from: investor});
         let balance = await this.token.balanceOf(investor);
-        balance.should.be.bignumber.equal(this.expectedTokenAmount * this.privateSaleRate);
+        balance.should.be.bignumber.equal(this.standardExpectedTokenAmount * this.privateSaleRate);
       });
 
     });
@@ -889,7 +887,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
         it('should assign tokens to sender', async function () {
           await this.crowdsale.sendTransaction({value: this.value, from: investor});
           let balance = await this.token.balanceOf(investor);
-          balance.should.be.bignumber.equal(this.expectedTokenAmount * this.privateSaleRate);
+          balance.should.be.bignumber.equal(this.standardExpectedTokenAmount * this.privateSaleRate);
         });
 
         // when using RefundableCrowdsale the "vault" holds the funds
@@ -911,7 +909,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
         it('should assign tokens to sender', async function () {
           await this.crowdsale.sendTransaction({value: this.value, from: investor});
           let balance = await this.token.balanceOf(investor);
-          balance.should.be.bignumber.equal(this.expectedTokenAmount * this.preSaleRate);
+          balance.should.be.bignumber.equal(this.standardExpectedTokenAmount * this.preSaleRate);
         });
 
         // when using RefundableCrowdsale the "vault" holds the funds
