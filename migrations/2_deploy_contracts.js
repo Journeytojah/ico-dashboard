@@ -1,6 +1,5 @@
 /* global web3:true */
 const Promise = require('bluebird');
-
 const PixieToken = artifacts.require('PixieToken');
 const PixieCrowdsale = artifacts.require('PixieCrowdsale');
 
