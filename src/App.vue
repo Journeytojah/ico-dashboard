@@ -2,7 +2,7 @@
   <div id="app">
     <div class="container">
 
-      <div class="header clearfix">
+      <div class="m-4 clearfix">
         <nav>
           <ul class="nav float-right">
             <li class="nav-item" v-if="isOwner">
@@ -103,7 +103,4 @@
 
   }
 
-  .header {
-    margin: 20px;
-  }
 </style>

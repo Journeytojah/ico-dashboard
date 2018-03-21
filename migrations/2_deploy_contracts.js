@@ -88,7 +88,7 @@ module.exports = function (deployer, network, accounts) {
         PixieCrowdsale.deployed(),
         privateSaleDetails,
         preSaleDetails
-      ])
+      ]);
     })
     .then((results) => {
       let contract = results[1];
@@ -113,6 +113,6 @@ module.exports = function (deployer, network, accounts) {
       return Promise.all([
         contract.addManyToWhitelist([_contractCreatorAccount, _secondTestApprovedTestAccount]),
         contract.setPrivatePreSaleRates(privateSaleDetails.closeTime, privateSaleDetails.rate, preSaleDetails.closeTime, preSaleDetails.rate)
-      ])
+      ]);
     });
 };
