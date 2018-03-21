@@ -23,40 +23,30 @@
 
     </b-jumbotron>
 
-    <div class="container">
+    <div class="row">
+      <div class="col-lg-12">
+        <strong>Contribute:</strong>
+        <b-button-group>
+          <b-button variant="primary" @click="CONTRIBUTE_WEI(1)">1 <eth-symbol></eth-symbol></b-button>
+          <b-button variant="primary" @click="CONTRIBUTE_WEI(25)">25 <eth-symbol></eth-symbol></b-button>
+          <b-button variant="primary" @click="CONTRIBUTE_WEI(50)">50 <eth-symbol></eth-symbol></b-button>
+          <b-button variant="primary" @click="CONTRIBUTE_WEI(100)">100 <eth-symbol></eth-symbol></b-button>
+          <b-button variant="primary" @click="CONTRIBUTE_WEI(250)">250 <eth-symbol></eth-symbol></b-button>
+        </b-button-group>
+      </div>
+    </div>
 
-      <div class="row">
-        <div class="col-lg-12">
-          <strong>Contribute:</strong>
-          <b-button-group>
-            <b-button variant="primary" @click="CONTRIBUTE_WEI(1)">1 <eth-symbol></eth-symbol></b-button>
-            <b-button variant="primary" @click="CONTRIBUTE_WEI(25)">25 <eth-symbol></eth-symbol></b-button>
-            <b-button variant="primary" @click="CONTRIBUTE_WEI(50)">50 <eth-symbol></eth-symbol></b-button>
-            <b-button variant="primary" @click="CONTRIBUTE_WEI(100)">100 <eth-symbol></eth-symbol></b-button>
-            <b-button variant="primary" @click="CONTRIBUTE_WEI(250)">250 <eth-symbol></eth-symbol></b-button>
-          </b-button-group>
+    <div class="row mt-4">
+      <div class="col-lg-12">
+        <div class="alert alert-warning" role="alert" v-if="isOwner">
+          <icon name="exclamation-triangle"></icon> Only the owner can pause the contract!
+
+          <span class="pl-4">
+            <b-button variant="primary" v-if="!paused" @click="PAUSE_CONTRACT(1)">Pause <icon name="pause"></icon></b-button>
+            <b-button variant="primary" v-if="paused" @click="UNPAUSE_CONTRACT(25)">Unpause <icon name="play"></icon></b-button>
+          </span>
         </div>
       </div>
-
-      <hr>
-
-      <div class="row">
-        <div class="col-lg-12">
-          <strong>Pauseable:</strong>
-          <span>Contract is paused <strong>{{paused}}</strong></span>
-          <div v-if="isOwner">
-            <b-button-group>
-              <b-button variant="primary" v-if="!paused" @click="PAUSE_CONTRACT(1)">Pause <icon name="pause"></icon></b-button>
-
-              <b-button variant="primary" v-if="paused" @click="UNPAUSE_CONTRACT(25)">Unpause <icon name="play"></icon></b-button>
-            </b-button-group>
-          </div>
-          <div v-if="!isOwner">
-            <div class="bg-warning text-dark"><icon name="exclamation-triangle"></icon> Only the owner can pause the contract!</div>
-          </div>
-        </div>
-      </div>
-
     </div>
 
   </div>

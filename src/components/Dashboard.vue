@@ -16,7 +16,7 @@
       </div>
 
       <h2 class="text-muted">{{ icoState }}</h2>
-      
+
       <p class="float-right"><strong>{{ raised }}</strong>
         <eth-symbol></eth-symbol>
       </p>
@@ -55,6 +55,9 @@
 
         <h4>Pre-ICO Sale Close Date</h4>
         <p>{{ preSaleCloseTime | moment('from') }}</p>
+
+        <h4>Paused?</h4>
+        <p>{{ paused }}</p>
       </div>
       <div class="col-lg-2">
         &nbsp;
@@ -132,7 +135,8 @@
         'privateSaleCloseTime',
         'privateSaleRate',
         'preSaleCloseTime',
-        'preSaleRate'
+        'preSaleRate',
+        'paused'
       ]),
       ...mapGetters(['icoState'])
     }
