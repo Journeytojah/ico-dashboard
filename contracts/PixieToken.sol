@@ -7,7 +7,7 @@ import 'zeppelin-solidity/contracts/token/ERC20/StandardToken.sol';
 contract PixieToken is StandardToken {
 
   string public constant name = "Pixie Token";
-  string public constant symbol = "PIX";
+  string public constant symbol = "PXE";
   uint8 public constant decimals = 18;
 
   uint256 public initialSupply;

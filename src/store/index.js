@@ -41,6 +41,12 @@ const store = new Vuex.Store({
     max: 0,
     vault: null,
 
+    // semi-static values
+    privateSaleCloseTime: 0,
+    privateSaleRate: 0,
+    preSaleCloseTime: 0,
+    preSaleRate: 0,
+
     //crowdsale dynamic
     raised: 0,
     crowdsaleBalance: 0,
@@ -55,7 +61,33 @@ const store = new Vuex.Store({
   },
   getters: {
     isOwner: (state) => (state.owner && state.account) ? state.owner.toLowerCase() === state.account.toLowerCase() : false,
-    inKycWaitingList: (state) => (state.kycWaitingList) ? state.kycWaitingList.includes(state.account) : false
+    inKycWaitingList: (state) => (state.kycWaitingList) ? state.kycWaitingList.includes(state.account) : false,
+    icoState: (state) => {
+      if (state.start !== 0 && state.end && state.privateSaleCloseTime && state.preSaleCloseTime) {
+        const now = new Date().getTime() / 1000;
+        if (now > state.start && now < state.end) {
+          if (now < state.privateSaleCloseTime) {
+            return 'Private Sale';
+          }
+
+          if (now < state.preSaleCloseTime) {
+            return 'Pre-TGE Sale';
+          }
+
+          return 'TGE Sale';
+        }
+
+        if (now > state.end) {
+          return 'Sale Closed';
+        }
+
+        if (now < state.start) {
+          return 'Sale Not Yet Open';
+        }
+      }
+
+      return '';
+    }
   },
   mutations: {
     [mutations.SET_STATIC_CROWDSALE_DETAILS](state, {
@@ -70,7 +102,11 @@ const store = new Vuex.Store({
       owner,
       min,
       max,
-      vault
+      vault,
+      privateSaleCloseTime,
+      privateSaleRate,
+      preSaleCloseTime,
+      preSaleRate
     }) {
       state.rate = rate;
       state.token = token;
@@ -84,6 +120,10 @@ const store = new Vuex.Store({
       state.min = min;
       state.max = max;
       state.vault = vault;
+      state.privateSaleCloseTime = privateSaleCloseTime;
+      state.privateSaleRate = privateSaleRate;
+      state.preSaleCloseTime = preSaleCloseTime;
+      state.preSaleRate = preSaleRate;
     },
     [mutations.SET_CROWDSALE_DETAILS](state, {
       raised,
@@ -137,29 +177,29 @@ const store = new Vuex.Store({
     [actions.INIT_APP]({commit, dispatch, state}) {
       // use Web3?
       web3.eth.getAccounts()
-        .then((accounts) => {
+      .then((accounts) => {
 
-          // store the account
-          commit(mutations.SET_ACCOUNT, accounts[0]);
+        // store the account
+        commit(mutations.SET_ACCOUNT, accounts[0]);
 
-          store.dispatch(actions.INIT_CONTRACT_DETAILS, accounts[0]);
-          store.dispatch(actions.INIT_CROWDSALE_DETAILS, accounts[0]);
-          return accounts;
-        });
+        store.dispatch(actions.INIT_CONTRACT_DETAILS, accounts[0]);
+        store.dispatch(actions.INIT_CROWDSALE_DETAILS, accounts[0]);
+        return accounts;
+      });
     },
     [actions.REFRESH_APP]({commit, dispatch, state}) {
       // use Web3?
       web3.eth.getAccounts()
-        .then((accounts) => {
+      .then((accounts) => {
 
-          // store the account
-          commit(mutations.SET_ACCOUNT, accounts[0]);
+        // store the account
+        commit(mutations.SET_ACCOUNT, accounts[0]);
 
-          store.dispatch(actions.REFRESH_CONTRACT_DETAILS, accounts[0]);
-          store.dispatch(actions.REFRESH_CROWDSALE_DETAILS, accounts[0]);
-          store.dispatch(actions.VAULT_BALANCE);
-          return accounts;
-        });
+        store.dispatch(actions.REFRESH_CONTRACT_DETAILS, accounts[0]);
+        store.dispatch(actions.REFRESH_CROWDSALE_DETAILS, accounts[0]);
+        store.dispatch(actions.VAULT_BALANCE);
+        return accounts;
+      });
     },
     [actions.INIT_CONTRACT_DETAILS]({commit, dispatch, state}, account) {
       PixieToken.deployed()
@@ -185,7 +225,7 @@ const store = new Vuex.Store({
       .then((contract) => {
         return Promise.all([
           contract.balanceOf(account, {from: account}),
-          contract.balanceOf(state.address, {from: account}),
+          contract.balanceOf(state.address, {from: account})
         ]);
       })
       .then((results) => {
@@ -210,7 +250,11 @@ const store = new Vuex.Store({
           contract.owner(),
           contract.min(),
           contract.max(),
-          contract.vault()
+          contract.vault(),
+          contract.privateSaleCloseTime(),
+          contract.privateSaleRate(),
+          contract.preSaleCloseTime(),
+          contract.preSaleRate()
         ]);
       })
       .then((results) => {
@@ -227,6 +271,10 @@ const store = new Vuex.Store({
           min: results[9].toNumber(10),
           max: results[10].toNumber(10),
           vault: results[11],
+          privateSaleCloseTime: results[12].toNumber(10),
+          privateSaleRate: results[13].toNumber(10),
+          preSaleCloseTime: results[14].toNumber(10),
+          preSaleRate: results[15].toNumber(10)
         });
       });
     },

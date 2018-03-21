@@ -76,7 +76,7 @@ contract('PixieCrowdsale Tokenomics', function ([owner, investor, wallet]) {
     this.vault = await this.crowdsale.vault();
   });
 
-  describe.only('Crowdsale should allow all tokens in ICO to be sold', function () {
+  describe('Crowdsale should allow all tokens in ICO to be sold', function () {
 
     beforeEach(async function () {
       await increaseTimeTo(latestTime() + duration.seconds(11)); // force time to move on to 11 seconds
