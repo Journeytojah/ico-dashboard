@@ -1,19 +1,31 @@
 /* global web3:true */
+const Promise = require('bluebird');
+
 const PixieToken = artifacts.require('PixieToken');
 const PixieCrowdsale = artifacts.require('PixieCrowdsale');
 
 const HDWalletProvider = require('truffle-hdwallet-provider');
-const infuraApikey = 'nbCbdzC6IG9CF6hmvAVQ';
+const infuraApikey = 'fkWxG7nrciMRrRD36yVj';
 let mnemonic = require('../mnemonic');
 
 module.exports = function (deployer, network, accounts) {
 
   console.log(`Running within network = ${network}`);
 
+  let promisifyGetBlockNumber = Promise.promisify(web3.eth.getBlockNumber);
+  let promisifyGetBlock = Promise.promisify(web3.eth.getBlock);
+
   deployer.deploy(PixieToken, 1000)
     .then(() => PixieToken.deployed())
-    .then((contract) => Promise.all([contract, contract.initialSupply()]))
+    .then((contract) => Promise.all([
+      contract,
+      contract.initialSupply(),
+      promisifyGetBlockNumber().then((blockNumber) => promisifyGetBlock(blockNumber))
+    ]))
     .then((results) => {
+
+      const block = results[2];
+      console.log("last known block", block);
 
       const _rate = 1;
       const _initialSupply = results[1];
@@ -21,7 +33,7 @@ module.exports = function (deployer, network, accounts) {
       const _token = PixieToken.address;
       const _cap = _initialSupply.times(0.5); // cap 50% of supply i.e 500 WEI
 
-      const _openingTime = web3.eth.getBlock(web3.eth.blockNumber).timestamp + 1; // one second in the future
+      const _openingTime = block.timestamp + 1; // one second in the future
       const _closingTime = _openingTime + (86400 * 20); // 20 days
 
       const _privateSaleCloseTime = _openingTime + (86400 * 5); // 5 days
@@ -67,35 +79,39 @@ module.exports = function (deployer, network, accounts) {
       const crowdsaleSupply = initialSupply.times(0.5); // sell upto 50%, i.e. 500 WEI
 
       let pixieToken = results[1];
-      pixieToken.transfer(PixieCrowdsale.address, crowdsaleSupply);
 
       let privateSaleDetails = results[3];
       let preSaleDetails = results[4];
 
       return Promise.all([
+        pixieToken.transfer(PixieCrowdsale.address, crowdsaleSupply),
         PixieCrowdsale.deployed(),
         privateSaleDetails,
         preSaleDetails
       ])
     })
     .then((results) => {
-      let contract = results[0];
-      let privateSaleDetails = results[1];
-      let preSaleDetails = results[2];
+      let contract = results[1];
+      let privateSaleDetails = results[2];
+      let preSaleDetails = results[3];
 
-      let _contractCreatorAccount = accounts[0];
-      let _secondTestApprovedTestAccount = accounts[1];
+      let _contractCreatorAccount;
+      let _secondTestApprovedTestAccount;
 
       // Load in other accounts for different networks
       if (network === 'ropsten' || network === 'rinkeby') {
-        _secondTestApprovedTestAccount = new HDWalletProvider(mnemonic, `https://ropsten.infura.io/${infuraApikey}`, 1);
+        _secondTestApprovedTestAccount = new HDWalletProvider(mnemonic, `https://${network}.infura.io/${infuraApikey}`, 1).getAddress();
+        _contractCreatorAccount = accounts[0].getAddress();
+      } else {
+        _contractCreatorAccount = accounts[0];
+        _secondTestApprovedTestAccount = accounts[1];
       }
 
-      console.log(`_contractCreatorAccount - [${_contractCreatorAccount.getAddress()}]`);
-      console.log(`_secondTestApprovedTestAccount - [${_secondTestApprovedTestAccount.getAddress()}]`);
+      console.log(`_contractCreatorAccount - [${_contractCreatorAccount}]`);
+      console.log(`_secondTestApprovedTestAccount - [${_secondTestApprovedTestAccount}]`);
 
       return Promise.all([
-        contract.addManyToWhitelist([_contractCreatorAccount.getAddress(), _secondTestApprovedTestAccount.getAddress()]),
+        contract.addManyToWhitelist([_contractCreatorAccount, _secondTestApprovedTestAccount]),
         contract.setPrivatePreSaleRates(privateSaleDetails.closeTime, privateSaleDetails.rate, preSaleDetails.closeTime, preSaleDetails.rate)
       ])
     });
