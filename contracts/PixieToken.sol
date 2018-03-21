@@ -8,7 +8,7 @@ contract PixieToken is StandardToken {
 
   string public constant name = "Pixie Token";
   string public constant symbol = "PIX";
-  uint8 public constant decimals = 0;
+  uint8 public constant decimals = 18;
 
   uint256 public initialSupply;
 
