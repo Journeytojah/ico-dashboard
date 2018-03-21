@@ -25,7 +25,7 @@
 
     <div class="row">
       <div class="col-lg-12">
-        <strong>Contribute:</strong>
+        <span>Contribute:</span>
         <b-button-group>
           <b-button variant="primary" @click="CONTRIBUTE_WEI(1)">1 <eth-symbol></eth-symbol></b-button>
           <b-button variant="primary" @click="CONTRIBUTE_WEI(25)">25 <eth-symbol></eth-symbol></b-button>
