@@ -9,6 +9,12 @@ contract PixieCrowdsale is Crowdsale, Pausable {
 
   event Finalized();
 
+  mapping(address => bool) public whitelist;
+
+  mapping(address => uint256) public contributions;
+
+  bool public isFinalized = false;
+
   uint256 public openingTime = now;
 
   uint256 public closingTime = openingTime.add(4 weeks);
@@ -21,20 +27,13 @@ contract PixieCrowdsale is Crowdsale, Pausable {
 
   uint256 public preSaleRate = 2;
 
-  uint256 public cap = 1000 ether;
+  uint256 public goal = 50 ether;
 
-  mapping(address => uint256) public contributions;
+  uint256 public cap = 1000 ether;
 
   uint256 public min = 0.1 ether;
 
   uint256 public max = 100 ether;
-
-  mapping(address => bool) public whitelist;
-
-  bool public isFinalized = false;
-
-  // minimum amount of funds to be raised in weis
-  uint256 public goal = 50 ether;
 
   // refund vault used to hold funds while crowdsale is running
   RefundVault public vault;
