@@ -1,6 +1,8 @@
 <template>
   <div class="current-network">
-    {{ currentNetwork }}
+    <v-alert type="info" :value="true">
+      Current Network: {{ currentNetwork }}
+    </v-alert>
   </div>
 </template>
 

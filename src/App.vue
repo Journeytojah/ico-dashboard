@@ -1,46 +1,81 @@
 <template>
-  <div id="app">
-    <div class="container">
-
-      <div class="header clearfix">
-        <nav>
-          <ul class="nav float-right">
-            <li class="nav-item" v-if="isOwner">
-              <b-badge  pill variant="success">OWNER</b-badge>
-            </li>
-            <li class="nav-item">
-              <router-link :to="{ name: 'dashboard' }" class="nav-link">Home</router-link>
-            </li>
-            <li class="nav-item">
-              <router-link :to="{ name: 'token' }" class="nav-link">Token</router-link>
-            </li>
-            <li class="nav-item">
-              <router-link :to="{ name: 'vault' }" class="nav-link">Vault</router-link>
-            </li>
-            <li class="nav-item">
-              <router-link :to="{ name: 'kyc' }" class="nav-link">KYC</router-link>
-            </li>
-            <li class="nav-item">
-              <router-link :to="{ name: 'account' }" class="nav-link">Account</router-link>
-            </li>
-          </ul>
-        </nav>
-
-        <h3 class="text-muted">Pixie TGE</h3>
-      </div>
-
+  <v-app id="inspire">
+    <v-toolbar dark color="primary">
+      <v-toolbar-title>Pixie Token Sale</v-toolbar-title>
+      <v-spacer></v-spacer>
+      <v-toolbar-items class="hidden-sm-and-down">
+        <v-btn flat>
+          <v-icon>home</v-icon> Dashboard
+          <router-link :to="{ name: 'dashboard' }"></router-link>
+        </v-btn>
+      <v-btn flat>
+        <v-icon>monetization_on</v-icon>Token
+        <router-link :to="{ name: 'token' }"></router-link>
+      </v-btn>
+      <v-btn flat>
+        <v-icon>account_balance</v-icon>Vault
+        <router-link :to="{ name: 'vault' }"></router-link>
+      </v-btn>
+      <v-btn flat>
+        <v-icon>supervisor_account</v-icon>KYC
+        <router-link :to="{ name: 'kyc' }"></router-link>
+      </v-btn>
+      <v-btn flat>
+        <v-icon>gavel</v-icon>Account
+        <router-link :to="{ name: 'account' }"></router-link>
+      </v-btn>
+      </v-toolbar-items>
+    </v-toolbar>
+    <v-parallax src="https://vuetifyjs.com/static/doc-images/parallax/material2.jpg" height="100%">
+      <v-layout align-center justify-center pa-3>
       <router-view></router-view>
+    </v-layout>
+    </v-parallax>
+      <v-footer>
+      <v-flex>
+        <current-network></current-network>
+      </v-flex>
+    </v-footer>
+  </v-app>
 
-      <div class="footer">
-        <hr/>
-        <b-badge>
-          <current-network></current-network>
-        </b-badge>
-      </div>
+    <!--<div class="container">-->
+      <!--<div class="header clearfix">-->
+        <!--<nav>-->
+          <!--<ul class="nav float-right">-->
+            <!--<li class="nav-item" v-if="isOwner">-->
+              <!--<b-badge  pill variant="success">OWNER</b-badge>-->
+            <!--</li>-->
+            <!--<li class="nav-item">-->
+              <!--<router-link :to="{ name: 'dashboard' }" class="nav-link">Home</router-link>-->
+            <!--</li>-->
+            <!--<li class="nav-item">-->
+              <!--<router-link :to="{ name: 'token' }" class="nav-link">Token</router-link>-->
+            <!--</li>-->
+            <!--<li class="nav-item">-->
+              <!--<router-link :to="{ name: 'vault' }" class="nav-link">Vault</router-link>-->
+            <!--</li>-->
+            <!--<li class="nav-item">-->
+              <!--<router-link :to="{ name: 'kyc' }" class="nav-link">KYC</router-link>-->
+            <!--</li>-->
+            <!--<li class="nav-item">-->
+              <!--<router-link :to="{ name: 'account' }" class="nav-link">Account</router-link>-->
+            <!--</li>-->
+          <!--</ul>-->
+        <!--</nav>-->
 
-    </div>
+        <!--<h3 class="text-muted">Pixie TGE</h3>-->
+      <!--</div>-->
 
-  </div>
+      <!--<router-view></router-view>-->
+
+      <!--<div class="footer">-->
+        <!--<hr/>-->
+        <!--<b-badge>-->
+          <!--<current-network></current-network>-->
+        <!--</b-badge>-->
+      <!--</div>-->
+
+  <!--</div>-->
 </template>
 
 <script>
