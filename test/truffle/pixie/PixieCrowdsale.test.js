@@ -56,7 +56,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     this.crowdsale = await PixieCrowdsale.new(wallet, this.token.address, {from: owner});
 
     // ensure tokens can be transferred from crowdsale
-    await this.token.transfer(this.crowdsale.address, this.amountAvailableForPurchase);
+    await this.token.transfer(this.crowdsale.address, this.amountAvailableForPurchase, {from: owner});
 
     // approve so they can invest in crowdsale
     await this.crowdsale.addToWhitelist(owner);
@@ -66,6 +66,9 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
 
     // used in whitelist testing
     await this.crowdsale.addToWhitelist(authorized);
+
+    // ensure crowdsale address is whitelisted to transfer tokens
+    this.token.addAddressToWhitelist(this.crowdsale.address, {from: owner});
 
     this.vault = await this.crowdsale.vault();
   });
