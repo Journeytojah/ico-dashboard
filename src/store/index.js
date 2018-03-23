@@ -1,4 +1,4 @@
-import Web3 from 'web3';
+/* global web3:true */
 
 import Vue from 'vue';
 import Vuex from 'vuex';
@@ -7,7 +7,11 @@ import * as mutations from './mutation-types';
 import createLogger from 'vuex/dist/logger';
 import { getNetIdString } from '../utils';
 
-import { PixieCrowdsale, PixieToken } from '../contracts/index';
+// import { PixieCrowdsale, PixieToken } from '../contracts/index';
+import { ConfigurableCrowdsale, ConfigurableToken } from '../contracts/index';
+
+const _token = ConfigurableToken;
+const _crowdsale = ConfigurableCrowdsale;
 
 const utils = require('../utils');
 
@@ -202,7 +206,7 @@ const store = new Vuex.Store({
       });
     },
     [actions.INIT_CONTRACT_DETAILS]({commit, dispatch, state}, account) {
-      PixieToken.deployed()
+      _token.deployed()
       .then((contract) => {
         return Promise.all([
           contract.name(),
@@ -221,7 +225,7 @@ const store = new Vuex.Store({
       });
     },
     [actions.REFRESH_CONTRACT_DETAILS]({commit, dispatch, state}, account) {
-      PixieToken.deployed()
+      _token.deployed()
       .then((contract) => {
         return Promise.all([
           contract.balanceOf(account, {from: account}),
@@ -236,7 +240,7 @@ const store = new Vuex.Store({
       });
     },
     [actions.INIT_CROWDSALE_DETAILS]({commit, dispatch, state}, account) {
-      PixieCrowdsale.deployed()
+      _crowdsale.deployed()
       .then((contract) => {
         return Promise.all([
           contract.rate(),
@@ -279,7 +283,7 @@ const store = new Vuex.Store({
       });
     },
     [actions.REFRESH_CROWDSALE_DETAILS]({commit, dispatch, state}, account) {
-      PixieCrowdsale.deployed()
+      _crowdsale.deployed()
       .then((contract) => {
         return Promise.all([
           contract.weiRaised(),
@@ -303,7 +307,7 @@ const store = new Vuex.Store({
       commit(mutations.PUSH_TO_KYC_WAITING_LIST, kycAccount);
     },
     [actions.APPROVE_KYC]({commit, dispatch, state}, kycAccount) {
-      PixieCrowdsale.deployed()
+      _crowdsale.deployed()
       .then((contract) => {
         return contract.addToWhitelist(kycAccount, {from: state.account});
       })
@@ -318,19 +322,19 @@ const store = new Vuex.Store({
       }
     },
     [actions.CONTRIBUTE_WEI]({commit, dispatch, state}, contributionInWei) {
-      PixieCrowdsale.deployed()
+      _crowdsale.deployed()
       .then((contract) => {
         return contract.buyTokens(state.account, {value: contributionInWei, from: state.account});
       });
     },
     [actions.PAUSE_CONTRACT]({commit, dispatch, state}) {
-      PixieCrowdsale.deployed()
+      _crowdsale.deployed()
       .then((contract) => {
         return contract.pause({from: state.account});
       });
     },
     [actions.UNPAUSE_CONTRACT]({commit, dispatch, state}) {
-      PixieCrowdsale.deployed()
+      _crowdsale.deployed()
       .then((contract) => {
         return contract.unpause({from: state.account});
       });

@@ -1,5 +1,5 @@
-const etherToWei = require('../helpers/EtherToWei');
-const EVMRevert = require('../helpers/EVMRevert');
+const etherToWei = require('../../helpers/etherToWei');
+const EVMRevert = require('../../helpers/EVMRevert');
 
 const BigNumber = web3.BigNumber;
 

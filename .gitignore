@@ -18,3 +18,4 @@ build
 *.iml
 /coverage.json
 /coverage/
+/contracts-flat/

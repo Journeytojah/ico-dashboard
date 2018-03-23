@@ -1,14 +1,15 @@
 /* eslint-disable camelcase */
-const assertRevert = require('../helpers/assertRevert');
+const assertRevert = require('../../helpers/assertRevert');
 
-const PixieToken = artifacts.require('PixieToken');
+const ConfigurableToken = artifacts.require('ConfigurableToken');
 
-contract('PixieToken', function ([_, owner, recipient, anotherAccount]) {
+contract('ConfigurableToken', function ([_, owner, recipient, anotherAccount]) {
   const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
   const TOTAl_AMOUNT_OF_TOKENS = 10000000000;
+  const DECIMALS = 0;
 
   beforeEach(async function () {
-    this.token = await PixieToken.new(TOTAl_AMOUNT_OF_TOKENS, {from: owner});
+    this.token = await ConfigurableToken.new(TOTAl_AMOUNT_OF_TOKENS, DECIMALS, {from: owner});
   });
 
   describe('total supply', function () {

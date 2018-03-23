@@ -1,11 +1,11 @@
-const etherToWei = require('../helpers/etherToWei');
-const assertRevert = require('../helpers/assertRevert');
+const etherToWei = require('../../helpers/etherToWei');
+const assertRevert = require('../../helpers/assertRevert');
 
-const advanceBlock = require('../helpers/advanceToBlock');
-const increaseTimeTo = require('../helpers/increaseTime').increaseTimeTo;
-const duration = require('../helpers/increaseTime').duration;
-const latestTime = require('../helpers/latestTime');
-const EVMRevert = require('../helpers/EVMRevert');
+const advanceBlock = require('../../helpers/advanceToBlock');
+const increaseTimeTo = require('../../helpers/increaseTime').increaseTimeTo;
+const duration = require('../../helpers/increaseTime').duration;
+const latestTime = require('../../helpers/latestTime');
+const EVMRevert = require('../../helpers/EVMRevert');
 
 const BigNumber = web3.BigNumber;
 
@@ -14,10 +14,10 @@ const should = require('chai')
   .use(require('chai-bignumber')(BigNumber))
   .should();
 
-const PixieCrowdsale = artifacts.require('PixieCrowdsale');
-const PixieToken = artifacts.require('PixieToken');
+const ConfigurableCrowdsale = artifacts.require('ConfigurableCrowdsale');
+const ConfigurableToken = artifacts.require('ConfigurableToken');
 
-contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, authorized, unauthorized, anotherAuthorized]) {
+contract('ConfigurableCrowdsale', function ([owner, investor, wallet, purchaser, authorized, unauthorized, anotherAuthorized]) {
 
   before(async function () {
     // Advance to the next block to correctly read time in the solidity "now" function interpreted by testrpc
@@ -25,7 +25,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
   });
 
   beforeEach(async function () {
-    this.token = await PixieToken.new(1000);
+    this.token = await ConfigurableToken.new(1000, 0);
 
     this.rate = new BigNumber(1);
 
@@ -51,7 +51,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     this.value = this.minContribution;
     this.standardExpectedTokenAmount = this.rate.mul(this.value);
 
-    this.crowdsale = await PixieCrowdsale.new(
+    this.crowdsale = await ConfigurableCrowdsale.new(
       this.rate,
       wallet,
       this.token.address,
@@ -183,7 +183,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     describe('creating a valid crowdsale', function () {
       it('should fail with zero cap', async function () {
         await assertRevert(
-          PixieCrowdsale.new(
+          ConfigurableCrowdsale.new(
             this.rate,
             wallet,
             0,
@@ -332,7 +332,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     describe('creating a valid timed crowdsale contract', function () {
       it('should fail with zero opening time', async function () {
         await assertRevert(
-          PixieCrowdsale.new(
+          ConfigurableCrowdsale.new(
             this.rate,
             wallet,
             this.cap,
@@ -348,7 +348,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
       });
       it('should fail with zero closing time', async function () {
         await assertRevert(
-          PixieCrowdsale.new(
+          ConfigurableCrowdsale.new(
             this.rate,
             wallet,
             this.cap,
@@ -602,7 +602,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     describe('creating a valid crowdsale', function () {
       it('should fail with zero minimum', async function () {
         await assertRevert(
-          PixieCrowdsale.new(
+          ConfigurableCrowdsale.new(
             this.rate,
             wallet,
             this.cap,
@@ -619,7 +619,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
 
       it('should fail with zero maximum', async function () {
         await assertRevert(
-          PixieCrowdsale.new(
+          ConfigurableCrowdsale.new(
             this.rate,
             wallet,
             this.cap,
@@ -725,7 +725,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
 
     describe('creating a valid crowdsale', function () {
       it('should fail with zero goal', async function () {
-        await assertRevert(PixieCrowdsale.new(
+        await assertRevert(ConfigurableCrowdsale.new(
           this.rate,
           wallet,
           this.token.address,
@@ -787,7 +787,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     describe('enhanced _preValidatePurchase() checks', function () {
 
       beforeEach(async function () {
-        this.crowdsale = await PixieCrowdsale.new(
+        this.crowdsale = await ConfigurableCrowdsale.new(
           this.rate,
           wallet,
           this.token.address,
@@ -881,7 +881,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
       describe('private sale rate', async function () {
 
         beforeEach(async function () {
-          await increaseTimeTo(this.privateSaleCloseTime - duration.seconds(1)); // set time to just before private sale close
+          await increaseTimeTo(this.privateSaleCloseTime - duration.seconds(10)); // set time to just before private sale close
         });
 
         it('should assign tokens to sender', async function () {
@@ -903,7 +903,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
       describe('pre sale rate', async function () {
 
         beforeEach(async function () {
-          await increaseTimeTo(this.preSaleCloseTime - duration.seconds(1)); // set time to just before pre sale close
+          await increaseTimeTo(this.preSaleCloseTime - duration.seconds(10)); // set time to just before pre sale close
         });
 
         it('should assign tokens to sender', async function () {

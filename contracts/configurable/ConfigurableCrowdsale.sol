@@ -4,14 +4,14 @@ pragma solidity ^0.4.19;
 import "zeppelin-solidity/contracts/token/ERC20/StandardToken.sol";
 import "zeppelin-solidity/contracts/lifecycle/Pausable.sol";
 import "zeppelin-solidity/contracts/crowdsale/validation/CappedCrowdsale.sol";
-import "zeppelin-solidity/contracts/crowdsale/validation/WhitelistedCrowdsale.sol";
+import "./WhitelistedCrowdsale.sol";
 import "zeppelin-solidity/contracts/crowdsale/distribution/RefundableCrowdsale.sol";
 import "./IndividualLimitsCrowdsale.sol";
 
 
-contract PixieCrowdsale is CappedCrowdsale, WhitelistedCrowdsale, IndividualLimitsCrowdsale, RefundableCrowdsale, Pausable {
+contract ConfigurableCrowdsale is CappedCrowdsale, WhitelistedCrowdsale, IndividualLimitsCrowdsale, RefundableCrowdsale, Pausable {
 
-  function PixieCrowdsale(
+  function ConfigurableCrowdsale(
     uint256 _rate,
     address _wallet,
     StandardToken _token,
