@@ -881,7 +881,7 @@ contract('ConfigurableCrowdsale', function ([owner, investor, wallet, purchaser,
       describe('private sale rate', async function () {
 
         beforeEach(async function () {
-          await increaseTimeTo(this.privateSaleCloseTime - duration.seconds(1)); // set time to just before private sale close
+          await increaseTimeTo(this.privateSaleCloseTime - duration.seconds(10)); // set time to just before private sale close
         });
 
         it('should assign tokens to sender', async function () {
@@ -903,7 +903,7 @@ contract('ConfigurableCrowdsale', function ([owner, investor, wallet, purchaser,
       describe('pre sale rate', async function () {
 
         beforeEach(async function () {
-          await increaseTimeTo(this.preSaleCloseTime - duration.seconds(1)); // set time to just before pre sale close
+          await increaseTimeTo(this.preSaleCloseTime - duration.seconds(10)); // set time to just before pre sale close
         });
 
         it('should assign tokens to sender', async function () {
