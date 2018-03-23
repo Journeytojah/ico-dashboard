@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-const assertRevert = require('../helpers/assertRevert');
+const assertRevert = require('../../helpers/assertRevert');
 
 const PixieToken = artifacts.require('PixieToken');
 
