@@ -234,23 +234,23 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     });
 
     it('cannot be finalized by third party after ending', async function () {
-      await increaseTimeTo(this.afterClosingTime);
+      await increaseTimeTo(this.afterClosingTime + duration.seconds(1));
       await this.crowdsale.finalize({from: investor}).should.be.rejectedWith(EVMRevert);
     });
 
     it('can be finalized by owner after ending', async function () {
-      await increaseTimeTo(this.afterClosingTime);
+      await increaseTimeTo(this.afterClosingTime + duration.seconds(1));
       await this.crowdsale.finalize({from: owner}).should.be.fulfilled;
     });
 
     it('cannot be finalized twice', async function () {
-      await increaseTimeTo(this.afterClosingTime);
+      await increaseTimeTo(this.afterClosingTime + duration.seconds(1));
       await this.crowdsale.finalize({from: owner});
       await this.crowdsale.finalize({from: owner}).should.be.rejectedWith(EVMRevert);
     });
 
     it('logs finalized', async function () {
-      await increaseTimeTo(this.afterClosingTime);
+      await increaseTimeTo(this.afterClosingTime + duration.seconds(1));
       const {logs} = await this.crowdsale.finalize({from: owner});
       const event = logs.find(e => e.event === 'Finalized');
       should.exist(event);
@@ -290,7 +290,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
       });
 
       it('should reject payments after end', async function () {
-        await increaseTimeTo(this.afterClosingTime);
+        await increaseTimeTo(this.afterClosingTime + duration.seconds(1));
         await this.crowdsale.send(this.minContribution).should.be.rejectedWith(EVMRevert);
         await this.crowdsale.buyTokens(investor, {value: this.minContribution, from: purchaser})
           .should.be.rejectedWith(EVMRevert);
@@ -662,55 +662,52 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     });
   });
 
-  describe('Private/Pre ICO date restrictions - setPrivatePreSaleRates()', function () {
+  describe('Private/Pre ICO date restrictions - overridden _getTokenAmount()', function () {
 
-    describe('overridden _getTokenAmount() method', function () {
+    describe('private sale rate', async function () {
 
-      describe('private sale rate', async function () {
-
-        beforeEach(async function () {
-          await increaseTimeTo(this.privateSaleCloseTime - duration.seconds(1)); // set time to just before private sale close
-        });
-
-        it('should assign tokens to sender', async function () {
-          await this.crowdsale.sendTransaction({value: this.value, from: investor});
-          let balance = await this.token.balanceOf(investor);
-          balance.should.be.bignumber.equal(this.standardExpectedTokenAmount * this.privateSaleRate);
-        });
-
-        // when using RefundableCrowdsale the "vault" holds the funds
-        it('should forward funds to vault', async function () {
-          const pre = web3.eth.getBalance(this.vault);
-          await this.crowdsale.sendTransaction({value: this.value, from: investor});
-
-          const post = web3.eth.getBalance(this.vault);
-          post.minus(pre).should.be.bignumber.equal(this.value);
-        });
+      beforeEach(async function () {
+        await increaseTimeTo(this.privateSaleCloseTime - duration.seconds(10)); // set time to just before private sale close
       });
 
-      describe('pre sale rate', async function () {
-
-        beforeEach(async function () {
-          await increaseTimeTo(this.preSaleCloseTime - duration.seconds(1)); // set time to just before pre sale close
-        });
-
-        it('should assign tokens to sender', async function () {
-          await this.crowdsale.sendTransaction({value: this.value, from: investor});
-          let balance = await this.token.balanceOf(investor);
-          balance.should.be.bignumber.equal(this.standardExpectedTokenAmount * this.preSaleRate);
-        });
-
-        // when using RefundableCrowdsale the "vault" holds the funds
-        it('should forward funds to vault', async function () {
-          const pre = web3.eth.getBalance(this.vault);
-          await this.crowdsale.sendTransaction({value: this.value, from: investor});
-
-          const post = web3.eth.getBalance(this.vault);
-          post.minus(pre).should.be.bignumber.equal(this.value);
-        });
+      it('should assign tokens to sender', async function () {
+        await this.crowdsale.sendTransaction({value: this.value, from: investor});
+        let balance = await this.token.balanceOf(investor);
+        balance.should.be.bignumber.equal(this.standardExpectedTokenAmount * this.privateSaleRate);
       });
 
+      // when using RefundableCrowdsale the "vault" holds the funds
+      it('should forward funds to vault', async function () {
+        const pre = web3.eth.getBalance(this.vault);
+        await this.crowdsale.sendTransaction({value: this.value, from: investor});
+
+        const post = web3.eth.getBalance(this.vault);
+        post.minus(pre).should.be.bignumber.equal(this.value);
+      });
     });
+
+    describe('pre sale rate', async function () {
+
+      beforeEach(async function () {
+        await increaseTimeTo(this.preSaleCloseTime - duration.seconds(10)); // set time to just before pre sale close
+      });
+
+      it('should assign tokens to sender', async function () {
+        await this.crowdsale.sendTransaction({value: this.value, from: investor});
+        let balance = await this.token.balanceOf(investor);
+        balance.should.be.bignumber.equal(this.standardExpectedTokenAmount * this.preSaleRate);
+      });
+
+      // when using RefundableCrowdsale the "vault" holds the funds
+      it('should forward funds to vault', async function () {
+        const pre = web3.eth.getBalance(this.vault);
+        await this.crowdsale.sendTransaction({value: this.value, from: investor});
+
+        const post = web3.eth.getBalance(this.vault);
+        post.minus(pre).should.be.bignumber.equal(this.value);
+      });
+    });
+
   });
 
 });
