@@ -20,7 +20,7 @@ module.exports = function (deployer, network, accounts) {
   const _decimals = new BigNumber(0);
 
   deployer.deploy(ConfigurableToken, _tokenInitialSupply, _decimals)
-  .then((contract) => promisifyGetBlockNumber().then((blockNumber) => promisifyGetBlock(blockNumber)))
+  .then(() => promisifyGetBlockNumber().then((blockNumber) => promisifyGetBlock(blockNumber)))
   .then((block) => {
 
     const _rate = 1;

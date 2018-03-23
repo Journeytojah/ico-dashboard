@@ -12,7 +12,7 @@ contract PixieToken is StandardToken {
 
   uint8 public constant decimals = 18;
 
-  uint256 public initialSupply = 100000000000 * (10 ** uint256(decimals)); // 100 Billion PXE to 18 decimal places
+  uint256 public constant initialSupply = 100000000000 * (10 ** uint256(decimals)); // 100 Billion PXE to 18 decimal places
 
   /**
    * @dev Constructor that gives msg.sender all of existing tokens.
