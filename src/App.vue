@@ -26,7 +26,7 @@
           </ul>
         </nav>
 
-        <h3 class="text-muted">Pixie TGE</h3>
+        <h3 class="text-muted">{{ tokenName }} TGE</h3>
       </div>
 
       <router-view></router-view>
@@ -60,9 +60,8 @@
       };
     },
     computed: {
-      ...mapGetters([
-        'isOwner',
-      ])
+      ...mapGetters(['isOwner']),
+      ...mapState(['tokenName'])
     },
     components: {CurrentNetwork},
     mounted() {
