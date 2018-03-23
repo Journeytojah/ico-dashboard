@@ -197,6 +197,4 @@ contract PixieCrowdsale is Crowdsale, Pausable {
 
     require(!paused);
   }
-
-
 }

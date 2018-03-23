@@ -9,9 +9,9 @@ import "zeppelin-solidity/contracts/crowdsale/distribution/RefundableCrowdsale.s
 import "./IndividualLimitsCrowdsale.sol";
 
 
-contract PixieCrowdsale is CappedCrowdsale, WhitelistedCrowdsale, IndividualLimitsCrowdsale, RefundableCrowdsale, Pausable {
+contract ConfigurableCrowdsale is CappedCrowdsale, WhitelistedCrowdsale, IndividualLimitsCrowdsale, RefundableCrowdsale, Pausable {
 
-  function PixieCrowdsale(
+  function ConfigurableCrowdsale(
     uint256 _rate,
     address _wallet,
     StandardToken _token,
