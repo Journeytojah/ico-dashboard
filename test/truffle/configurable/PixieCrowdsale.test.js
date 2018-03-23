@@ -1,11 +1,11 @@
-const etherToWei = require('../helpers/etherToWei');
-const assertRevert = require('../helpers/assertRevert');
+const etherToWei = require('../../helpers/etherToWei');
+const assertRevert = require('../../helpers/assertRevert');
 
-const advanceBlock = require('../helpers/advanceToBlock');
-const increaseTimeTo = require('../helpers/increaseTime').increaseTimeTo;
-const duration = require('../helpers/increaseTime').duration;
-const latestTime = require('../helpers/latestTime');
-const EVMRevert = require('../helpers/EVMRevert');
+const advanceBlock = require('../../helpers/advanceToBlock');
+const increaseTimeTo = require('../../helpers/increaseTime').increaseTimeTo;
+const duration = require('../../helpers/increaseTime').duration;
+const latestTime = require('../../helpers/latestTime');
+const EVMRevert = require('../../helpers/EVMRevert');
 
 const BigNumber = web3.BigNumber;
 
