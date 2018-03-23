@@ -15,7 +15,8 @@ contract PixieCrowdsale is Crowdsale, Pausable {
 
   bool public isFinalized = false;
 
-  uint256 public openingTime = now;
+  // N.B this is a temp solution
+  uint256 public openingTime = now.add(1 minutes);
 
   uint256 public closingTime = openingTime.add(4 weeks);
 
@@ -27,9 +28,9 @@ contract PixieCrowdsale is Crowdsale, Pausable {
 
   uint256 public preSaleRate = 2;
 
-  uint256 public goal = 50 ether;
+  uint256 public goal = 17500 ether;
 
-  uint256 public cap = 1000 ether;
+  uint256 public cap = 65000 ether;
 
   uint256 public min = 0.1 ether;
 
