@@ -15,26 +15,26 @@ contract PixieCrowdsale is Crowdsale, Pausable {
 
   bool public isFinalized = false;
 
-  // N.B this is a temp solution
-  uint256 public openingTime = now.add(1 minutes);
+  // FIXME N.B this is a temp solution
+  uint256 public constant openingTime = now.add(1 minutes);
 
-  uint256 public closingTime = openingTime.add(4 weeks);
+  uint256 public constant closingTime = openingTime.add(4 weeks);
 
-  uint256 public privateSaleCloseTime = openingTime.add(1 weeks);
+  uint256 public constant privateSaleCloseTime = openingTime.add(1 weeks);
 
-  uint256 public privateSaleRate = 3;
+  uint256 public constant privateSaleRate = 3;
 
-  uint256 public preSaleCloseTime = openingTime.add(2 weeks);
+  uint256 public constant preSaleCloseTime = openingTime.add(2 weeks);
 
-  uint256 public preSaleRate = 2;
+  uint256 public constant preSaleRate = 2;
 
-  uint256 public goal = 17500 ether;
+  uint256 public constant goal = 17500 ether;
 
-  uint256 public cap = 65000 ether;
+  uint256 public constant cap = 65000 ether;
 
-  uint256 public min = 0.1 ether;
+  uint256 public constant min = 0.1 ether;
 
-  uint256 public max = 100 ether;
+  uint256 public constant max = 100 ether;
 
   // refund vault used to hold funds while crowdsale is running
   RefundVault public vault;

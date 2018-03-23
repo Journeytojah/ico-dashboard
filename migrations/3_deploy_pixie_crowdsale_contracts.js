@@ -11,14 +11,13 @@ module.exports = function (deployer, network, accounts) {
 
   console.log(`Running within network = ${network}`);
 
-  deployer.deploy(PixieToken)
+  deployer.deploy(PixieToken, {from: accounts[0]})
   .then(() => PixieToken.deployed())
   .then((deployedPixieToken) => deployedPixieToken.initialSupply())
   .then((initialSupply) => {
 
-
     return Promise.all([
-      deployer.deploy(PixieCrowdsale, accounts[0], PixieToken.address),
+      deployer.deploy(PixieCrowdsale, accounts[0], PixieToken.address, {from: accounts[0]}),
       PixieToken.deployed(),
       initialSupply
     ]);
@@ -30,11 +29,13 @@ module.exports = function (deployer, network, accounts) {
 
     return Promise.all([
       PixieCrowdsale.deployed(),
-      deployedPixieToken.transfer(PixieCrowdsale.address, crowdsaleSupply),
+      PixieToken.deployed(),
+      deployedPixieToken.transfer(PixieCrowdsale.address, crowdsaleSupply, {from: accounts[0]})
     ]);
   })
   .then((results) => {
     const deployedPixieCrowdsale = results[0];
+    const deployedPixieToken = results[1];
 
     let _contractCreatorAccount;
     let _secondTestApprovedTestAccount;
@@ -51,6 +52,11 @@ module.exports = function (deployer, network, accounts) {
     // console.log(`_contractCreatorAccount - [${_contractCreatorAccount}]`);
     // console.log(`_secondTestApprovedTestAccount - [${_secondTestApprovedTestAccount}]`);
 
-    return deployedPixieCrowdsale.addManyToWhitelist([_contractCreatorAccount, _secondTestApprovedTestAccount]);
+    // whitelist approved account in crowdsale
+    // whitelist crowdsale in token so it can transfer token during the sale
+    return Promise.all([
+      deployedPixieCrowdsale.addManyToWhitelist([_contractCreatorAccount, _secondTestApprovedTestAccount]),
+      deployedPixieToken.addAddressToWhitelist(PixieCrowdsale.address, {from: accounts[0]})
+    ]);
   });
 };
