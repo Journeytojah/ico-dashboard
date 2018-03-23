@@ -11,9 +11,9 @@ const EVMRevert = require('../../helpers/EVMRevert');
 const BigNumber = web3.BigNumber;
 
 const should = require('chai')
-.use(require('chai-as-promised'))
-.use(require('chai-bignumber')(BigNumber))
-.should();
+  .use(require('chai-as-promised'))
+  .use(require('chai-bignumber')(BigNumber))
+  .should();
 
 const PixieCrowdsale = artifacts.require('PixieCrowdsale');
 const PixieToken = artifacts.require('PixieToken');
