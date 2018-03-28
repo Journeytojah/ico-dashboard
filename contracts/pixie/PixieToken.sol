@@ -5,7 +5,8 @@ import 'zeppelin-solidity/contracts/token/ERC20/StandardToken.sol';
 import './Whitelist.sol';
 
 
-contract PixieToken is StandardToken, Whitelist {
+//contract PixieToken is StandardToken, Whitelist {
+contract PixieToken is StandardToken {
 
   string public constant name = "Pixie Token";
 
@@ -21,13 +22,14 @@ contract PixieToken is StandardToken, Whitelist {
   /**
    * @dev Constructor that gives msg.sender all of existing tokens.
    */
-  function PixieToken() public Whitelist() {
+//  function PixieToken() public Whitelist() {
+  function PixieToken() public {
     totalSupply_ = initialSupply;
     balances[msg.sender] = initialSupply;
     Transfer(0x0, msg.sender, initialSupply);
 
     // owner is automatically whitelisted
-    addAddressToWhitelist(msg.sender);
+//    addAddressToWhitelist(msg.sender);
   }
 
 //  function transfer(address _to, uint256 _value) public returns (bool) {

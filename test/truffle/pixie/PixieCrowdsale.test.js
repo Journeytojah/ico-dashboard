@@ -17,7 +17,7 @@ const should = require('chai')
 const PixieCrowdsale = artifacts.require('PixieCrowdsale');
 const PixieToken = artifacts.require('PixieToken');
 
-contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, authorized, unauthorized, anotherAuthorized,
+contract.only('PixieCrowdsale', function ([owner, investor, wallet, purchaser, authorized, unauthorized, anotherAuthorized,
                                        authorizedTwo, authorizedThree, authorizedFour, authorizedFive]) {
 
   before(async function () {

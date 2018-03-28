@@ -56,7 +56,7 @@ module.exports = function (deployer, network, accounts) {
     // whitelist crowdsale in token so it can transfer token during the sale
     return Promise.all([
       deployedPixieCrowdsale.addManyToWhitelist([_contractCreatorAccount, _secondTestApprovedTestAccount]),
-      deployedPixieToken.addAddressToWhitelist(PixieCrowdsale.address, {from: accounts[0]})
+      // deployedPixieToken.addAddressToWhitelist(PixieCrowdsale.address, {from: accounts[0]})
     ]);
   });
 };
