@@ -9,19 +9,18 @@ An Dapp that simulates a crowdsale - build using `VueJs`, `Web3Js`, and `Truffle
 	```
 	npm install -g truffle
 	```
-
-2. Clean, compile and migrate the contracts - use `./clean_compile.sh` 
+	
+2. Install dependencies.
 	```
-	npm run clean
-	truffle compile
-	truffle migrate
+	npm install
 	```
-	* use `npm run clean` to clean the build directory
 
-3. Run the webpack server for front-end hot reloading. - use `./run_server.sh`
+3. Clean, compile and migrate the contracts - use `./clean_deploy_local.sh` 
+	* use `npm run clean` to clean the build directory - **this is a last resort**
+
+4. Run the webpack server for front-end hot reloading. - use `./run_server.sh`
 
  Smart contract changes do not support hot reloading for now.
-	
 	```
 	npm run start
 	```
