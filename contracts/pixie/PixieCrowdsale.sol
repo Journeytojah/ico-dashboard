@@ -34,7 +34,8 @@ contract PixieCrowdsale is Crowdsale, Pausable {
 
   uint256 public constant min = 0.1 ether;
 
-  uint256 public constant max = 100 ether;
+  // N.B arbitrarily high for now until we know what
+  uint256 public max = 10000 ether;
 
   // refund vault used to hold funds while crowdsale is running
   RefundVault public vault;

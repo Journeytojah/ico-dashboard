@@ -30,17 +30,17 @@ contract PixieToken is StandardToken, Whitelist {
     addAddressToWhitelist(msg.sender);
   }
 
-  function transfer(address _to, uint256 _value) public returns (bool) {
-    // lock transfers until after ICO completes unless whitelisted
-    require(now > closingTime || whitelist[msg.sender]);
-
-    return super.transfer(_to, _value);
-  }
-
-  function transferFrom(address _from, address _to, uint256 _value) public returns (bool) {
-    // lock transfers until after ICO completes unless whitelisted
-    require(now > closingTime || whitelist[msg.sender]);
-
-    return super.transferFrom(_from, _to, _value);
-  }
+//  function transfer(address _to, uint256 _value) public returns (bool) {
+//    // lock transfers until after ICO completes unless whitelisted
+//    require(now > closingTime || whitelist[msg.sender]);
+//
+//    return super.transfer(_to, _value);
+//  }
+//
+//  function transferFrom(address _from, address _to, uint256 _value) public returns (bool) {
+//    // lock transfers until after ICO completes unless whitelisted
+//    require(now > closingTime || whitelist[msg.sender]);
+//
+//    return super.transferFrom(_from, _to, _value);
+//  }
 }
