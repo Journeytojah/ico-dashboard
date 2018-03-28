@@ -50,8 +50,8 @@ module.exports = {
         return new HDWalletProvider(mnemonic, `https://rinkeby.infura.io/${infuraApikey}`);
       },
       network_id: 4,
-      gas: 3075039, // default = 4712388
-      gasPrice: 10000000000 // default = 100 gwei = 100000000000
+      gas: 4712388, // default = 4712388
+      gasPrice: 5000000000 // default = 100 gwei = 100000000000
     }
   }
 };

@@ -28,7 +28,7 @@ module.exports = async function (deployer, network, accounts) {
   // Load in other accounts for different networks
   if (network === 'ropsten' || network === 'rinkeby') {
     _secondTestApprovedTestAccount = new HDWalletProvider(mnemonic, `https://${network}.infura.io/${infuraApikey}`, 1).getAddress();
-    _contractCreatorAccount = accounts[0].getAddress();
+    _contractCreatorAccount = accounts[0];
   } else {
     _contractCreatorAccount = accounts[0];
     _secondTestApprovedTestAccount = accounts[1];
