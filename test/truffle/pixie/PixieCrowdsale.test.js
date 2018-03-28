@@ -26,7 +26,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
   });
 
   beforeEach(async function () {
-    this.token = await PixieToken.new({from: owner});
+    this.token = await PixieToken.new();
 
     this.rate = new BigNumber(1);
 
@@ -54,10 +54,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     this.value = this.minContribution;
     this.standardExpectedTokenAmount = this.rate.mul(this.value);
 
-    this.crowdsale = await PixieCrowdsale.new(wallet, this.token.address, {from: owner});
-
-    // ensure tokens can be transferred from crowdsale
-    await this.token.transfer(this.crowdsale.address, this.amountAvailableForPurchase);
+    this.crowdsale = await PixieCrowdsale.new(wallet, this.token.address);
 
     // approve so they can invest in crowdsale
     await this.crowdsale.addToWhitelist(owner);
@@ -71,6 +68,17 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     await this.crowdsale.addToWhitelist(authorizedThree);
     await this.crowdsale.addToWhitelist(authorizedFour);
     await this.crowdsale.addToWhitelist(authorizedFive);
+
+    // ensure owner and all accounts are whitelisted
+    assert.isTrue(await this.token.whitelist(owner));
+    await this.token.addAddressesToWhitelist([investor, wallet, purchaser, authorized, unauthorized, anotherAuthorized,
+      authorizedTwo, authorizedThree, authorizedFour, authorizedFive]);
+
+    // ensure the crowdsale can transfer tokens - whitelist in token
+    await this.token.addAddressToWhitelist(this.crowdsale.address);
+
+    // transfer balance to crowdsale to allow ICO token distribution
+    await this.token.transfer(this.crowdsale.address, this.amountAvailableForPurchase);
 
     this.vault = await this.crowdsale.vault();
   });

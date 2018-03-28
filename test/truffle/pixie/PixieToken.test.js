@@ -1,5 +1,9 @@
 /* eslint-disable camelcase */
 const assertRevert = require('../../helpers/assertRevert');
+const expectEvent = require('../../helpers/expectEvent');
+const increaseTimeTo = require('../../helpers/increaseTime').increaseTimeTo;
+const duration = require('../../helpers/increaseTime').duration;
+const latestTime = require('../../helpers/latestTime');
 
 const PixieToken = artifacts.require('PixieToken');
 
@@ -10,8 +14,7 @@ require('chai')
   .use(require('chai-bignumber')(BigNumber))
   .should();
 
-contract('PixieToken', function ([_, owner, recipient, anotherAccount]) {
-
+contract('PixieToken', function ([_, owner, recipient, anotherAccount, extraAccount]) {
 
   const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
   const DECIMALS = 18;
@@ -19,6 +22,11 @@ contract('PixieToken', function ([_, owner, recipient, anotherAccount]) {
 
   beforeEach(async function () {
     this.token = await PixieToken.new({from: owner});
+
+    assert.isTrue(await this.token.whitelist(owner));
+
+    await this.token.addAddressToWhitelist(recipient, {from: owner});
+    assert.isTrue(await this.token.whitelist(recipient));
   });
 
   describe('total supply', function () {
@@ -50,6 +58,130 @@ contract('PixieToken', function ([_, owner, recipient, anotherAccount]) {
       const name = await this.token.name();
 
       assert.equal(name, "Pixie Token");
+    });
+  });
+
+  describe('ownable', function () {
+    it('should have an owner', async function () {
+      let owner = await this.token.owner();
+      assert.isTrue(owner !== 0);
+    });
+
+    it('changes owner after transfer', async function () {
+      await this.token.transferOwnership(recipient, {from: owner});
+      let newOwner = await this.token.owner();
+
+      assert.isTrue(newOwner === recipient);
+    });
+
+    it('should prevent non-owners from transfering', async function () {
+      const owner = await this.token.owner.call();
+      assert.isTrue(owner !== anotherAccount);
+      await assertRevert(this.token.transferOwnership(anotherAccount, {from: anotherAccount}));
+    });
+
+    it('should guard ownership against stuck state', async function () {
+      let originalOwner = await this.token.owner();
+      await assertRevert(this.token.transferOwnership(null, {from: originalOwner}));
+    });
+  });
+
+  describe('whitelist', function () {
+    context('in normal conditions', function() {
+      it('should add address to the whitelist', async function () {
+        await expectEvent.inTransaction(
+          this.token.addAddressToWhitelist(anotherAccount, {from: owner}),
+          'WhitelistedAddressAdded'
+        );
+        const isWhitelisted = await this.token.whitelist(anotherAccount);
+        isWhitelisted.should.be.equal(true);
+      });
+
+      it('should add addresses to the whitelist', async function () {
+        const whitelistedAddresses = [anotherAccount, extraAccount];
+        await expectEvent.inTransaction(
+          this.token.addAddressesToWhitelist(whitelistedAddresses, {from: owner}),
+          'WhitelistedAddressAdded'
+        );
+        for (let addr of whitelistedAddresses) {
+          const isWhitelisted = await this.token.whitelist(addr);
+          isWhitelisted.should.be.equal(true);
+        }
+      });
+
+      it('should not announce WhitelistedAddressAdded event if address is already in the whitelist', async function () {
+        const {logs} = await this.token.addAddressToWhitelist(owner, {from: owner});
+        logs.should.be.empty;
+      });
+
+
+      it('should remove address from the whitelist', async function () {
+        await expectEvent.inTransaction(
+          this.token.removeAddressFromWhitelist(recipient, {from: owner}),
+          'WhitelistedAddressRemoved'
+        );
+        let isWhitelisted = await this.token.whitelist(recipient);
+        isWhitelisted.should.be.equal(false);
+      });
+
+      it('should remove addresses from the the whitelist', async function () {
+        await expectEvent.inTransaction(
+          this.token.addAddressToWhitelist(anotherAccount, {from: owner}),
+          'WhitelistedAddressAdded'
+        );
+
+        const whitelistedAddresses = [recipient, anotherAccount];
+        await expectEvent.inTransaction(
+          this.token.removeAddressesFromWhitelist(whitelistedAddresses, {from: owner}),
+          'WhitelistedAddressRemoved'
+        );
+        for (let addr of whitelistedAddresses) {
+          const isWhitelisted = await this.token.whitelist(addr);
+          isWhitelisted.should.be.equal(false);
+        }
+      });
+
+      it('should not announce WhitelistedAddressRemoved event if address is not in the whitelist', async function () {
+        const {logs} = await this.token.removeAddressFromWhitelist(anotherAccount, {from: owner});
+        logs.should.be.empty;
+      });
+
+      it('should allow whitelisted address to call transfer within ICO', async function() {
+        await this.token.transfer(recipient, 1, {from: owner}).should.be.fulfilled;
+
+        await this.token.addAddressToWhitelist(recipient, {from: owner});
+        await this.token.transfer(anotherAccount, 1, {from: recipient}).should.be.fulfilled;
+      });
+    });
+
+    context('in adversarial conditions', function () {
+      it('should not allow "anyone" to add to the whitelist', async function () {
+        await assertRevert(this.token.addAddressToWhitelist(recipient, {from: recipient}));
+      });
+
+      it('should not allow "anyone" to remove from the whitelist', async function () {
+        await assertRevert(this.token.removeAddressFromWhitelist(owner, {from: recipient}));
+      });
+
+      it('should not allow "anyone" to call transfer within ICOs', async function () {
+        await assertRevert(this.token.transfer(anotherAccount, 1, ({from: recipient})));
+      });
+    });
+  });
+
+  describe('locks transfers', function () {
+    it('should not allow unwhitelisted transfers before unlocked time', async function () {
+      const unlockTime = await this.token.unlockTime();
+      assert.isTrue(latestTime < unlockTime);
+      await assertRevert(this.token.transfer(anotherAccount, 1, ({from: recipient})));
+    });
+
+    it('should not allow unwhitelisted transfers before unlocked time', async function () {
+      const unlockTime = await this.token.unlockTime();
+      await increaseTimeTo(unlockTime + duration.seconds(30)); // force time to move on to just after unlock
+
+      await this.token.transfer(recipient, 1, {from: owner}).should.be.fulfilled;
+      await this.token.transfer(anotherAccount, 1, ({from: recipient}));
     });
   });
 

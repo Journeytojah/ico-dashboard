@@ -7,102 +7,77 @@ const HDWalletProvider = require('truffle-hdwallet-provider');
 const infuraApikey = 'fkWxG7nrciMRrRD36yVj';
 let mnemonic = require('../mnemonic');
 
-module.exports = function (deployer, network, accounts) {
-
-  const BigNumber = web3.BigNumber;
+module.exports = async function (deployer, network, accounts) {
 
   console.log(`Running within network = ${network}`);
 
   let promisifyGetBlockNumber = Promise.promisify(web3.eth.getBlockNumber);
   let promisifyGetBlock = Promise.promisify(web3.eth.getBlock);
 
+  const BigNumber = web3.BigNumber;
+
   const _tokenInitialSupply = new BigNumber(1000);
   const _decimals = new BigNumber(0);
 
-  deployer.deploy(ConfigurableToken, _tokenInitialSupply, _decimals)
-  .then(() => promisifyGetBlockNumber().then((blockNumber) => promisifyGetBlock(blockNumber)))
-  .then((block) => {
+  // Deploy the token
+  await deployer.deploy(ConfigurableToken, _tokenInitialSupply, _decimals);
+  const deployedConfigurableToken = await ConfigurableToken.deployed();
 
-    const _rate = 1;
-    const _wallet = accounts[0];
-    const _token = ConfigurableToken.address;
-    const _cap = _tokenInitialSupply.times(0.5); // cap 50% of supply i.e 500 WEI
+  // Get last block
+  let blockNumber = await promisifyGetBlockNumber();
+  let block = await promisifyGetBlock(blockNumber);
 
-    const _openingTime = block.timestamp + 1; // one second in the future
-    const _closingTime = _openingTime + (86400 * 20); // 20 days
+  const _rate = 1;
+  const _wallet = accounts[0];
+  const _token = ConfigurableToken.address;
+  const _cap = _tokenInitialSupply.times(0.5); // cap 50% of supply i.e 500 WEI
 
-    const _privateSaleCloseTime = _openingTime + (86400 * 5); // 5 days
-    const _privateSaleRate = _rate;
+  const _openingTime = block.timestamp + 1; // one second in the future
+  const _closingTime = _openingTime + (86400 * 20); // 20 days
 
-    const _preSaleCloseTime = _openingTime + (86400 * 10); // 10 days
-    const _preSaleRate = _rate;
+  const _minContribution = 2;
+  const _maxContribution = 250;
 
-    const _minContribution = 2;
-    const _maxContribution = 250;
+  const _goal = _tokenInitialSupply.times(0.25); // 25% of supply i.e 250 WEI
+  const crowdsaleSupply = _tokenInitialSupply.times(0.5); // sell upto 50%, i.e. 500 WEI
 
-    const _goal = _tokenInitialSupply.times(0.25); // 25% of supply i.e 250 WEI
+  // Deploy the crowdsale with full configuration
+  await deployer.deploy(ConfigurableCrowdsale, _rate, _wallet, _token, _cap, _openingTime, _closingTime, _minContribution, _maxContribution, _goal);
 
-    return Promise.all([
-      deployer.deploy(
-        ConfigurableCrowdsale,
-        _rate,
-        _wallet,
-        _token,
-        _cap,
-        _openingTime,
-        _closingTime,
-        _minContribution,
-        _maxContribution,
-        _goal
-      ),
-      {
-        closeTime: _privateSaleCloseTime,
-        rate: _privateSaleRate
-      },
-      {
-        closeTime: _preSaleCloseTime,
-        rate: _preSaleRate
-      },
-      ConfigurableToken.deployed()
-    ]);
-  })
-  .then((results) => {
-    const crowdsaleSupply = _tokenInitialSupply.times(0.5); // sell upto 50%, i.e. 500 WEI
+  // Transfer the ICO supply to the crowdsale
+  await deployedConfigurableToken.transfer(ConfigurableCrowdsale.address, crowdsaleSupply);
 
-    const privateSaleDetails = results[1];
-    const preSaleDetails = results[2];
-    const deployedConfigurableToken = results[3];
+  let _contractCreatorAccount;
+  let _secondTestApprovedTestAccount;
 
-    return Promise.all([
-      ConfigurableCrowdsale.deployed(),
-      deployedConfigurableToken.transfer(ConfigurableCrowdsale.address, crowdsaleSupply),
-      privateSaleDetails,
-      preSaleDetails
-    ]);
-  })
-  .then((results) => {
-    const deployedConfigurableCrowdsale = results[0];
-    const privateSaleDetails = results[2];
-    const preSaleDetails = results[3];
+  // Load in other accounts for different networks
+  if (network === 'ropsten' || network === 'rinkeby') {
+    _secondTestApprovedTestAccount = new HDWalletProvider(mnemonic, `https://${network}.infura.io/${infuraApikey}`, 1).getAddress();
+    _contractCreatorAccount = accounts[0].getAddress();
+  } else {
+    _contractCreatorAccount = accounts[0];
+    _secondTestApprovedTestAccount = accounts[1];
+  }
 
-    let _contractCreatorAccount;
-    let _secondTestApprovedTestAccount;
+  // console.log(`_contractCreatorAccount - [${_contractCreatorAccount}]`);
+  // console.log(`_secondTestApprovedTestAccount - [${_secondTestApprovedTestAccount}]`);
 
-    // Load in other accounts for different networks
-    if (network === 'ropsten' || network === 'rinkeby') {
-      _secondTestApprovedTestAccount = new HDWalletProvider(mnemonic, `https://${network}.infura.io/${infuraApikey}`, 1).getAddress();
-      _contractCreatorAccount = accounts[0].getAddress();
-    } else {
-      _contractCreatorAccount = accounts[0];
-      _secondTestApprovedTestAccount = accounts[1];
-    }
+  const deployedConfigurableCrowdsale = await ConfigurableCrowdsale.deployed();
 
-    // console.log(`_contractCreatorAccount - [${_contractCreatorAccount}]`);
-    // console.log(`_secondTestApprovedTestAccount - [${_secondTestApprovedTestAccount}]`);
+  // Whitelist a few accounts fo ease
+  await deployedConfigurableCrowdsale.addManyToWhitelist([_contractCreatorAccount, _secondTestApprovedTestAccount]);
 
-    return Promise.all([
-      deployedConfigurableCrowdsale.addManyToWhitelist([_contractCreatorAccount, _secondTestApprovedTestAccount]),
-      deployedConfigurableCrowdsale.setPrivatePreSaleRates(privateSaleDetails.closeTime, privateSaleDetails.rate, preSaleDetails.closeTime, preSaleDetails.rate)
-    ]);
-  });
+
+  let privateSaleDetails = {
+    closeTime: _openingTime + (86400 * 5),
+    rate: _rate
+  };
+
+  let preSaleDetails = {
+    closeTime: _openingTime + (86400 * 10), // 10 days,
+    rate: _rate
+  };
+
+  // Update private and pre sale times and rates
+  await deployedConfigurableCrowdsale.setPrivatePreSaleRates(privateSaleDetails.closeTime, privateSaleDetails.rate, preSaleDetails.closeTime, preSaleDetails.rate);
 };
