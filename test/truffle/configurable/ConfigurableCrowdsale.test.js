@@ -31,7 +31,7 @@ contract('ConfigurableCrowdsale', function ([owner, investor, wallet, purchaser,
 
     this.initialSupply = await this.token.initialSupply(); // 1000 WEI
     this.amountAvailableForPurchase = this.initialSupply.times(0.5); // 500 WEI
-    this.cap = this.amountAvailableForPurchase; // 500 WEI
+    this.hardCap = this.amountAvailableForPurchase; // 500 WEI
 
     this.openingTime = latestTime() + duration.seconds(10); // opens in 10 seconds
     this.closingTime = this.openingTime + duration.weeks(1); // closes in 1 week & 1 second
@@ -44,7 +44,7 @@ contract('ConfigurableCrowdsale', function ([owner, investor, wallet, purchaser,
     this.preSaleRate = new BigNumber(2);
 
     this.minContribution = new BigNumber(5); // 5 WEI
-    this.maxContribution = new BigNumber(this.cap).times(0.5); // 250 WEI
+    this.maxContribution = new BigNumber(this.hardCap).times(0.5); // 250 WEI
 
     this.goal = new BigNumber(250);
 
@@ -55,7 +55,7 @@ contract('ConfigurableCrowdsale', function ([owner, investor, wallet, purchaser,
       this.rate,
       wallet,
       this.token.address,
-      this.cap,
+      this.hardCap,
       this.openingTime,
       this.closingTime,
       this.minContribution,
@@ -93,7 +93,7 @@ contract('ConfigurableCrowdsale', function ([owner, investor, wallet, purchaser,
     console.log('isCrowdsaleOpen', await this.crowdsale.isCrowdsaleOpen());
     console.log('isFinalized', await this.crowdsale.isFinalized());
     console.log('capReached', await this.crowdsale.capReached());
-    console.log('cap', await this.crowdsale.cap());
+    console.log('hardCap', await this.crowdsale.hardCap());
     console.log('min contribution', await this.crowdsale.min());
     console.log('max contribution', await this.crowdsale.max());
     console.log('goal', await this.crowdsale.goal());
@@ -181,7 +181,7 @@ contract('ConfigurableCrowdsale', function ([owner, investor, wallet, purchaser,
     });
 
     describe('creating a valid crowdsale', function () {
-      it('should fail with zero cap', async function () {
+      it('should fail with zero hardCap', async function () {
         await assertRevert(
           ConfigurableCrowdsale.new(
             this.rate,
@@ -200,23 +200,23 @@ contract('ConfigurableCrowdsale', function ([owner, investor, wallet, purchaser,
     });
 
     describe('accepting payments', function () {
-      it('should accept payments within cap', async function () {
+      it('should accept payments within hardCap', async function () {
         await this.crowdsale.send(this.maxContribution.minus(this.minContribution)).should.be.fulfilled;
         await this.crowdsale.send(this.minContribution).should.be.fulfilled;
       });
 
-      it('should reject payments outside cap', async function () {
+      it('should reject payments outside hardCap', async function () {
 
-        // cap is twice the max contribution so send that from multiple buyers
+        // hardCap is twice the max contribution so send that from multiple buyers
         await this.crowdsale.send(this.maxContribution);
         await this.crowdsale.buyTokens(purchaser, {value: this.maxContribution, from: purchaser});
 
         await assertRevert(this.crowdsale.buyTokens(authorized, {value: 1, from: authorized}));
       });
 
-      it('should reject payments that exceed cap', async function () {
+      it('should reject payments that exceed hardCap', async function () {
 
-        // cap is twice the max contribution so send that from multiple buyers
+        // hardCap is twice the max contribution so send that from multiple buyers
         await this.crowdsale.send(this.maxContribution);
         await this.crowdsale.buyTokens(purchaser, {value: this.maxContribution, from: purchaser});
 
@@ -228,7 +228,7 @@ contract('ConfigurableCrowdsale', function ([owner, investor, wallet, purchaser,
     });
 
     describe('ending', function () {
-      it('should not reach cap if sent under cap', async function () {
+      it('should not reach hardCap if sent under hardCap', async function () {
         let capReached = await this.crowdsale.capReached();
         capReached.should.equal(false);
         await this.crowdsale.send(this.minContribution);
@@ -236,8 +236,8 @@ contract('ConfigurableCrowdsale', function ([owner, investor, wallet, purchaser,
         capReached.should.equal(false);
       });
 
-      it('should not reach cap if sent just under cap', async function () {
-        // cap is twice the max contribution so send that from multiple buyers
+      it('should not reach hardCap if sent just under hardCap', async function () {
+        // hardCap is twice the max contribution so send that from multiple buyers
         await this.crowdsale.send(this.maxContribution);
         await this.crowdsale.buyTokens(purchaser, {value: this.maxContribution.minus(1), from: purchaser});
 
@@ -245,8 +245,8 @@ contract('ConfigurableCrowdsale', function ([owner, investor, wallet, purchaser,
         capReached.should.equal(false);
       });
 
-      it('should reach cap if cap sent', async function () {
-        // cap is twice the max contribution so send that from multiple buyers
+      it('should reach hardCap if hardCap sent', async function () {
+        // hardCap is twice the max contribution so send that from multiple buyers
         await this.crowdsale.send(this.maxContribution);
         await this.crowdsale.buyTokens(purchaser, {value: this.maxContribution, from: purchaser});
 
@@ -335,7 +335,7 @@ contract('ConfigurableCrowdsale', function ([owner, investor, wallet, purchaser,
           ConfigurableCrowdsale.new(
             this.rate,
             wallet,
-            this.cap,
+            this.hardCap,
             this.token.address,
             0,
             this.closingTime,
@@ -351,7 +351,7 @@ contract('ConfigurableCrowdsale', function ([owner, investor, wallet, purchaser,
           ConfigurableCrowdsale.new(
             this.rate,
             wallet,
-            this.cap,
+            this.hardCap,
             this.token.address,
             this.openingTime,
             0,
@@ -605,7 +605,7 @@ contract('ConfigurableCrowdsale', function ([owner, investor, wallet, purchaser,
           ConfigurableCrowdsale.new(
             this.rate,
             wallet,
-            this.cap,
+            this.hardCap,
             this.token.address,
             this.openingTime,
             this.closingTime,
@@ -622,7 +622,7 @@ contract('ConfigurableCrowdsale', function ([owner, investor, wallet, purchaser,
           ConfigurableCrowdsale.new(
             this.rate,
             wallet,
-            this.cap,
+            this.hardCap,
             this.token.address,
             this.openingTime,
             this.closingTime,
@@ -729,7 +729,7 @@ contract('ConfigurableCrowdsale', function ([owner, investor, wallet, purchaser,
           this.rate,
           wallet,
           this.token.address,
-          this.cap,
+          this.hardCap,
           this.openingTime,
           this.closingTime,
           this.minContribution,
@@ -791,7 +791,7 @@ contract('ConfigurableCrowdsale', function ([owner, investor, wallet, purchaser,
           this.rate,
           wallet,
           this.token.address,
-          this.cap,
+          this.hardCap,
           this.openingTime,
           this.closingTime,
           this.minContribution,

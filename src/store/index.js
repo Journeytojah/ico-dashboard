@@ -35,7 +35,7 @@ const store = new Vuex.Store({
     // crowdsale
     address: null,
     rate: 0,
-    cap: 0,
+    hardCap: 0,
     goal: 0,
     wallet: null,
     start: 0,
@@ -114,7 +114,7 @@ const store = new Vuex.Store({
     }) {
       state.rate = rate;
       state.token = token;
-      state.cap = cap;
+      state.hardCap = hardCap;
       state.goal = goal;
       state.wallet = wallet;
       state.start = start;
@@ -245,7 +245,7 @@ const store = new Vuex.Store({
         return Promise.all([
           contract.rate(),
           contract.token(),
-          contract.cap(),
+          contract.hardCap(),
           contract.goal(),
           contract.wallet(),
           contract.openingTime(),
@@ -265,7 +265,7 @@ const store = new Vuex.Store({
         commit(mutations.SET_STATIC_CROWDSALE_DETAILS, {
           rate: results[0].toNumber(10),
           token: results[1].toString(),
-          cap: results[2].toNumber(10),
+          hardCap: results[2].toNumber(10),
           goal: results[3].toNumber(10),
           wallet: results[4].toString(),
           start: results[5].toNumber(10),

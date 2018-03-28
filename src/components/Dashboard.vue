@@ -21,7 +21,7 @@
         <eth-symbol></eth-symbol>
       </p>
 
-      <b-progress show-value :max="cap" class="mb-3 thermometer" height="50px">
+      <b-progress show-value :max="hardCap" class="mb-3 thermometer" height="50px">
         <b-progress-bar variant="primary" :value="raised"></b-progress-bar>
       </b-progress>
 
@@ -65,7 +65,7 @@
       <div class="col-lg-5">
         <h4>Hard Cap</h4>
         <p>
-          {{ cap }}
+          {{ hardCap }}
           <eth-symbol></eth-symbol>
         </p>
 
@@ -121,7 +121,7 @@
         'rate',
         'raised',
         'token',
-        'cap',
+        'hardCap',
         'goal',
         'start',
         'end',

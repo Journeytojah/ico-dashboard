@@ -17,7 +17,7 @@ const should = require('chai')
 const PixieCrowdsale = artifacts.require('PixieCrowdsale');
 const PixieToken = artifacts.require('PixieToken');
 
-contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, authorized, unauthorized, anotherAuthorized,
+contract.only('PixieCrowdsale', function ([owner, investor, wallet, purchaser, authorized, unauthorized, anotherAuthorized,
                                        authorizedTwo, authorizedThree, authorizedFour, authorizedFive]) {
 
   before(async function () {
@@ -49,7 +49,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     this.maxContribution = etherToWei(10000); // 10000 ETH
 
     this.goal = etherToWei(17500);
-    this.cap = etherToWei(65000);
+    this.hardCap = etherToWei(65000);
 
     this.value = this.minContribution;
     this.standardExpectedTokenAmount = this.rate.mul(this.value);
@@ -94,9 +94,9 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     console.log('isCrowdsaleOpen', await this.crowdsale.isCrowdsaleOpen());
     console.log('isFinalized', await this.crowdsale.isFinalized());
     console.log('capReached', await this.crowdsale.capReached());
-    console.log('cap', (await this.crowdsale.cap()).toString(10));
-    console.log('min contribution', (await this.crowdsale.min()).toString(10));
-    console.log('max contribution', (await this.crowdsale.max()).toString(10));
+    console.log('hardCap', (await this.crowdsale.hardCap()).toString(10));
+    console.log('min contribution', (await this.crowdsale.minimumContribution()).toString(10));
+    console.log('max contribution', (await this.crowdsale.maximumContribution()).toString(10));
     console.log('goal', (await this.crowdsale.goal()).toString(10));
     console.log('paused', await this.crowdsale.paused());
     console.log('openingTime', (await this.crowdsale.openingTime()).toString(10));
@@ -182,12 +182,12 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     });
 
     describe('accepting payments', function () {
-      it('should accept payments within cap', async function () {
+      it('should accept payments within hardCap', async function () {
         await this.crowdsale.send(this.maxContribution.minus(this.minContribution)).should.be.fulfilled;
         await this.crowdsale.send(this.minContribution).should.be.fulfilled;
       });
 
-      it('should reject payments that exceed cap', async function () {
+      it('should reject payments that exceed hardCap', async function () {
         let capReached = await this.crowdsale.capReached();
         capReached.should.equal(false);
 
@@ -226,7 +226,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
         capReached = await this.crowdsale.capReached();
         capReached.should.equal(false);
 
-        // send another 5K ETHER which will reach cap
+        // send another 5K ETHER which will reach hardCap
         await this.crowdsale.buyTokens(authorizedFive, {value: etherToWei(5000), from: authorizedFive});
 
         capReached = await this.crowdsale.capReached();
@@ -238,7 +238,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     });
 
     describe('ending', function () {
-      it('should not reach cap if sent under cap', async function () {
+      it('should not reach hardCap if sent under hardCap', async function () {
         let capReached = await this.crowdsale.capReached();
         capReached.should.equal(false);
         await this.crowdsale.send(this.minContribution);
@@ -682,7 +682,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
       let goalReached = await this.crowdsale.goalReached();
       goalReached.should.equal(false);
 
-      // 7500 ETHER to reach soft cap
+      // 7500 ETHER to reach soft hardCap
       await this.crowdsale.sendTransaction({value: etherToWei(7500), from: investor});
       goalReached = await this.crowdsale.goalReached();
       goalReached.should.equal(true);

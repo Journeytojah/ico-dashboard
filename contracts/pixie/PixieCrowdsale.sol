@@ -15,7 +15,7 @@ contract PixieCrowdsale is Crowdsale, Pausable {
 
   bool public isFinalized = false;
 
-  // N.B arbitrarily set to one minute until until we know what
+  // FIXME arbitrarily set to one minute until until know start
   uint256 public openingTime = now.add(1 minutes);
 
   uint256 public closingTime = openingTime.add(4 weeks);
@@ -28,19 +28,26 @@ contract PixieCrowdsale is Crowdsale, Pausable {
 
   uint256 public preSaleRate = 2;
 
+  uint256 public rate = 1;
+
   uint256 public goal = 17500 ether;
 
-  uint256 public cap = 65000 ether;
+  uint256 public hardCap = 65000 ether;
 
-  uint256 public min = 0.1 ether;
+  uint256 public minimumContribution = 0.1 ether;
 
-  // N.B arbitrarily high for now until we know what
-  uint256 public max = 10000 ether;
+  // FIXME arbitrarily high for now until we know what
+  uint256 public maximumContribution = 10000 ether;
 
   // refund vault used to hold funds while crowdsale is running
   RefundVault public vault;
 
-  function PixieCrowdsale(address _wallet, StandardToken _token) public Crowdsale(1, _wallet, _token) {
+  /**
+   * @dev Constructs the Crowdsale contract with pre-defined parameter plus params
+   * @param _wallet Address where collected funds will be forwarded to
+   * @param _token Address of the token being sold
+   */
+  function PixieCrowdsale(address _wallet, StandardToken _token) public Crowdsale(rate, _wallet, _token) {
     vault = new RefundVault(wallet);
   }
 
@@ -131,11 +138,11 @@ contract PixieCrowdsale is Crowdsale, Pausable {
   }
 
   /**
-   * @dev Checks whether the cap has been reached.
-   * @return Whether the cap was reached
+   * @dev Checks whether the hardCap has been reached.
+   * @return Whether the hardCap was reached
    */
   function capReached() public view returns (bool) {
-    return weiRaised >= cap;
+    return weiRaised >= hardCap;
   }
 
   /**
@@ -164,8 +171,8 @@ contract PixieCrowdsale is Crowdsale, Pausable {
   }
 
   /**
-   * @dev gets current time
-   * @return the current blocktime
+   * @dev Returns current time (from the chain)
+   * @return Current blocktime
    */
   function getNow() public view returns (uint) {
     return now;
@@ -189,11 +196,11 @@ contract PixieCrowdsale is Crowdsale, Pausable {
 
     require(now >= openingTime && now <= closingTime);
 
-    require(weiRaised.add(_weiAmount) <= cap);
+    require(weiRaised.add(_weiAmount) <= hardCap);
 
-    require(_weiAmount >= min);
+    require(_weiAmount >= minimumContribution);
 
-    require(contributions[_beneficiary].add(_weiAmount) <= max);
+    require(contributions[_beneficiary].add(_weiAmount) <= maximumContribution);
 
     require(whitelist[_beneficiary]);
 
