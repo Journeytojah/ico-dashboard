@@ -2,7 +2,7 @@ pragma solidity ^0.4.19;
 
 
 import 'zeppelin-solidity/contracts/token/ERC20/StandardToken.sol';
-import './Whitelist.sol';
+//import './Whitelist.sol';
 
 
 //contract PixieToken is StandardToken, Whitelist {
