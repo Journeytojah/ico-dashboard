@@ -28,14 +28,15 @@ contract.only('PixieCrowdsale', function ([owner, investor, wallet, purchaser, a
   beforeEach(async function () {
     this.token = await PixieToken.new();
 
-    this.rate = new BigNumber(1);
-
     this.initialSupply = await this.token.initialSupply();
-
     this.amountAvailableForPurchase = this.initialSupply.times(0.4); // 40% of total supply
 
-    this.openingTime = latestTime() + duration.seconds(60); // opens in 60 seconds
-    this.closingTime = this.openingTime + duration.weeks(4); // closes in 4 week & 10 second
+    this.crowdsale = await PixieCrowdsale.new(wallet, this.token.address);
+
+    this.rate = await this.crowdsale.rate();
+
+    this.openingTime = await this.crowdsale.openingTime();
+    this.closingTime = await this.crowdsale.closingTime();
 
     this.afterClosingTime = this.closingTime + duration.seconds(1);
 
@@ -53,8 +54,6 @@ contract.only('PixieCrowdsale', function ([owner, investor, wallet, purchaser, a
 
     this.value = this.minContribution;
     this.standardExpectedTokenAmount = this.rate.mul(this.value);
-
-    this.crowdsale = await PixieCrowdsale.new(wallet, this.token.address);
 
     // approve so they can invest in crowdsale
     await this.crowdsale.addToWhitelist(owner);
@@ -682,7 +681,7 @@ contract.only('PixieCrowdsale', function ([owner, investor, wallet, purchaser, a
       let goalReached = await this.crowdsale.goalReached();
       goalReached.should.equal(false);
 
-      // 7500 ETHER to reach soft hardCap
+      // 7500 ETHER to reach soft cap
       await this.crowdsale.sendTransaction({value: etherToWei(7500), from: investor});
       goalReached = await this.crowdsale.goalReached();
       goalReached.should.equal(true);
