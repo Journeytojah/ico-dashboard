@@ -638,7 +638,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     });
   });
 
-  describe.skip('Refundable with goal', function () {
+  describe('Refundable with goal', function () {
 
     it('should deny refunds before end', async function () {
       await this.crowdsale.claimRefund({from: investor}).should.be.rejectedWith(EVMRevert);
@@ -671,25 +671,24 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
 
     it('should forward funds to wallet after end if goal was reached', async function () {
       await increaseTimeTo(this.preSaleCloseTime + duration.seconds(1)); // force time to move on to just after pre-sale
-      await this.crowdsale.sendTransaction({value: this.goal, from: investor});
 
       // 10000 ETHER
-      await this.crowdsale.buyTokens(purchaser, {value: this.maxContribution, from: purchaser});
+      await this.crowdsale.sendTransaction({value: this.maxContribution, from: purchaser});
       let goalReached = await this.crowdsale.goalReached();
       goalReached.should.equal(false);
 
       // 7500 ETHER to reach soft cap
-      await this.crowdsale.buyTokens(investor, {value: etherToWei(7500), from: investor});
+      await this.crowdsale.sendTransaction({value: etherToWei(7500), from: investor});
       goalReached = await this.crowdsale.goalReached();
       goalReached.should.equal(true);
 
-      // await increaseTimeTo(this.afterClosingTime);
-      // const pre = web3.eth.getBalance(wallet);
-      //
-      // await this.crowdsale.finalize({from: owner});
-      //
-      // const post = web3.eth.getBalance(wallet);
-      // post.minus(pre).should.be.bignumber.equal(etherToWei(17500));
+      await increaseTimeTo(this.afterClosingTime);
+      const pre = web3.eth.getBalance(wallet);
+
+      await this.crowdsale.finalize({from: owner});
+
+      const post = web3.eth.getBalance(wallet);
+      post.minus(pre).should.be.bignumber.equal(etherToWei(17500));
     });
   });
 
