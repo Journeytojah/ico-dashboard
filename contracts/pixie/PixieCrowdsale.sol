@@ -15,7 +15,7 @@ contract PixieCrowdsale is Crowdsale, Pausable {
 
   bool public isFinalized = false;
 
-  // N.B this is a temp solution
+  // N.B arbitrarily set to one minute until until we know what
   uint256 public openingTime = now.add(1 minutes);
 
   uint256 public closingTime = openingTime.add(4 weeks);
@@ -34,7 +34,8 @@ contract PixieCrowdsale is Crowdsale, Pausable {
 
   uint256 public min = 0.1 ether;
 
-  uint256 public max = 100 ether;
+  // N.B arbitrarily high for now until we know what
+  uint256 public max = 10000 ether;
 
   // refund vault used to hold funds while crowdsale is running
   RefundVault public vault;
