@@ -7,11 +7,11 @@ import * as mutations from './mutation-types';
 import createLogger from 'vuex/dist/logger';
 import { getNetIdString } from '../utils';
 
-// import { PixieCrowdsale, PixieToken } from '../contracts/index';
-import { ConfigurableCrowdsale, ConfigurableToken } from '../contracts/index';
+import { PixieCrowdsale, PixieToken } from '../contracts/index';
+// import { ConfigurableCrowdsale, ConfigurableToken } from '../contracts/index';
 
-const _token = ConfigurableToken;
-const _crowdsale = ConfigurableCrowdsale;
+const _token = PixieToken;
+const _crowdsale = PixieCrowdsale;
 
 const utils = require('../utils');
 
@@ -252,8 +252,8 @@ const store = new Vuex.Store({
           contract.closingTime(),
           contract.address,
           contract.owner(),
-          contract.min(),
-          contract.max(),
+          contract.minimumContribution(),
+          contract.maximumContribution(),
           contract.vault(),
           contract.privateSaleCloseTime(),
           contract.privateSaleRate(),

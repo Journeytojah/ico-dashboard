@@ -6,8 +6,8 @@ import 'zeppelin-solidity/contracts/token/ERC20/StandardToken.sol';
 
 contract ConfigurableToken is StandardToken {
 
-  string public constant name = "Configurable Token";
-  string public constant symbol = "CON";
+  string public constant name = "Coinfest Token";
+  string public constant symbol = "CFT";
 
   uint8 public decimals;
   uint256 public initialSupply;

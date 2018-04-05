@@ -52,15 +52,12 @@ module.exports = async function (deployer, network, accounts) {
 
   // Load in other accounts for different networks
   if (network === 'ropsten' || network === 'rinkeby') {
-    _secondTestApprovedTestAccount = new HDWalletProvider(mnemonic, `https://${network}.infura.io/${infuraApikey}`, 1).getAddress();
     _contractCreatorAccount = accounts[0].getAddress();
+    _secondTestApprovedTestAccount = new HDWalletProvider(mnemonic, `https://${network}.infura.io/${infuraApikey}`, 1).getAddress();
   } else {
     _contractCreatorAccount = accounts[0];
     _secondTestApprovedTestAccount = accounts[1];
   }
-
-  // console.log(`_contractCreatorAccount - [${_contractCreatorAccount}]`);
-  // console.log(`_secondTestApprovedTestAccount - [${_secondTestApprovedTestAccount}]`);
 
   const deployedConfigurableCrowdsale = await ConfigurableCrowdsale.deployed();
 
