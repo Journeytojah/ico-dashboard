@@ -11,8 +11,23 @@ module.exports = async function (deployer, network, accounts) {
 
   console.log(`Running within network = ${network}`);
 
+  let _contractCreatorAccount;
+  let _secondTestApprovedTestAccount;
+
+  // Load in other accounts for different networks
+  if (network === 'ropsten' || network === 'rinkeby') {
+    _contractCreatorAccount = new HDWalletProvider(mnemonic, `https://${network}.infura.io/${infuraApikey}`, 0).getAddress();
+    _secondTestApprovedTestAccount = new HDWalletProvider(mnemonic, `https://${network}.infura.io/${infuraApikey}`, 1).getAddress();
+  } else {
+    _contractCreatorAccount = accounts[0];
+    _secondTestApprovedTestAccount = accounts[1];
+  }
+
+  console.log(`_contractCreatorAccount - [${_contractCreatorAccount}]`);
+  console.log(`_secondTestApprovedTestAccount - [${_secondTestApprovedTestAccount}]`);
+
   await deployer.deploy(PixieToken);
-  await deployer.deploy(PixieCrowdsale, accounts[0], PixieToken.address);
+  await deployer.deploy(PixieCrowdsale, _contractCreatorAccount, PixieToken.address);
 
   const deployedPixieToken = await PixieToken.deployed();
   const deployedPixieCrowdsale = await PixieCrowdsale.deployed();
@@ -22,24 +37,10 @@ module.exports = async function (deployer, network, accounts) {
 
   await deployedPixieToken.transfer(PixieCrowdsale.address, crowdsaleSupply);
 
-  let _contractCreatorAccount;
-  let _secondTestApprovedTestAccount;
-
-  // Load in other accounts for different networks
-  if (network === 'ropsten' || network === 'rinkeby') {
-    _secondTestApprovedTestAccount = new HDWalletProvider(mnemonic, `https://${network}.infura.io/${infuraApikey}`, 1).getAddress();
-    _contractCreatorAccount = accounts[0];
-  } else {
-    _contractCreatorAccount = accounts[0];
-    _secondTestApprovedTestAccount = accounts[1];
-  }
-
-  // console.log(`_contractCreatorAccount - [${_contractCreatorAccount}]`);
-  // console.log(`_secondTestApprovedTestAccount - [${_secondTestApprovedTestAccount}]`);
 
   // Whitelist various utility accounts
   await deployedPixieCrowdsale.addManyToWhitelist([_contractCreatorAccount, _secondTestApprovedTestAccount]);
 
   // Whitelist the crowdsale
-  await deployedPixieToken.addAddressToWhitelist(PixieCrowdsale.address, {from: accounts[0]});
+  await deployedPixieToken.addAddressToWhitelist(PixieCrowdsale.address, {from: _contractCreatorAccount});
 };

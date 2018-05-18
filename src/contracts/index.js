@@ -4,21 +4,16 @@ import contract from 'truffle-contract';
 
 // PXE Token and Crowdsale
 
-// // import artifacts
-// import pixieToken from '../../build/contracts/PixieToken.json';
-// import pixieCrowdsale from '../../build/contracts/PixieCrowdsale.json';
-//
-// // create contracts
-// const PixieToken = contract(pixieToken);
-// PixieToken.setProvider(web3.currentProvider);
-//
-// const PixieCrowdsale = contract(pixieCrowdsale);
-// PixieCrowdsale.setProvider(web3.currentProvider);
-//
-// export {
-//   PixieToken,
-//   PixieCrowdsale
-// };
+// import artifacts
+import pixieToken from '../../build/contracts/PixieToken.json';
+import pixieCrowdsale from '../../build/contracts/PixieCrowdsale.json';
+
+// create contracts
+const PixieToken = contract(pixieToken);
+PixieToken.setProvider(web3.currentProvider);
+
+const PixieCrowdsale = contract(pixieCrowdsale);
+PixieCrowdsale.setProvider(web3.currentProvider);
 
 // CON Token and Crowdsale
 
@@ -35,5 +30,7 @@ ConfigurableCrowdsale.setProvider(web3.currentProvider);
 
 export {
   ConfigurableToken,
-  ConfigurableCrowdsale
+  ConfigurableCrowdsale,
+  PixieToken,
+  PixieCrowdsale
 };

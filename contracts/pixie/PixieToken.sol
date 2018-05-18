@@ -20,7 +20,7 @@ contract PixieToken is StandardToken, Whitelist {
   /**
    * @dev Constructor that gives msg.sender all of existing tokens.
    */
-  function PixieToken() public Whitelist() {
+  constructor() public Whitelist() {
     totalSupply_ = initialSupply;
     balances[msg.sender] = initialSupply;
     emit Transfer(0x0, msg.sender, initialSupply);

@@ -11,7 +11,7 @@ import "./IndividualLimitsCrowdsale.sol";
 
 contract ConfigurableCrowdsale is CappedCrowdsale, WhitelistedCrowdsale, IndividualLimitsCrowdsale, RefundableCrowdsale, Pausable {
 
-  function ConfigurableCrowdsale(
+  constructor(
     uint256 _rate,
     address _wallet,
     StandardToken _token,

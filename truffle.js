@@ -25,11 +25,11 @@ module.exports = {
       port: 7545,
       network_id: "*"
     },
-    testrpc: {
-      host: '127.0.0.1',
-      port: 8545,
-      network_id: '*'
-    },
+    // testrpc: {
+    //   host: '127.0.0.1',
+    //   port: 8545,
+    //   network_id: '*'
+    // },
     coverage: {
       host: "localhost",
       network_id: "*",
@@ -37,11 +37,6 @@ module.exports = {
       gas: 0xfffffffffff, // <-- Use this high gas value
       gasPrice: 0x01      // <-- Use this low gas price
     },
-    // ganache: {
-    //   host: 'localhost',
-    //   port: 8545,
-    //   network_id: '*', // eslint-disable-line camelcase
-    // },
     ropsten: {
       provider: function () {
         return new HDWalletProvider(mnemonic, `https://ropsten.infura.io/${infuraApikey}`);

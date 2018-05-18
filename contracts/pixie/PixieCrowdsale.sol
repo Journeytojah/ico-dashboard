@@ -1,6 +1,6 @@
 pragma solidity ^0.4.23;
 
-import "openzeppelin-solidity/contracts/token/ERC20/StandardToken.sol";
+import "./PixieToken.sol";
 import "openzeppelin-solidity/contracts/crowdsale/Crowdsale.sol";
 import "openzeppelin-solidity/contracts/lifecycle/Pausable.sol";
 import "openzeppelin-solidity/contracts/crowdsale/distribution/utils/RefundVault.sol";
@@ -40,7 +40,7 @@ contract PixieCrowdsale is Crowdsale, Pausable {
   // refund vault used to hold funds while crowdsale is running
   RefundVault public vault;
 
-  function PixieCrowdsale(address _wallet, StandardToken _token) public Crowdsale(1, _wallet, _token) {
+  constructor(address _wallet, PixieToken _token) public Crowdsale(1, _wallet, _token) {
     vault = new RefundVault(wallet);
   }
 

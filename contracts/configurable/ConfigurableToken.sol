@@ -15,7 +15,7 @@ contract ConfigurableToken is StandardToken {
   /**
    * @dev Constructor that gives msg.sender all of existing tokens.
    */
-  function ConfigurableToken(uint256 _initialSupply, uint8 _decimals) public {
+  constructor(uint256 _initialSupply, uint8 _decimals) public {
     decimals = _decimals;
     initialSupply = _initialSupply * (10 ** uint256(decimals));
     totalSupply_ = initialSupply;

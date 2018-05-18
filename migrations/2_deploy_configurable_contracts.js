@@ -11,6 +11,21 @@ module.exports = async function (deployer, network, accounts) {
 
   console.log(`Running within network = ${network}`);
 
+  let _contractCreatorAccount;
+  let _secondTestApprovedTestAccount;
+
+  // Load in other accounts for different networks
+  if (network === 'ropsten' || network === 'rinkeby') {
+    _contractCreatorAccount = new HDWalletProvider(mnemonic, `https://${network}.infura.io/${infuraApikey}`, 0).getAddress();
+    _secondTestApprovedTestAccount = new HDWalletProvider(mnemonic, `https://${network}.infura.io/${infuraApikey}`, 1).getAddress();
+  } else {
+    _contractCreatorAccount = accounts[0];
+    _secondTestApprovedTestAccount = accounts[1];
+  }
+
+  console.log(`_contractCreatorAccount - [${_contractCreatorAccount}]`);
+  console.log(`_secondTestApprovedTestAccount - [${_secondTestApprovedTestAccount}]`);
+
   let promisifyGetBlockNumber = Promise.promisify(web3.eth.getBlockNumber);
   let promisifyGetBlock = Promise.promisify(web3.eth.getBlock);
 
@@ -28,7 +43,7 @@ module.exports = async function (deployer, network, accounts) {
   let block = await promisifyGetBlock(blockNumber);
 
   const _rate = 1;
-  const _wallet = accounts[0];
+  const _wallet = _contractCreatorAccount;
   const _token = ConfigurableToken.address;
   const _cap = _tokenInitialSupply.times(0.5); // cap 50% of supply i.e 500 WEI
 
@@ -46,21 +61,6 @@ module.exports = async function (deployer, network, accounts) {
 
   // Transfer the ICO supply to the crowdsale
   await deployedConfigurableToken.transfer(ConfigurableCrowdsale.address, crowdsaleSupply);
-
-  let _contractCreatorAccount;
-  let _secondTestApprovedTestAccount;
-
-  // Load in other accounts for different networks
-  if (network === 'ropsten' || network === 'rinkeby') {
-    _secondTestApprovedTestAccount = new HDWalletProvider(mnemonic, `https://${network}.infura.io/${infuraApikey}`, 1).getAddress();
-    _contractCreatorAccount = accounts[0];
-  } else {
-    _contractCreatorAccount = accounts[0];
-    _secondTestApprovedTestAccount = accounts[1];
-  }
-
-  // console.log(`_contractCreatorAccount - [${_contractCreatorAccount}]`);
-  // console.log(`_secondTestApprovedTestAccount - [${_secondTestApprovedTestAccount}]`);
 
   const deployedConfigurableCrowdsale = await ConfigurableCrowdsale.deployed();
 

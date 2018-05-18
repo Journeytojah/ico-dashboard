@@ -23,7 +23,7 @@ contract IndividualLimitsCrowdsale is Crowdsale {
    * @param _min Min amount of wei that must be contributed
    * @param _max Max amount of wei that can be contributed per individual address
    */
-  function IndividualLimitsCrowdsale(uint256 _min, uint256 _max) public {
+  constructor(uint256 _min, uint256 _max) public {
     require(_min > 0);
     require(_max > 0);
     min = _min;

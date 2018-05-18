@@ -477,7 +477,6 @@ contract('ConfigurableCrowdsale', function ([owner, investor, wallet, purchaser,
     });
   });
 
-
   describe('Pausable', function () {
     beforeEach(async function () {
       await increaseTimeTo(this.preSaleCloseTime + duration.seconds(1)); // force time to move on to just after pre-sale
