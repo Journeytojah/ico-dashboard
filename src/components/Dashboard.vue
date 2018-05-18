@@ -38,12 +38,12 @@
 
         <h4>Goal</h4>
         <p>
-          {{ goal }}
+          {{ goalHuman }}
           <eth-symbol></eth-symbol>
         </p>
 
         <h4>Min. Contribution</h4>
-        <p>{{ min }}
+        <p>{{ minHuman }}
           <eth-symbol></eth-symbol>
         </p>
 
@@ -65,7 +65,7 @@
       <div class="col-lg-5">
         <h4>Hard Cap</h4>
         <p>
-          {{ cap }}
+          {{ capHuman }}
           <eth-symbol></eth-symbol>
         </p>
 
@@ -77,7 +77,7 @@
         </p>
 
         <h4>Max. Contribution</h4>
-        <p>{{ max }}
+        <p>{{ maxHuman }}
           <eth-symbol></eth-symbol>
         </p>
 
@@ -122,12 +122,16 @@
         'raised',
         'token',
         'cap',
+        'capHuman',
         'goal',
+        'goalHuman',
         'start',
         'end',
         'tokenSymbol',
         'min',
+        'minHuman',
         'max',
+        'maxHuman',
         'start',
         'end',
         'owner',

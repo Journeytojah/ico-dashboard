@@ -36,13 +36,17 @@ const store = new Vuex.Store({
     address: null,
     rate: 0,
     cap: 0,
+    capHuman: null,
     goal: 0,
+    goalHuman: 0,
     wallet: null,
     start: 0,
     end: 0,
     owner: null,
     min: 0,
+    minHuman: null,
     max: 0,
+    maxHuman: null,
     vault: null,
 
     // semi-static values
@@ -114,15 +118,19 @@ const store = new Vuex.Store({
     }) {
       state.rate = rate;
       state.token = token;
-      state.cap = cap;
-      state.goal = goal;
+      state.cap = cap.toNumber(10);
+      state.capHuman = cap.toString(10);
+      state.goal = goal.toNumber(10);
+      state.goalHuman = goal.toString(10);
       state.wallet = wallet;
       state.start = start;
       state.end = end;
       state.address = address;
       state.owner = owner;
-      state.min = min;
-      state.max = max;
+      state.min = min.toNumber(10);
+      state.minHuman = min.toString(10);
+      state.max = max.toNumber(10);
+      state.maxHuman = max.toString(10);
       state.vault = vault;
       state.privateSaleCloseTime = privateSaleCloseTime;
       state.privateSaleRate = privateSaleRate;
@@ -234,8 +242,8 @@ const store = new Vuex.Store({
       })
       .then((results) => {
         commit(mutations.SET_CONTRACT_DETAILS, {
-          tokenBalance: results[0].toNumber(10),
-          crowdsaleBalance: results[1].toNumber(10)
+          tokenBalance: results[0].toString(10),
+          crowdsaleBalance: results[1].toString(10)
         });
       });
     },
@@ -265,15 +273,15 @@ const store = new Vuex.Store({
         commit(mutations.SET_STATIC_CROWDSALE_DETAILS, {
           rate: results[0].toNumber(10),
           token: results[1].toString(),
-          cap: results[2].toNumber(10),
-          goal: results[3].toNumber(10),
+          cap: results[2],
+          goal: results[3],
           wallet: results[4].toString(),
           start: results[5].toNumber(10),
           end: results[6].toNumber(10),
           address: results[7],
           owner: results[8],
-          min: results[9].toNumber(10),
-          max: results[10].toNumber(10),
+          min: results[9],
+          max: results[10],
           vault: results[11],
           privateSaleCloseTime: results[12].toNumber(10),
           privateSaleRate: results[13].toNumber(10),
