@@ -7,7 +7,7 @@ const HDWalletProvider = require('truffle-hdwallet-provider');
 const infuraApikey = 'fkWxG7nrciMRrRD36yVj';
 let mnemonic = require('../mnemonic');
 
-module.exports = async function (deployer, network, accounts) {
+module.exports = function (deployer, network, accounts) {
 
   console.log(`Running within network = ${network}`);
 
@@ -26,21 +26,48 @@ module.exports = async function (deployer, network, accounts) {
   console.log(`_contractCreatorAccount - [${_contractCreatorAccount}]`);
   console.log(`_secondTestApprovedTestAccount - [${_secondTestApprovedTestAccount}]`);
 
-  await deployer.deploy(PixieToken);
-  await deployer.deploy(PixieCrowdsale, _contractCreatorAccount, PixieToken.address);
+  return deployer.deploy(PixieToken)
+    .then((deployedPixieToken) => {
+      return deployer.deploy(PixieCrowdsale, _contractCreatorAccount, PixieToken.address)
+        .then((deployedPixieCrowdsale) => {
+          return {
+            deployedPixieToken,
+            deployedPixieCrowdsale
+          }
+        })
+    })
+    .then(({deployedPixieToken, deployedPixieCrowdsale}) => {
 
-  const deployedPixieToken = await PixieToken.deployed();
-  const deployedPixieCrowdsale = await PixieCrowdsale.deployed();
+      let promise1 = deployedPixieToken.initialSupply()
+        .then((_tokenInitialSupply) => {
+          const crowdsaleSupply = _tokenInitialSupply.times(0.5); // sell upto 50%, i.e. 500 WEI
+          return deployedPixieToken.transfer(PixieCrowdsale.address, crowdsaleSupply);
+        });
 
-  const _tokenInitialSupply = await deployedPixieToken.initialSupply();
-  const crowdsaleSupply = _tokenInitialSupply.times(0.5); // sell upto 50%, i.e. 500 WEI
+      // Whitelist various utility accounts
+      let promise2 = deployedPixieCrowdsale.addManyToWhitelist([_contractCreatorAccount, _secondTestApprovedTestAccount]);
 
-  await deployedPixieToken.transfer(PixieCrowdsale.address, crowdsaleSupply);
+      // Whitelist the crowdsale
+      let promise3 = deployedPixieToken.addAddressToWhitelist(PixieCrowdsale.address, {from: _contractCreatorAccount});
 
+      return Promise.all([promise1, promise2, promise3]);
+    });
 
-  // Whitelist various utility accounts
-  await deployedPixieCrowdsale.addManyToWhitelist([_contractCreatorAccount, _secondTestApprovedTestAccount]);
+  // await deployer.deploy(PixieToken);
+  // await deployer.deploy(PixieCrowdsale, _contractCreatorAccount, PixieToken.address);
 
-  // Whitelist the crowdsale
-  await deployedPixieToken.addAddressToWhitelist(PixieCrowdsale.address, {from: _contractCreatorAccount});
+  // const deployedPixieToken = await PixieToken.deployed();
+  // const deployedPixieCrowdsale = await PixieCrowdsale.deployed();
+  //
+  // const _tokenInitialSupply = await deployedPixieToken.initialSupply();
+  // const crowdsaleSupply = _tokenInitialSupply.times(0.5); // sell upto 50%, i.e. 500 WEI
+  //
+  // await deployedPixieToken.transfer(PixieCrowdsale.address, crowdsaleSupply);
+  //
+  //
+  // // Whitelist various utility accounts
+  // await deployedPixieCrowdsale.addManyToWhitelist([_contractCreatorAccount, _secondTestApprovedTestAccount]);
+  //
+  // // Whitelist the crowdsale
+  // await deployedPixieToken.addAddressToWhitelist(PixieCrowdsale.address, {from: _contractCreatorAccount});
 };
