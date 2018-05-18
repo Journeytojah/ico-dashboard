@@ -20,6 +20,6 @@ contract ConfigurableToken is StandardToken {
     initialSupply = _initialSupply * (10 ** uint256(decimals));
     totalSupply_ = initialSupply;
     balances[msg.sender] = initialSupply;
-    Transfer(0x0, msg.sender, initialSupply);
+    emit Transfer(0x0, msg.sender, initialSupply);
   }
 }

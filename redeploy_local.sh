@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-truffle migrate --network ganache
+./node_modules/.bin/truffle migrate --network ganache

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 
-truffle migrate --network ropsten
+./node_modules/.bin/truffle migrate --network ropsten
 
 ## Ropsten:

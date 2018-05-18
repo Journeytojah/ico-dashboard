@@ -48,8 +48,8 @@ contract PixieCrowdsale is Crowdsale, Pausable {
    * @dev Investors can claim refunds here if crowdsale is unsuccessful
    */
   function claimRefund() public {
-    require(isFinalized);
-    require(!goalReached());
+    require(isFinalized, "Crowdsale not finalised");
+    require(!goalReached(), "Crowdsale goal not reached");
 
     vault.refund(msg.sender);
   }
@@ -85,11 +85,11 @@ contract PixieCrowdsale is Crowdsale, Pausable {
    * work. Calls the contract's finalization function.
    */
   function finalize() onlyOwner public {
-    require(!isFinalized);
-    require(hasClosed());
+    require(!isFinalized, "Crowdsale already finalised");
+    require(hasClosed(), "Crowdsale already closed");
 
     finalization();
-    Finalized();
+    emit Finalized();
 
     isFinalized = true;
   }
@@ -187,16 +187,16 @@ contract PixieCrowdsale is Crowdsale, Pausable {
   function _preValidatePurchase(address _beneficiary, uint256 _weiAmount) internal {
     super._preValidatePurchase(_beneficiary, _weiAmount);
 
-    require(now >= openingTime && now <= closingTime);
+    require(now >= openingTime && now <= closingTime, "Crowdsale not open");
 
-    require(weiRaised.add(_weiAmount) <= cap);
+    require(weiRaised.add(_weiAmount) <= cap, "Exceed maximum cap");
 
-    require(_weiAmount >= min);
+    require(_weiAmount >= min, "Beneficiary minimum amount not reached");
 
-    require(contributions[_beneficiary].add(_weiAmount) <= max);
+    require(contributions[_beneficiary].add(_weiAmount) <= max, "Beneficiary maximum contribution reached");
 
-    require(whitelist[_beneficiary]);
+    require(whitelist[_beneficiary], "Beneficiary not whitelisted");
 
-    require(!paused);
+    require(!paused, "Contract paused");
   }
 }
