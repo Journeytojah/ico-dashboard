@@ -19,3 +19,4 @@ build
 /coverage.json
 /coverage/
 /contracts-flat/
+/allFiredEvents

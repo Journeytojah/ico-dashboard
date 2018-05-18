@@ -287,9 +287,6 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
   describe('TimedCrowdsale with timed open/close', function () {
 
     it('should be ended only after end', async function () {
-      let isCrowdsaleOpen = await this.crowdsale.isCrowdsaleOpen();
-      isCrowdsaleOpen.should.equal(false);
-
       let ended = await this.crowdsale.hasClosed();
       ended.should.equal(false);
 
