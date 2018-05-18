@@ -106,7 +106,7 @@ contract('ConfigurableCrowdsale', function ([owner, investor, wallet, purchaser,
     console.log('preSaleRate', await this.crowdsale.preSaleRate());
   });
 
-  describe('Crowdsale', function () {
+  describe.only('Crowdsale', function () {
 
     beforeEach(async function () {
       await increaseTimeTo(this.preSaleCloseTime + duration.seconds(1)); // force time to move on to just after pre-sale
