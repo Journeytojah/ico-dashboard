@@ -54,8 +54,8 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     this.preSaleExpectedTokenAmount = this.preSaleRate.mul(this.value);
     this.privateSaleExpectedTokenAmount = this.privateSaleRate.mul(this.value);
 
-    let vaultAddress = await this.crowdsale.vault();
-    this.refundVault = await RefundVault.at(vaultAddress);
+    this.vault = await this.crowdsale.vault();
+    this.refundVault = await RefundVault.at(this.vault);
 
     // approve so they can invest in crowdsale
     await this.crowdsale.addToWhitelist(owner);
@@ -83,8 +83,6 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
 
     // transfer balance to crowdsale to allow ICO token distribution
     await this.token.transfer(this.crowdsale.address, this.amountAvailableForPurchase);
-
-    this.vault = await this.crowdsale.vault();
   });
 
   after(async function () {
@@ -99,7 +97,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     console.log('isFinalized', await this.crowdsale.isFinalized());
     console.log('paused', await this.crowdsale.paused());
 
-    console.log('capReached', await this.crowdsale.capReached());
+    console.log('hardCapReached', await this.crowdsale.hardCapReached());
     console.log('hardCap', this.hardCap.toString(10));
     console.log('softCap', this.softCap.toString(10));
     console.log('min contribution', (await this.crowdsale.minimumContribution()).toString(10));
@@ -228,48 +226,22 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     });
 
     describe('accepting payments', function () {
-      it('should accept payments within cap', async function () {
+      it('should accept payments within hard cap', async function () {
         await this.crowdsale.send(this.minContribution).should.be.fulfilled;
       });
 
-      it('should reject payments that exceed cap', async function () {
-        let capReached = await this.crowdsale.capReached();
-        capReached.should.equal(false);
+      it('should reject payments that exceed hard cap', async function () {
+        let hardCapReached = await this.crowdsale.hardCapReached();
+        hardCapReached.should.equal(false);
 
-        // 10000 ETHER
-        await this.crowdsale.buyTokens(purchaser, {value: etherToWei(10000), from: purchaser});
-        capReached = await this.crowdsale.capReached();
-        capReached.should.equal(false);
+        await this.crowdsale.buyTokens(authorizedFour, {value: this.hardCap.minus(etherToWei(1)), from: authorizedFour});
+        hardCapReached = await this.crowdsale.hardCapReached();
+        hardCapReached.should.equal(false);
 
-        // 20000 ETHER
-        await this.crowdsale.buyTokens(investor, {value: etherToWei(10000), from: investor});
-        capReached = await this.crowdsale.capReached();
-        capReached.should.equal(false);
-
-        // 30000 ETHER
-        await this.crowdsale.buyTokens(authorized, {value: etherToWei(10000), from: authorized});
-        capReached = await this.crowdsale.capReached();
-        capReached.should.equal(false);
-
-        // 40000 ETHER
-        await this.crowdsale.buyTokens(authorizedTwo, {value: etherToWei(10000), from: authorizedTwo});
-        capReached = await this.crowdsale.capReached();
-        capReached.should.equal(false);
-
-        // 60000 ETHER
-        await this.crowdsale.buyTokens(authorizedThree, {value: etherToWei(20000), from: authorizedThree});
-        capReached = await this.crowdsale.capReached();
-        capReached.should.equal(false);
-
-        // 80000 ETHER
-        await this.crowdsale.buyTokens(authorizedFour, {value: etherToWei(20000), from: authorizedFour});
-        capReached = await this.crowdsale.capReached();
-        capReached.should.equal(false);
-
-        // 88116 max - reached cap
-        await this.crowdsale.buyTokens(authorizedFive, {value: etherToWei(8116), from: authorizedFive});
-        capReached = await this.crowdsale.capReached();
-        capReached.should.equal(true);
+        // +1 ether
+        await this.crowdsale.buyTokens(authorizedFive, {value: etherToWei(1), from: authorizedFive});
+        hardCapReached = await this.crowdsale.hardCapReached();
+        hardCapReached.should.equal(true);
 
         // Ensure you cannot purchase anymore
         await assertRevert(this.crowdsale.buyTokens(authorizedFive, {value: etherToWei(1), from: authorizedFive}));
@@ -277,12 +249,12 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     });
 
     describe('ending', function () {
-      it('should not reach cap if sent under cap', async function () {
-        let capReached = await this.crowdsale.capReached();
-        capReached.should.equal(false);
+      it('should not reach hard cap if sent under hard cap', async function () {
+        let hardCapReached = await this.crowdsale.hardCapReached();
+        hardCapReached.should.equal(false);
         await this.crowdsale.send(this.minContribution);
-        capReached = await this.crowdsale.capReached();
-        capReached.should.equal(false);
+        hardCapReached = await this.crowdsale.hardCapReached();
+        hardCapReached.should.equal(false);
       });
     });
 
@@ -335,8 +307,8 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     it('can be finalized by owner over goal and all contributions send to wallet', async function () {
       let startingWalletBalance = web3.eth.getBalance(wallet);
       await this.crowdsale.buyTokens(investor, {value: this.softCap, from: investor}).should.be.fulfilled;
-      let goalReached = await this.crowdsale.goalReached();
-      goalReached.should.equal(true);
+      let softCapReached = await this.crowdsale.softCapReached();
+      softCapReached.should.equal(true);
 
       let vaultBalance = web3.eth.getBalance(this.refundVault.address);
       vaultBalance.should.be.bignumber.equal(this.softCap);
@@ -484,7 +456,6 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
       });
 
       it('should reject payments to not whitelisted (with whichever buyers)', async function () {
-
         await this.crowdsale.send({value: this.value, from: unauthorized}).should.be.rejected;
 
         await this.crowdsale.buyTokens(unauthorized, {value: this.value, from: unauthorized}).should.be.rejected;
@@ -679,9 +650,8 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
         secondPostContribution.should.be.bignumber.equal(this.minContribution.times(2));
       });
 
-      it('should allow multiple contributions if below max limit', async function () {
+      it('should allow multiple contributions ', async function () {
 
-        // well below max limit
         await this.crowdsale.send(this.minContribution).should.be.fulfilled;
         await this.crowdsale.send(this.minContribution).should.be.fulfilled;
         await this.crowdsale.send(this.minContribution).should.be.fulfilled;
@@ -694,7 +664,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     });
   });
 
-  describe('Refundable with softCap', function () {
+  describe('Refundable with soft cap', function () {
 
     it('should deny refunds if not finalized', async function () {
       await this.refundVault.refund(investor, {from: investor}).should.be.rejectedWith(EVMRevert);
@@ -703,8 +673,9 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
       await this.refundVault.refund(investor, {from: investor}).should.be.rejectedWith(EVMRevert);
     });
 
-    it('should allow refunds after end if softCap was not reached', async function () {
+    it('should allow refunds after end if soft cap was not reached', async function () {
       await increaseTimeTo(this.openingTime + duration.seconds(5)); // force time to move on to just after opening
+
       await this.crowdsale.sendTransaction({value: this.minContribution, from: investor});
 
       await increaseTimeTo(this.afterClosingTime);
@@ -717,18 +688,17 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
       post.minus(pre).should.be.bignumber.equal(this.minContribution);
     });
 
-    it('should forward funds to wallet after end if softCap was reached', async function () {
+    it('should forward funds to wallet after end if soft cap was reached', async function () {
       await increaseTimeTo(this.preSaleCloseTime + duration.seconds(1)); // force time to move on to just after pre-sale
 
-      // 7048 ETHER
-      await this.crowdsale.sendTransaction({value: etherToWei(7048), from: purchaser});
-      let goalReached = await this.crowdsale.goalReached();
-      goalReached.should.equal(false);
+      await this.crowdsale.sendTransaction({value: this.softCap.minus(etherToWei(1)), from: purchaser});
+      let softCapReached = await this.crowdsale.softCapReached();
+      softCapReached.should.equal(false);
 
       // +1 ETHER to reach soft cap
       await this.crowdsale.sendTransaction({value: etherToWei(1), from: investor});
-      goalReached = await this.crowdsale.goalReached();
-      goalReached.should.equal(true);
+      softCapReached = await this.crowdsale.softCapReached();
+      softCapReached.should.equal(true);
 
       await increaseTimeTo(this.afterClosingTime);
       const pre = web3.eth.getBalance(wallet);
@@ -736,7 +706,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
       await this.crowdsale.finalize({from: owner});
 
       const post = web3.eth.getBalance(wallet);
-      post.minus(pre).should.be.bignumber.equal(etherToWei(7049));
+      post.minus(pre).should.be.bignumber.equal(this.softCap);
     });
   });
 

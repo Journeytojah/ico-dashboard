@@ -62,7 +62,7 @@ contract PixieCrowdsale is Crowdsale, Pausable {
    * @dev Checks whether funding goal was reached.
    * @return Whether funding goal was reached
    */
-  function goalReached() public view returns (bool) {
+  function softCapReached() public view returns (bool) {
     return weiRaised >= softCap;
   }
 
@@ -70,7 +70,7 @@ contract PixieCrowdsale is Crowdsale, Pausable {
    * @dev vault finalization task, called when owner calls finalize()
    */
   function finalization() internal {
-    if (goalReached()) {
+    if (softCapReached()) {
       vault.close();
     } else {
       vault.enableRefunds();
@@ -144,7 +144,7 @@ contract PixieCrowdsale is Crowdsale, Pausable {
    * @dev Checks whether the hard cap has been reached.
    * @return Whether the cap was reached
    */
-  function capReached() public view returns (bool) {
+  function hardCapReached() public view returns (bool) {
     return weiRaised >= hardCap;
   }
 

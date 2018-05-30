@@ -58,7 +58,7 @@ const store = new Vuex.Store({
     crowdsaleBalance: 0,
     contributions: 0,
     paused: null,
-    goalReached: false,
+    softCapReached: false,
     // refund vault
     vaultBalance: 0,
     vaultState: null,
@@ -136,13 +136,13 @@ const store = new Vuex.Store({
       raised,
       whitelisted,
       contributions,
-      goalReached,
+      softCapReached,
       paused
     }) {
       state.raised = raised;
       state.whitelisted = whitelisted;
       state.contributions = contributions;
-      state.goalReached = goalReached;
+      state.softCapReached = softCapReached;
       state.paused = paused;
     },
     [mutations.SET_VAULT_BALANCE](state, vaultBalance) {
@@ -269,7 +269,7 @@ const store = new Vuex.Store({
           rate: results[0].toNumber(10),
           token: results[1].toString(),
           hardCap: results[2],
-          goal: results[3],
+          softCapReached: results[3],
           wallet: results[4].toString(),
           start: results[5].toNumber(10),
           end: results[6].toNumber(10),
@@ -291,7 +291,7 @@ const store = new Vuex.Store({
           contract.weiRaised(),
           contract.whitelist(account),
           contract.contributions(account, {from: account}),
-          contract.goalReached(),
+          contract.softCapReached(),
           contract.paused()
         ]);
       })
@@ -300,7 +300,7 @@ const store = new Vuex.Store({
           raised: results[0].toNumber(10),
           whitelisted: results[1],
           contributions: results[2].toNumber(10),
-          goalReached: results[3],
+          softCapReached: results[3],
           paused: results[4]
         });
       });
