@@ -332,15 +332,14 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
       postRefundInvestorBalance.minus(this.value).should.be.bignumber.equal(postContributionInvestorBalance);
     });
 
-    it.skip('can be finalized by owner over goal and all contributions send to wallet', async function () {
+    it('can be finalized by owner over goal and all contributions send to wallet', async function () {
       let startingWalletBalance = web3.eth.getBalance(wallet);
-      await this.crowdsale.buyTokens(investor, {value: this.maxContribution, from: investor}).should.be.fulfilled;
-      await this.crowdsale.buyTokens(purchaser, {value: this.maxContribution, from: purchaser});
+      await this.crowdsale.buyTokens(investor, {value: this.softCap, from: investor}).should.be.fulfilled;
       let goalReached = await this.crowdsale.goalReached();
       goalReached.should.equal(true);
 
       let vaultBalance = web3.eth.getBalance(this.refundVault.address);
-      vaultBalance.should.be.bignumber.equal(this.maxContribution.times(2));
+      vaultBalance.should.be.bignumber.equal(this.softCap);
 
       await this.crowdsale.finalize({from: owner}).should.be.fulfilled;
 
@@ -349,7 +348,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
       vaultBalance.should.be.bignumber.equal(0);
 
       let postFinalizeWalletBalance = web3.eth.getBalance(wallet);
-      startingWalletBalance.plus(this.maxContribution.times(2)).should.be.bignumber.equal(postFinalizeWalletBalance);
+      startingWalletBalance.plus(this.softCap).should.be.bignumber.equal(postFinalizeWalletBalance);
     });
 
     it('cannot be finalized twice', async function () {
