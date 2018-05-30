@@ -17,7 +17,7 @@ require('chai')
 contract('PixieToken', function ([_, owner, recipient, anotherAccount, extraAccount]) {
 
   const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
-  const DECIMALS = 18;
+  const DECIMALS = 6;
   const TOTAl_AMOUNT_OF_TOKENS = new BigNumber(100000000000).times(new BigNumber(10).pow(DECIMALS));
 
   beforeEach(async function () {

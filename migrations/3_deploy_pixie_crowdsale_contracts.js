@@ -40,7 +40,7 @@ module.exports = function (deployer, network, accounts) {
 
       let promise1 = deployedPixieToken.initialSupply()
         .then((_tokenInitialSupply) => {
-          const crowdsaleSupply = _tokenInitialSupply.times(0.5); // sell upto 50%, i.e. 500 WEI
+          const crowdsaleSupply = _tokenInitialSupply.times(0.4); // sell upto 40%
           return deployedPixieToken.transfer(PixieCrowdsale.address, crowdsaleSupply);
         });
 
