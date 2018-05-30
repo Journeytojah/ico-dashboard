@@ -15,32 +15,46 @@ contract PixieCrowdsale is Crowdsale, Pausable {
 
   bool public isFinalized = false;
 
-  // N.B arbitrarily set to one minute until until we know what
+  // FIXME arbitrarily set to one minute until until know start
   uint256 public openingTime = now.add(1 minutes);
 
+  // FIXME - date
   uint256 public closingTime = openingTime.add(4 weeks);
 
+  // FIXME - date
   uint256 public privateSaleCloseTime = openingTime.add(1 weeks);
 
-  uint256 public privateSaleRate = 3;
-
+  // FIXME - date
   uint256 public preSaleCloseTime = openingTime.add(2 weeks);
 
-  uint256 public preSaleRate = 2;
+  // price per token (no discount)
+  uint256 public rate = 453944;
 
-  uint256 public goal = 17500 ether;
+  // 25% discount
+  uint256 public privateSaleRate = 567430;
 
-  uint256 public cap = 65000 ether;
+  // 12.5% discount
+  uint256 public preSaleRate = 510687;
 
-  uint256 public min = 0.1 ether;
+  // at a rate of $567.43 per eth - soft cap of 4m (approx)
+  uint256 public softCap = 7049 ether;
 
-  // N.B arbitrarily high for now until we know what
-  uint256 public max = 10000 ether;
+  // at a rate of $567.43 per eth - soft cap of 50m (approx)
+  uint256 public hardCap = 88116 ether;
+
+  // Min contribution of 1 ETH
+  uint256 public minimumContribution = 1 ether;
 
   // refund vault used to hold funds while crowdsale is running
   RefundVault public vault;
 
-  constructor(address _wallet, PixieToken _token) public Crowdsale(1, _wallet, _token) {
+  /**
+   * @dev Constructs the Crowdsale contract with pre-defined parameter plus params
+   *
+   * @param _wallet Address where collected funds will be forwarded to
+   * @param _token Address of the token being sold
+   */
+  constructor(address _wallet, PixieToken _token) public Crowdsale(rate, _wallet, _token) {
     vault = new RefundVault(wallet);
   }
 
@@ -49,7 +63,7 @@ contract PixieCrowdsale is Crowdsale, Pausable {
    * @return Whether funding goal was reached
    */
   function goalReached() public view returns (bool) {
-    return weiRaised >= goal;
+    return weiRaised >= softCap;
   }
 
   /**
@@ -127,11 +141,11 @@ contract PixieCrowdsale is Crowdsale, Pausable {
   }
 
   /**
-   * @dev Checks whether the cap has been reached.
+   * @dev Checks whether the hard cap has been reached.
    * @return Whether the cap was reached
    */
   function capReached() public view returns (bool) {
-    return weiRaised >= cap;
+    return weiRaised >= hardCap;
   }
 
   /**
@@ -160,7 +174,7 @@ contract PixieCrowdsale is Crowdsale, Pausable {
   }
 
   /**
-   * @dev gets current time
+   * @dev Returns current time (from the chain)
    * @return the current blocktime
    */
   function getNow() public view returns (uint) {
@@ -185,11 +199,9 @@ contract PixieCrowdsale is Crowdsale, Pausable {
 
     require(now >= openingTime && now <= closingTime, "Crowdsale not open");
 
-    require(weiRaised.add(_weiAmount) <= cap, "Exceed maximum cap");
+    require(weiRaised.add(_weiAmount) <= hardCap, "Exceed maximum cap");
 
-    require(_weiAmount >= min, "Beneficiary minimum amount not reached");
-
-    require(contributions[_beneficiary].add(_weiAmount) <= max, "Beneficiary maximum contribution reached");
+    require(_weiAmount >= minimumContribution, "Beneficiary minimum amount not reached");
 
     require(whitelist[_beneficiary], "Beneficiary not whitelisted");
 

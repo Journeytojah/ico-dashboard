@@ -21,7 +21,7 @@
         <eth-symbol></eth-symbol>
       </p>
 
-      <b-progress show-value :max="cap" class="mb-3 thermometer" height="50px">
+      <b-progress show-value :max="hardCap" class="mb-3 thermometer" height="50px">
         <b-progress-bar variant="primary" :value="raised"></b-progress-bar>
       </b-progress>
 
@@ -38,12 +38,12 @@
 
         <h4>Goal</h4>
         <p>
-          {{ goalHuman }}
+          {{ softCapHuman }}
           <eth-symbol></eth-symbol>
         </p>
 
         <h4>Min. Contribution</h4>
-        <p>{{ minHuman }}
+        <p>{{ minContributionHuman }}
           <eth-symbol></eth-symbol>
         </p>
 
@@ -77,9 +77,7 @@
         </p>
 
         <h4>Max. Contribution</h4>
-        <p>{{ maxHuman }}
-          <eth-symbol></eth-symbol>
-        </p>
+        <p>NO MAX</p>
 
         <h4>End Date</h4>
         <p>{{ end | moment('from') }}</p>
@@ -121,17 +119,15 @@
         'rate',
         'raised',
         'token',
-        'cap',
-        'capHuman',
-        'goal',
-        'goalHuman',
+        'hardCap',
+        'hardCapHuman',
+        'softCap',
+        'softCapHuman',
         'start',
         'end',
         'tokenSymbol',
-        'min',
-        'minHuman',
-        'max',
-        'maxHuman',
+        'minContribution',
+        'minContributionHuman',
         'start',
         'end',
         'owner',

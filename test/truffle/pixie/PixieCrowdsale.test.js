@@ -29,33 +29,30 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
   beforeEach(async function () {
     this.token = await PixieToken.new();
 
-    this.rate = new BigNumber(1);
+    this.crowdsale = await PixieCrowdsale.new(wallet, this.token.address);
 
     this.initialSupply = await this.token.initialSupply();
-
     this.amountAvailableForPurchase = this.initialSupply.times(0.4); // 40% of total supply
 
     this.openingTime = latestTime() + duration.seconds(60); // opens in 60 seconds
     this.closingTime = this.openingTime + duration.weeks(4); // closes in 4 week & 10 second
-
+    this.privateSaleCloseTime = this.openingTime + duration.weeks(1); // private sale to close 1 week after opening
+    this.preSaleCloseTime = this.openingTime + duration.weeks(2); // pre sale to close 2 weeks after opening
     this.afterClosingTime = this.closingTime + duration.seconds(1);
 
-    this.privateSaleCloseTime = this.openingTime + duration.weeks(1); // private sale to close 1 week after opening
-    this.privateSaleRate = new BigNumber(3);
+    this.privateSaleRate = await this.crowdsale.privateSaleRate();
+    this.preSaleRate = await this.crowdsale.preSaleRate();
+    this.rate = await this.crowdsale.rate();
 
-    this.preSaleCloseTime = this.openingTime + duration.weeks(2); // pre sale to close 2 weeks after opening
-    this.preSaleRate = new BigNumber(2);
+    this.minContribution = await this.crowdsale.minimumContribution();
 
-    this.minContribution = etherToWei(0.1); // 1.0 ETH
-    this.maxContribution = etherToWei(10000); // 10000 ETH
-
-    this.goal = etherToWei(17500);
-    this.cap = etherToWei(65000);
+    this.softCap = await this.crowdsale.softCap();
+    this.hardCap = await this.crowdsale.hardCap();
 
     this.value = this.minContribution;
     this.standardExpectedTokenAmount = this.rate.mul(this.value);
-
-    this.crowdsale = await PixieCrowdsale.new(wallet, this.token.address);
+    this.preSaleExpectedTokenAmount = this.preSaleRate.mul(this.value);
+    this.privateSaleExpectedTokenAmount = this.privateSaleRate.mul(this.value);
 
     let vaultAddress = await this.crowdsale.vault();
     this.refundVault = await RefundVault.at(vaultAddress);
@@ -75,8 +72,11 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
 
     // ensure owner and all accounts are whitelisted
     assert.isTrue(await this.token.whitelist(owner));
-    await this.token.addAddressesToWhitelist([investor, wallet, purchaser, authorized, unauthorized, anotherAuthorized,
-      authorizedTwo, authorizedThree, authorizedFour, authorizedFive]);
+
+    await this.token.addAddressesToWhitelist([
+      investor, wallet, purchaser, authorized, unauthorized, anotherAuthorized,
+      authorizedTwo, authorizedThree, authorizedFour, authorizedFive
+    ]);
 
     // ensure the crowdsale can transfer tokens - whitelist in token
     await this.token.addAddressToWhitelist(this.crowdsale.address);
@@ -97,24 +97,66 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     console.log('hasClosed', await this.crowdsale.hasClosed());
     console.log('isCrowdsaleOpen', await this.crowdsale.isCrowdsaleOpen());
     console.log('isFinalized', await this.crowdsale.isFinalized());
-    console.log('capReached', await this.crowdsale.capReached());
-    console.log('cap', (await this.crowdsale.cap()).toString(10));
-    console.log('min contribution', (await this.crowdsale.min()).toString(10));
-    console.log('max contribution', (await this.crowdsale.max()).toString(10));
-    console.log('goal', (await this.crowdsale.goal()).toString(10));
     console.log('paused', await this.crowdsale.paused());
+
+    console.log('capReached', await this.crowdsale.capReached());
+    console.log('hardCap', this.hardCap.toString(10));
+    console.log('softCap', this.softCap.toString(10));
+    console.log('min contribution', (await this.crowdsale.minimumContribution()).toString(10));
+    console.log('value', this.value.toString(10));
+    console.log('initialSupply', this.initialSupply.toString(10));
+    console.log('amountAvailableForPurchase', this.amountAvailableForPurchase.toString(10));
+
     console.log('openingTime', (await this.crowdsale.openingTime()).toString(10));
     console.log('closingTime', (await this.crowdsale.closingTime()).toString(10));
     console.log('privateSaleCloseTime', (await this.crowdsale.privateSaleCloseTime()).toString(10));
-    console.log('privateSaleRate', (await this.crowdsale.privateSaleRate()).toString(10));
     console.log('preSaleCloseTime', (await this.crowdsale.preSaleCloseTime()).toString(10));
-    console.log('preSaleRate', (await this.crowdsale.preSaleRate()).toString(10));
+
+    console.log('Presale ICO tokens per ETH', (await this.crowdsale.preSaleRate()).toString(10));
+    console.log('Private ICO tokens per ETH', (await this.crowdsale.privateSaleRate()).toString(10));
+    console.log('Normal ICO tokens per ETH', (await this.crowdsale.rate()).toString(10));
   });
 
-  describe('Crowdsale', function () {
+  describe('PixieCrowdsale', function () {
 
     beforeEach(async function () {
       await increaseTimeTo(this.preSaleCloseTime + duration.seconds(1)); // force time to move on to just after pre-sale
+    });
+
+    describe('some basic calculations', function () {
+      it('simple test to work out rates', async function () {
+        let priceOfOneEthInUSD = new BigNumber("567.43");
+        let priceOfOneTokenInUSD = new BigNumber("0.00125");
+
+        console.log("Price of 1 ETH in USD", priceOfOneEthInUSD.toString(10));
+        console.log("Price of 1 token in USD", priceOfOneTokenInUSD.toString(10));
+
+        ///////////
+        // 18 DP //
+        ///////////
+
+        let numberOfTokensPerEth = priceOfOneEthInUSD.div(priceOfOneTokenInUSD);
+        console.log("number of tokens PER ETH (18 DP) - ", numberOfTokensPerEth.toString(10));
+
+        let numberOfTokens12Pt5PctDiscount = numberOfTokensPerEth.times(1.125); // 12.5% discount
+        console.log("number of tokens PER ETH (18 DP) - 12.5% discount - ", numberOfTokens12Pt5PctDiscount.toString(10));
+
+        let numberOfTokens25PctDiscount = numberOfTokensPerEth.times(1.25); // 25% discount
+        console.log("number of tokens PER ETH (18 DP) - 25% discount - ", numberOfTokens25PctDiscount.toString(10));
+
+        //////////
+        // 6 DP //
+        //////////
+
+        let numberOfTokensAt6DP = numberOfTokensPerEth.times(3);
+        console.log("number of tokens PER ETH (6 DP) - ", numberOfTokensAt6DP.toString(10)); // 18/6 = 3 times
+
+        numberOfTokens12Pt5PctDiscount = numberOfTokensPerEth.times(3).times(1.125); // 12.5% discount
+        console.log("number of tokens PER ETH (6 DP) - 12.5% discount - ", numberOfTokens12Pt5PctDiscount.toString(10));
+
+        numberOfTokens25PctDiscount = numberOfTokensPerEth.times(3).times(1.25); // 25% discount
+        console.log("number of tokens PER ETH (6 DP) - 25% discount - ", numberOfTokens25PctDiscount.toString(10));
+      });
     });
 
     describe('accepting payments', function () {
@@ -187,7 +229,6 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
 
     describe('accepting payments', function () {
       it('should accept payments within cap', async function () {
-        await this.crowdsale.send(this.maxContribution.minus(this.minContribution)).should.be.fulfilled;
         await this.crowdsale.send(this.minContribution).should.be.fulfilled;
       });
 
@@ -196,48 +237,42 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
         capReached.should.equal(false);
 
         // 10000 ETHER
-        await this.crowdsale.buyTokens(purchaser, {value: this.maxContribution, from: purchaser});
+        await this.crowdsale.buyTokens(purchaser, {value: etherToWei(10000), from: purchaser});
         capReached = await this.crowdsale.capReached();
         capReached.should.equal(false);
 
         // 20000 ETHER
-        await this.crowdsale.buyTokens(investor, {value: this.maxContribution, from: investor});
+        await this.crowdsale.buyTokens(investor, {value: etherToWei(10000), from: investor});
         capReached = await this.crowdsale.capReached();
         capReached.should.equal(false);
 
         // 30000 ETHER
-        await this.crowdsale.buyTokens(authorized, {value: this.maxContribution, from: authorized});
+        await this.crowdsale.buyTokens(authorized, {value: etherToWei(10000), from: authorized});
         capReached = await this.crowdsale.capReached();
         capReached.should.equal(false);
 
         // 40000 ETHER
-        await this.crowdsale.buyTokens(authorizedTwo, {value: this.maxContribution, from: authorizedTwo});
-        capReached = await this.crowdsale.capReached();
-        capReached.should.equal(false);
-
-        // 50000 ETHER
-        await this.crowdsale.buyTokens(authorizedThree, {value: this.maxContribution, from: authorizedThree});
+        await this.crowdsale.buyTokens(authorizedTwo, {value: etherToWei(10000), from: authorizedTwo});
         capReached = await this.crowdsale.capReached();
         capReached.should.equal(false);
 
         // 60000 ETHER
-        await this.crowdsale.buyTokens(authorizedFour, {value: this.maxContribution, from: authorizedFour});
+        await this.crowdsale.buyTokens(authorizedThree, {value: etherToWei(20000), from: authorizedThree});
         capReached = await this.crowdsale.capReached();
         capReached.should.equal(false);
 
-        // 65k max so rejected
-        await assertRevert(this.crowdsale.buyTokens(authorizedFive, {value: this.maxContribution, from: authorizedFive}));
+        // 80000 ETHER
+        await this.crowdsale.buyTokens(authorizedFour, {value: etherToWei(20000), from: authorizedFour});
         capReached = await this.crowdsale.capReached();
         capReached.should.equal(false);
 
-        // send another 5K ETHER which will reach cap
-        await this.crowdsale.buyTokens(authorizedFive, {value: etherToWei(5000), from: authorizedFive});
-
+        // 88116 max - reached cap
+        await this.crowdsale.buyTokens(authorizedFive, {value: etherToWei(8116), from: authorizedFive});
         capReached = await this.crowdsale.capReached();
         capReached.should.equal(true);
 
         // Ensure you cannot purchase anymore
-        await assertRevert(this.crowdsale.buyTokens(authorizedFive, {value: this.minContribution, from: authorizedFive}));
+        await assertRevert(this.crowdsale.buyTokens(authorizedFive, {value: etherToWei(1), from: authorizedFive}));
       });
     });
 
@@ -299,13 +334,12 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
 
     it('can be finalized by owner over goal and all contributions send to wallet', async function () {
       let startingWalletBalance = web3.eth.getBalance(wallet);
-      await this.crowdsale.buyTokens(investor, {value: this.maxContribution, from: investor}).should.be.fulfilled;
-      await this.crowdsale.buyTokens(purchaser, {value: this.maxContribution, from: purchaser});
+      await this.crowdsale.buyTokens(investor, {value: this.softCap, from: investor}).should.be.fulfilled;
       let goalReached = await this.crowdsale.goalReached();
       goalReached.should.equal(true);
 
       let vaultBalance = web3.eth.getBalance(this.refundVault.address);
-      vaultBalance.should.be.bignumber.equal(this.maxContribution.times(2));
+      vaultBalance.should.be.bignumber.equal(this.softCap);
 
       await this.crowdsale.finalize({from: owner}).should.be.fulfilled;
 
@@ -314,7 +348,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
       vaultBalance.should.be.bignumber.equal(0);
 
       let postFinalizeWalletBalance = web3.eth.getBalance(wallet);
-      startingWalletBalance.plus(this.maxContribution.times(2)).should.be.bignumber.equal(postFinalizeWalletBalance);
+      startingWalletBalance.plus(this.softCap).should.be.bignumber.equal(postFinalizeWalletBalance);
     });
 
     it('cannot be finalized twice', async function () {
@@ -597,7 +631,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     });
   });
 
-  describe('IndividualLimitsCrowdsale - min & max contributions', function () {
+  describe('IndividualLimitsCrowdsale - min', function () {
     beforeEach(async function () {
       await increaseTimeTo(this.preSaleCloseTime + duration.seconds(1)); // force time to move on to just after pre-sale
     });
@@ -611,14 +645,6 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
       it('should allow if exactly min limit', async function () {
         await this.crowdsale.send(this.minContribution).should.be.fulfilled;
         await this.crowdsale.buyTokens(investor, {value: this.minContribution, from: purchaser}).should.be.fulfilled;
-      });
-
-      it('should allow if over min limit but less than max limit', async function () {
-        await this.crowdsale.send(this.maxContribution.minus(this.minContribution)).should.be.fulfilled;
-        await this.crowdsale.buyTokens(investor, {
-          value: this.maxContribution.minus(this.minContribution),
-          from: purchaser
-        }).should.be.fulfilled;
       });
     });
 
@@ -666,29 +692,9 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
         postContribution.should.be.bignumber.equal(this.minContribution.times(5));
       });
     });
-
-    describe('sending maximum', function () {
-      it('should fail if above limit via default', async function () {
-        await this.crowdsale.send(this.maxContribution).should.be.fulfilled;
-
-        const postContribution = await this.crowdsale.contributions(owner);
-        postContribution.should.be.bignumber.equal(this.maxContribution);
-
-        await assertRevert(this.crowdsale.send(1));
-      });
-
-      it('should fail if above limit via buyTokens', async function () {
-        await this.crowdsale.buyTokens(purchaser, {value: this.maxContribution, from: purchaser}).should.be.fulfilled;
-
-        const postContribution = await this.crowdsale.contributions(purchaser);
-        postContribution.should.be.bignumber.equal(this.maxContribution);
-
-        await assertRevert(this.crowdsale.buyTokens(purchaser, {value: 1, from: purchaser}));
-      });
-    });
   });
 
-  describe('Refundable with goal', function () {
+  describe('Refundable with softCap', function () {
 
     it('should deny refunds if not finalized', async function () {
       await this.refundVault.refund(investor, {from: investor}).should.be.rejectedWith(EVMRevert);
@@ -697,7 +703,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
       await this.refundVault.refund(investor, {from: investor}).should.be.rejectedWith(EVMRevert);
     });
 
-    it('should allow refunds after end if goal was not reached', async function () {
+    it('should allow refunds after end if softCap was not reached', async function () {
       await increaseTimeTo(this.openingTime + duration.seconds(5)); // force time to move on to just after opening
       await this.crowdsale.sendTransaction({value: this.minContribution, from: investor});
 
@@ -711,16 +717,16 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
       post.minus(pre).should.be.bignumber.equal(this.minContribution);
     });
 
-    it('should forward funds to wallet after end if goal was reached', async function () {
+    it('should forward funds to wallet after end if softCap was reached', async function () {
       await increaseTimeTo(this.preSaleCloseTime + duration.seconds(1)); // force time to move on to just after pre-sale
 
-      // 10000 ETHER
-      await this.crowdsale.sendTransaction({value: this.maxContribution, from: purchaser});
+      // 7048 ETHER
+      await this.crowdsale.sendTransaction({value: etherToWei(7048), from: purchaser});
       let goalReached = await this.crowdsale.goalReached();
       goalReached.should.equal(false);
 
-      // 7500 ETHER to reach soft cap
-      await this.crowdsale.sendTransaction({value: etherToWei(7500), from: investor});
+      // +1 ETHER to reach soft cap
+      await this.crowdsale.sendTransaction({value: etherToWei(1), from: investor});
       goalReached = await this.crowdsale.goalReached();
       goalReached.should.equal(true);
 
@@ -730,7 +736,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
       await this.crowdsale.finalize({from: owner});
 
       const post = web3.eth.getBalance(wallet);
-      post.minus(pre).should.be.bignumber.equal(etherToWei(17500));
+      post.minus(pre).should.be.bignumber.equal(etherToWei(7049));
     });
   });
 
@@ -745,7 +751,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
       it('should assign tokens to sender', async function () {
         await this.crowdsale.sendTransaction({value: this.value, from: investor});
         let balance = await this.token.balanceOf(investor);
-        balance.should.be.bignumber.equal(this.standardExpectedTokenAmount * this.privateSaleRate);
+        balance.should.be.bignumber.equal(this.privateSaleExpectedTokenAmount);
       });
 
       // when using RefundableCrowdsale the "vault" holds the funds
@@ -767,7 +773,7 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
       it('should assign tokens to sender', async function () {
         await this.crowdsale.sendTransaction({value: this.value, from: investor});
         let balance = await this.token.balanceOf(investor);
-        balance.should.be.bignumber.equal(this.standardExpectedTokenAmount * this.preSaleRate);
+        balance.should.be.bignumber.equal(this.preSaleExpectedTokenAmount);
       });
 
       // when using RefundableCrowdsale the "vault" holds the funds
