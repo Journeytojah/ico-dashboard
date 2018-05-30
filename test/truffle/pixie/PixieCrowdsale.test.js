@@ -515,6 +515,74 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     });
   });
 
+  describe('Management whitelisting', function () {
+
+    // TODO remove from whitelists
+    // TODO add single to whitelists
+
+    let authorizedForManagementButNotFinalize;
+    beforeEach(async function () {
+      authorizedForManagementButNotFinalize = unauthorized;
+
+      await this.crowdsale.addManyToWhitelist([authorized]);
+      await this.crowdsale.addManyToManagementWhitelist([anotherAuthorized]);
+    });
+
+    describe('finalize()', function () {
+      it('should be able to invoke finalize() when owner', async function () {
+        await this.crowdsale.finalize({from: owner});
+      });
+
+      it('should not be able to invoke finalize() when added to management whitelist', async function () {
+        await assertRevert(this.crowdsale.finalize({from: authorizedForManagementButNotFinalize}));
+      });
+    });
+
+    describe('beneficiary whitelisting', function () {
+      it('should be able to add many to whitelist when in management', async function () {
+        let isAuthorized = await this.crowdsale.whitelist(unauthorized);
+        isAuthorized.should.equal(false);
+
+        await this.crowdsale.addManyToWhitelist([unauthorized], {from: anotherAuthorized});
+
+        isAuthorized = await this.crowdsale.whitelist(unauthorized);
+        isAuthorized.should.equal(true);
+      });
+
+      it('should not be able to add many to whitelist when not in management', async function () {
+        let isAuthorized = await this.crowdsale.whitelist(unauthorized);
+        isAuthorized.should.equal(false);
+
+        await assertRevert(this.crowdsale.addManyToWhitelist([unauthorized], {from: purchaser}));
+
+        isAuthorized = await this.crowdsale.whitelist(unauthorized);
+        isAuthorized.should.equal(false);
+      });
+    });
+
+    describe('management whitelisting', function () {
+      it('should be able to add many to management whitelist when in management whitelist', async function () {
+        let isAuthorized = await this.crowdsale.managementWhitelist(authorizedFour);
+        isAuthorized.should.equal(false);
+
+        await this.crowdsale.addManyToManagementWhitelist([authorizedFour], {from: anotherAuthorized});
+
+        isAuthorized = await this.crowdsale.managementWhitelist(authorizedFour);
+        isAuthorized.should.equal(true);
+      });
+
+      it('should not be able to add many to management whitelist when not in management whitelist', async function () {
+        let isAuthorized = await this.crowdsale.managementWhitelist(unauthorized);
+        isAuthorized.should.equal(false);
+
+        await assertRevert(this.crowdsale.addManyToManagementWhitelist([unauthorized], {from: purchaser}));
+
+        isAuthorized = await this.crowdsale.managementWhitelist(unauthorized);
+        isAuthorized.should.equal(false);
+      });
+    });
+  });
+
   describe('Pausable', function () {
     beforeEach(async function () {
       await increaseTimeTo(this.preSaleCloseTime + duration.seconds(1)); // force time to move on to just after pre-sale

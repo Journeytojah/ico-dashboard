@@ -11,6 +11,8 @@ contract PixieCrowdsale is Crowdsale, Pausable {
 
   mapping(address => bool) public whitelist;
 
+  mapping(address => bool) public managementWhitelist;
+
   mapping(address => uint256) public contributions;
 
   bool public isFinalized = false;
@@ -47,6 +49,14 @@ contract PixieCrowdsale is Crowdsale, Pausable {
 
   // refund vault used to hold funds while crowdsale is running
   RefundVault public vault;
+
+  /**
+  * @dev Throws if called by any account other than the owner or the someone in the management list.
+  */
+  modifier onlyManagement() {
+    require(msg.sender == owner || managementWhitelist[msg.sender], "Must be owner or in management whitelist");
+    _;
+  }
 
   /**
    * @dev Constructs the Crowdsale contract with pre-defined parameter plus params
@@ -108,7 +118,7 @@ contract PixieCrowdsale is Crowdsale, Pausable {
    * @dev Adds single address to whitelist.
    * @param _beneficiary Address to be added to the whitelist
    */
-  function addToWhitelist(address _beneficiary) external onlyOwner {
+  function addToWhitelist(address _beneficiary) external onlyManagement {
     whitelist[_beneficiary] = true;
   }
 
@@ -116,7 +126,7 @@ contract PixieCrowdsale is Crowdsale, Pausable {
    * @dev Adds list of addresses to whitelist. Not overloaded due to limitations with truffle testing.
    * @param _beneficiaries Addresses to be added to the whitelist
    */
-  function addManyToWhitelist(address[] _beneficiaries) external onlyOwner {
+  function addManyToWhitelist(address[] _beneficiaries) external onlyManagement {
     for (uint256 i = 0; i < _beneficiaries.length; i++) {
       whitelist[_beneficiaries[i]] = true;
     }
@@ -126,8 +136,34 @@ contract PixieCrowdsale is Crowdsale, Pausable {
    * @dev Removes single address from whitelist.
    * @param _beneficiary Address to be removed to the whitelist
    */
-  function removeFromWhitelist(address _beneficiary) external onlyOwner {
+  function removeFromWhitelist(address _beneficiary) external onlyManagement {
     whitelist[_beneficiary] = false;
+  }
+
+  /**
+   * @dev Adds single address to the management whitelist.
+   * @param _manager Address to be added to the management whitelist
+   */
+  function addToManagementWhitelist(address _manager) external onlyManagement {
+    managementWhitelist[_manager] = true;
+  }
+
+  /**
+   * @dev Adds list of addresses to the management whitelist.
+   * @param _managers Addresses to be added to the management whitelist
+   */
+  function addManyToManagementWhitelist(address[] _managers) external onlyManagement {
+    for (uint256 i = 0; i < _managers.length; i++) {
+      managementWhitelist[_manager[i]] = true;
+    }
+  }
+
+  /**
+   * @dev Removes single address from the management whitelist.
+   * @param _manager Address to be removed to the management whitelist
+   */
+  function removeFromManagementWhitelist(address _manager) external onlyManagement {
+    managementWhitelist[_manager] = false;
   }
 
   /**
