@@ -15,7 +15,10 @@ contract PixieCrowdsale is Crowdsale, Pausable {
 
   bool public isFinalized = false;
 
-  uint256 public rate = 1;
+  uint8 private constant decimals = 6;
+
+  // price per token (no discount)
+  uint256 public rate = 1361832 * (10 ** uint256(decimals));
 
   // FIXME arbitrarily set to one minute until until know start
   uint256 public openingTime = now.add(1 minutes);
@@ -26,22 +29,22 @@ contract PixieCrowdsale is Crowdsale, Pausable {
   // FIXME - date
   uint256 public privateSaleCloseTime = openingTime.add(1 weeks);
 
-  // FIXME 25%
-  uint256 public privateSaleRate = 3;
+  // 25% discount
+  uint256 public privateSaleRate = 1702290 * (10 ** uint256(decimals));
 
   // FIXME - date
   uint256 public preSaleCloseTime = openingTime.add(2 weeks);
 
-  // FIXME 12.5%
-  uint256 public preSaleRate = 2;
+  // 12.5% discount
+  uint256 public preSaleRate = 1532061 * (10 ** uint256(decimals));
 
-  // FIXME 7106 ETH approx
-  uint256 public softCap = 7106 ether;
+  // at a rate of $567.43 per eth - soft cap of 4m (approx)
+  uint256 public softCap = 7049 ether;
 
-  // FIXME 88835 ETH (approx)
-  uint256 public hardCap = 88835 ether;
+  // at a rate of $567.43 per eth - soft cap of 50m (approx)
+  uint256 public hardCap = 88116 ether;
 
-  // FIXME - 1 ETH
+  // Min contribution of 1 ETH
   uint256 public minimumContribution = 1 ether;
 
   // FIXME - disable this

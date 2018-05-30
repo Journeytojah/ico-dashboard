@@ -28,24 +28,20 @@ contract.only('PixieCrowdsale', function ([owner, investor, wallet, purchaser, a
   beforeEach(async function () {
     this.token = await PixieToken.new();
 
-    this.rate = new BigNumber(1);
+    this.crowdsale = await PixieCrowdsale.new(wallet, this.token.address);
 
     this.initialSupply = await this.token.initialSupply();
-
     this.amountAvailableForPurchase = this.initialSupply.times(0.4); // 40% of total supply
 
     this.openingTime = latestTime() + duration.seconds(60); // opens in 60 seconds
     this.closingTime = this.openingTime + duration.weeks(4); // closes in 4 week & 10 second
-
+    this.privateSaleCloseTime = this.openingTime + duration.weeks(1); // private sale to close 1 week after opening
+    this.preSaleCloseTime = this.openingTime + duration.weeks(2); // pre sale to close 2 weeks after opening
     this.afterClosingTime = this.closingTime + duration.seconds(1);
 
-    this.privateSaleCloseTime = this.openingTime + duration.weeks(1); // private sale to close 1 week after opening
-    this.privateSaleRate = new BigNumber(3);
-
-    this.preSaleCloseTime = this.openingTime + duration.weeks(2); // pre sale to close 2 weeks after opening
-    this.preSaleRate = new BigNumber(2);
-
-    this.crowdsale = await PixieCrowdsale.new(wallet, this.token.address);
+    this.privateSaleRate = await this.crowdsale.privateSaleRate();
+    this.preSaleRate = await this.crowdsale.preSaleRate();
+    this.rate = await this.crowdsale.rate();
 
     this.minContribution = await this.crowdsale.minimumContribution();
     this.maxContribution = await this.crowdsale.maximumContribution();
@@ -110,15 +106,53 @@ contract.only('PixieCrowdsale', function ([owner, investor, wallet, purchaser, a
     console.log('openingTime', (await this.crowdsale.openingTime()).toString(10));
     console.log('closingTime', (await this.crowdsale.closingTime()).toString(10));
     console.log('privateSaleCloseTime', (await this.crowdsale.privateSaleCloseTime()).toString(10));
-    console.log('privateSaleRate', (await this.crowdsale.privateSaleRate()).toString(10));
     console.log('preSaleCloseTime', (await this.crowdsale.preSaleCloseTime()).toString(10));
-    console.log('preSaleRate', (await this.crowdsale.preSaleRate()).toString(10));
+
+    console.log('Presale ICO tokens per ETH', (await this.crowdsale.preSaleRate()).toString(10));
+    console.log('Private ICO tokens per ETH', (await this.crowdsale.privateSaleRate()).toString(10));
+    console.log('Normal ICO tokens per ETH', (await this.crowdsale.rate()).toString(10));
   });
 
   describe.only('PixieCrowdsale', function () {
 
     beforeEach(async function () {
       await increaseTimeTo(this.preSaleCloseTime + duration.seconds(1)); // force time to move on to just after pre-sale
+    });
+
+    describe.only('some basic calculations', function () {
+      it('simple test to work out rates', async function () {
+        let priceOfOneEthInUSD = new BigNumber("567.43");
+        let priceOfOneTokenInUSD = new BigNumber("0.00125");
+
+        console.log("Price of 1 ETH in USD", priceOfOneEthInUSD.toString(10));
+        console.log("Price of 1 token in USD", priceOfOneTokenInUSD.toString(10));
+
+        ///////////
+        // 18 DP //
+        ///////////
+
+        let numberOfTokensPerEth = priceOfOneEthInUSD.div(priceOfOneTokenInUSD);
+        console.log("number of tokens PER ETH (18 DP) - ", numberOfTokensPerEth.toString(10));
+
+        let numberOfTokens12Pt5PctDiscount = numberOfTokensPerEth.times(1.125); // 12.5% discount
+        console.log("number of tokens PER ETH (18 DP) - 12.5% discount - ", numberOfTokens12Pt5PctDiscount.toString(10));
+
+        let numberOfTokens25PctDiscount = numberOfTokensPerEth.times(1.25); // 25% discount
+        console.log("number of tokens PER ETH (18 DP) - 25% discount - ", numberOfTokens25PctDiscount.toString(10));
+
+        //////////
+        // 6 DP //
+        //////////
+
+        let numberOfTokensAt6DP = numberOfTokensPerEth.times(3);
+        console.log("number of tokens PER ETH (6 DP) - ", numberOfTokensAt6DP.toString(10)); // 18/6 = 3 times
+
+        numberOfTokens12Pt5PctDiscount = numberOfTokensPerEth.times(3).times(1.125); // 12.5% discount
+        console.log("number of tokens PER ETH (6 DP) - 12.5% discount - ", numberOfTokens12Pt5PctDiscount.toString(10));
+
+        numberOfTokens25PctDiscount = numberOfTokensPerEth.times(3).times(1.25); // 25% discount
+        console.log("number of tokens PER ETH (6 DP) - 25% discount - ", numberOfTokens25PctDiscount.toString(10));
+      });
     });
 
     describe.only('accepting payments', function () {
