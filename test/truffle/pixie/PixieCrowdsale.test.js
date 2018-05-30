@@ -16,6 +16,7 @@ const should = require('chai')
 
 const PixieCrowdsale = artifacts.require('PixieCrowdsale');
 const PixieToken = artifacts.require('PixieToken');
+const RefundVault = artifacts.require('RefundVault');
 
 contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, authorized, unauthorized, anotherAuthorized,
                                        authorizedTwo, authorizedThree, authorizedFour, authorizedFive]) {
@@ -55,6 +56,9 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
     this.standardExpectedTokenAmount = this.rate.mul(this.value);
 
     this.crowdsale = await PixieCrowdsale.new(wallet, this.token.address);
+
+    let vaultAddress = await this.crowdsale.vault();
+    this.refundVault = await RefundVault.at(vaultAddress);
 
     // approve so they can invest in crowdsale
     await this.crowdsale.addToWhitelist(owner);
@@ -255,18 +259,62 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
       await increaseTimeTo(this.preSaleCloseTime + duration.seconds(10)); // force time to move on to just after pre-sale
     });
 
-    it('cannot be finalized before ending', async function () {
-      await this.crowdsale.finalize({from: owner}).should.be.rejectedWith(EVMRevert);
-    });
-
-    it('cannot be finalized by third party after ending', async function () {
-      await increaseTimeTo(this.afterClosingTime + duration.seconds(1));
+    it('cannot be finalized by third party', async function () {
       await this.crowdsale.finalize({from: investor}).should.be.rejectedWith(EVMRevert);
     });
 
-    it('can be finalized by owner after ending', async function () {
-      await increaseTimeTo(this.afterClosingTime + duration.seconds(1));
+    it('can be finalized by owner (before end)', async function () {
       await this.crowdsale.finalize({from: owner}).should.be.fulfilled;
+    });
+
+    it('can be finalized by owner under goal to allow refunds', async function () {
+      let startingInvestorBalance = web3.eth.getBalance(investor);
+      await this.crowdsale.buyTokens(investor, {value: this.value, from: investor}).should.be.fulfilled;
+
+      let contribution = await this.crowdsale.contributions(investor, {from: investor});
+      contribution.should.be.bignumber.equal(this.value);
+
+      let vaultAccountBalance = await this.refundVault.deposited(investor, {from: investor});
+      vaultAccountBalance.should.be.bignumber.equal(this.value);
+
+      // spent
+      let postContributionInvestorBalance = web3.eth.getBalance(investor);
+      postContributionInvestorBalance.should.be.bignumber.lessThan(startingInvestorBalance);
+
+      await this.crowdsale.finalize({from: owner}).should.be.fulfilled;
+
+      await this.refundVault.refund(investor, {from: owner});
+
+      contribution = await this.crowdsale.contributions(investor, {from: investor});
+      contribution.should.be.bignumber.equal(this.value);
+
+      // balance should be reduced to zero
+      vaultAccountBalance = await this.refundVault.deposited(investor, {from: investor});
+      vaultAccountBalance.should.be.bignumber.equal(0);
+
+      // we should have the value back in the investors account
+      let postRefundInvestorBalance = web3.eth.getBalance(investor);
+      postRefundInvestorBalance.minus(this.value).should.be.bignumber.equal(postContributionInvestorBalance);
+    });
+
+    it('can be finalized by owner over goal and all contributions send to wallet', async function () {
+      let startingWalletBalance = web3.eth.getBalance(wallet);
+      await this.crowdsale.buyTokens(investor, {value: this.maxContribution, from: investor}).should.be.fulfilled;
+      await this.crowdsale.buyTokens(purchaser, {value: this.maxContribution, from: purchaser});
+      let goalReached = await this.crowdsale.goalReached();
+      goalReached.should.equal(true);
+
+      let vaultBalance = web3.eth.getBalance(this.refundVault.address);
+      vaultBalance.should.be.bignumber.equal(this.maxContribution.times(2));
+
+      await this.crowdsale.finalize({from: owner}).should.be.fulfilled;
+
+      // balance should be reduced to zero
+      vaultBalance = web3.eth.getBalance(this.refundVault.address);
+      vaultBalance.should.be.bignumber.equal(0);
+
+      let postFinalizeWalletBalance = web3.eth.getBalance(wallet);
+      startingWalletBalance.plus(this.maxContribution.times(2)).should.be.bignumber.equal(postFinalizeWalletBalance);
     });
 
     it('cannot be finalized twice', async function () {
@@ -642,30 +690,22 @@ contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, author
 
   describe('Refundable with goal', function () {
 
-    it('should deny refunds before end', async function () {
-      await this.crowdsale.claimRefund({from: investor}).should.be.rejectedWith(EVMRevert);
+    it('should deny refunds if not finalized', async function () {
+      await this.refundVault.refund(investor, {from: investor}).should.be.rejectedWith(EVMRevert);
 
-      await increaseTimeTo(this.openingTime);
-      await this.crowdsale.claimRefund({from: investor}).should.be.rejectedWith(EVMRevert);
-    });
-
-    it('should deny refunds after end if goal was reached', async function () {
-      await increaseTimeTo(this.preSaleCloseTime + duration.seconds(1)); // force time to move on to just after pre-sale
-      await this.crowdsale.sendTransaction({value: this.minContribution, from: investor});
-
-      await increaseTimeTo(this.afterClosingTime);
-      await this.crowdsale.claimRefund({from: investor}).should.be.rejectedWith(EVMRevert);
+      await increaseTimeTo(this.openingTime + duration.seconds(5));
+      await this.refundVault.refund(investor, {from: investor}).should.be.rejectedWith(EVMRevert);
     });
 
     it('should allow refunds after end if goal was not reached', async function () {
-      await increaseTimeTo(this.preSaleCloseTime + duration.seconds(1)); // force time to move on to just after pre-sale
+      await increaseTimeTo(this.openingTime + duration.seconds(5)); // force time to move on to just after opening
       await this.crowdsale.sendTransaction({value: this.minContribution, from: investor});
 
       await increaseTimeTo(this.afterClosingTime);
       await this.crowdsale.finalize({from: owner});
 
       const pre = web3.eth.getBalance(investor);
-      await this.crowdsale.claimRefund({from: investor, gasPrice: 0}).should.be.fulfilled;
+      await this.refundVault.refund(investor, {from: investor, gasPrice: 0}).should.be.fulfilled;
 
       const post = web3.eth.getBalance(investor);
       post.minus(pre).should.be.bignumber.equal(this.minContribution);
