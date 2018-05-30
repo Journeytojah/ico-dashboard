@@ -36,7 +36,7 @@
           per {{ tokenSymbol }} Token
         </p>
 
-        <h4>Goal</h4>
+        <h4>Soft Cap</h4>
         <p>
           {{ softCapHuman }}
           <eth-symbol></eth-symbol>
@@ -65,15 +65,15 @@
       <div class="col-lg-5">
         <h4>Hard Cap</h4>
         <p>
-          {{ capHuman }}
+          {{ hardCapHuman }}
           <eth-symbol></eth-symbol>
         </p>
 
-        <h4>Goal Reached</h4>
+        <h4>Soft Cap Reached</h4>
         <p>
-          <span v-if="!goalReached">No</span>
-          <span v-if="goalReached">Yes</span>
-          <icon name="check-circle" v-if="goalReached" scale="1" class="text-success" label="Goal met"></icon>
+          <span v-if="!softCapReached">No</span>
+          <span v-if="softCapReached">Yes</span>
+          <icon name="check-circle" v-if="softCapReached" scale="1" class="text-success" label="Goal met"></icon>
         </p>
 
         <h4>Max. Contribution</h4>
