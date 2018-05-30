@@ -45,10 +45,6 @@ contract PixieCrowdsale is Crowdsale, Pausable {
   // Min contribution of 1 ETH
   uint256 public minimumContribution = 1 ether;
 
-  // FIXME - disable this
-  // N.B arbitrarily high for now until we know what
-  uint256 public maximumContribution = 50000 ether;
-
   // refund vault used to hold funds while crowdsale is running
   RefundVault public vault;
 
@@ -210,8 +206,6 @@ contract PixieCrowdsale is Crowdsale, Pausable {
     require(weiRaised.add(_weiAmount) <= hardCap, "Exceed maximum cap");
 
     require(_weiAmount >= minimumContribution, "Beneficiary minimum amount not reached");
-
-    require(contributions[_beneficiary].add(_weiAmount) <= maximumContribution, "Beneficiary maximum contribution reached");
 
     require(whitelist[_beneficiary], "Beneficiary not whitelisted");
 

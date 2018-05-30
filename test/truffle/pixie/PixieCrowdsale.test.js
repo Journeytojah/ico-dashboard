@@ -44,7 +44,6 @@ contract.only('PixieCrowdsale', function ([owner, investor, wallet, purchaser, a
     this.rate = await this.crowdsale.rate();
 
     this.minContribution = await this.crowdsale.minimumContribution();
-    this.maxContribution = await this.crowdsale.maximumContribution();
 
     this.softCap = await this.crowdsale.softCap();
     this.hardCap = await this.crowdsale.hardCap();
@@ -98,7 +97,6 @@ contract.only('PixieCrowdsale', function ([owner, investor, wallet, purchaser, a
     console.log('hardCap', this.hardCap.toString(10));
     console.log('softCap', this.softCap.toString(10));
     console.log('min contribution', (await this.crowdsale.minimumContribution()).toString(10));
-    console.log('max contribution', (await this.crowdsale.maximumContribution()).toString(10));
     console.log('value', this.value.toString(10));
     console.log('initialSupply', this.initialSupply.toString(10));
     console.log('amountAvailableForPurchase', this.amountAvailableForPurchase.toString(10));
@@ -225,7 +223,6 @@ contract.only('PixieCrowdsale', function ([owner, investor, wallet, purchaser, a
 
     describe('accepting payments', function () {
       it('should accept payments within cap', async function () {
-        await this.crowdsale.send(this.maxContribution.minus(this.minContribution)).should.be.fulfilled;
         await this.crowdsale.send(this.minContribution).should.be.fulfilled;
       });
 
@@ -644,26 +641,6 @@ contract.only('PixieCrowdsale', function ([owner, investor, wallet, purchaser, a
 
         const postContribution = await this.crowdsale.contributions(owner);
         postContribution.should.be.bignumber.equal(this.minContribution.times(5));
-      });
-    });
-
-    describe('sending maximum', function () {
-      it('should fail if above limit via default', async function () {
-        await this.crowdsale.send(this.maxContribution).should.be.fulfilled;
-
-        const postContribution = await this.crowdsale.contributions(owner);
-        postContribution.should.be.bignumber.equal(this.maxContribution);
-
-        await assertRevert(this.crowdsale.send(1));
-      });
-
-      it('should fail if above limit via buyTokens', async function () {
-        await this.crowdsale.buyTokens(purchaser, {value: this.maxContribution, from: purchaser}).should.be.fulfilled;
-
-        const postContribution = await this.crowdsale.contributions(purchaser);
-        postContribution.should.be.bignumber.equal(this.maxContribution);
-
-        await assertRevert(this.crowdsale.buyTokens(purchaser, {value: 1, from: purchaser}));
       });
     });
   });

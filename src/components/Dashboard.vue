@@ -77,9 +77,7 @@
         </p>
 
         <h4>Max. Contribution</h4>
-        <p>{{ maxContributionHuman }}
-          <eth-symbol></eth-symbol>
-        </p>
+        <p>NO MAX</p>
 
         <h4>End Date</h4>
         <p>{{ end | moment('from') }}</p>
@@ -130,8 +128,6 @@
         'tokenSymbol',
         'minContribution',
         'minContributionHuman',
-        'maxContribution',
-        'maxContributionHuman',
         'start',
         'end',
         'owner',

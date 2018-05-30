@@ -45,8 +45,6 @@ const store = new Vuex.Store({
     owner: null,
     minimumContribution: 0,
     minimumContributionHuman: null,
-    maxContribution: 0,
-    maxContributionHuman: null,
     vault: null,
 
     // semi-static values
@@ -109,7 +107,6 @@ const store = new Vuex.Store({
       address,
       owner,
       minimumContribution,
-      maxContribution,
       vault,
       privateSaleCloseTime,
       privateSaleRate,
@@ -129,8 +126,6 @@ const store = new Vuex.Store({
       state.owner = owner;
       state.minimumContribution = minimumContribution.toNumber(10);
       state.minimumContributionHuman = minimumContribution.toString(10);
-      state.maxContribution = maxContribution.toNumber(10);
-      state.maxContributionHuman = maxContribution.toString(10);
       state.vault = vault;
       state.privateSaleCloseTime = privateSaleCloseTime;
       state.privateSaleRate = privateSaleRate;
@@ -281,7 +276,6 @@ const store = new Vuex.Store({
           address: results[7],
           owner: results[8],
           minContribution: results[9],
-          maxContribution: results[10],
           vault: results[11],
           privateSaleCloseTime: results[12].toNumber(10),
           privateSaleRate: results[13].toNumber(10),
