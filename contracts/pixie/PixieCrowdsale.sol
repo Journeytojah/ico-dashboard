@@ -15,9 +15,6 @@ contract PixieCrowdsale is Crowdsale, Pausable {
 
   bool public isFinalized = false;
 
-  // price per token (no discount)
-  uint256 public rate = 453944;
-
   // FIXME arbitrarily set to one minute until until know start
   uint256 public openingTime = now.add(1 minutes);
 
@@ -27,11 +24,14 @@ contract PixieCrowdsale is Crowdsale, Pausable {
   // FIXME - date
   uint256 public privateSaleCloseTime = openingTime.add(1 weeks);
 
-  // 25% discount
-  uint256 public privateSaleRate = 567430;
-
   // FIXME - date
   uint256 public preSaleCloseTime = openingTime.add(2 weeks);
+
+  // price per token (no discount)
+  uint256 public rate = 453944;
+
+  // 25% discount
+  uint256 public privateSaleRate = 567430;
 
   // 12.5% discount
   uint256 public preSaleRate = 510687;

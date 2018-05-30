@@ -17,7 +17,7 @@ const should = require('chai')
 const PixieCrowdsale = artifacts.require('PixieCrowdsale');
 const PixieToken = artifacts.require('PixieToken');
 
-contract.only('PixieCrowdsale', function ([owner, investor, wallet, purchaser, authorized, unauthorized, anotherAuthorized,
+contract('PixieCrowdsale', function ([owner, investor, wallet, purchaser, authorized, unauthorized, anotherAuthorized,
                                             authorizedTwo, authorizedThree, authorizedFour, authorizedFive]) {
 
   before(async function () {
@@ -50,6 +50,8 @@ contract.only('PixieCrowdsale', function ([owner, investor, wallet, purchaser, a
 
     this.value = this.minContribution;
     this.standardExpectedTokenAmount = this.rate.mul(this.value);
+    this.preSaleExpectedTokenAmount = this.preSaleRate.mul(this.value);
+    this.privateSaleExpectedTokenAmount = this.privateSaleRate.mul(this.value);
 
     // approve so they can invest in crowdsale
     await this.crowdsale.addToWhitelist(owner);
@@ -710,7 +712,7 @@ contract.only('PixieCrowdsale', function ([owner, investor, wallet, purchaser, a
       it('should assign tokens to sender', async function () {
         await this.crowdsale.sendTransaction({value: this.value, from: investor});
         let balance = await this.token.balanceOf(investor);
-        balance.should.be.bignumber.equal(this.standardExpectedTokenAmount * this.privateSaleRate);
+        balance.should.be.bignumber.equal(this.privateSaleExpectedTokenAmount);
       });
 
       // when using RefundableCrowdsale the "vault" holds the funds
@@ -732,7 +734,7 @@ contract.only('PixieCrowdsale', function ([owner, investor, wallet, purchaser, a
       it('should assign tokens to sender', async function () {
         await this.crowdsale.sendTransaction({value: this.value, from: investor});
         let balance = await this.token.balanceOf(investor);
-        balance.should.be.bignumber.equal(this.standardExpectedTokenAmount * this.preSaleRate);
+        balance.should.be.bignumber.equal(this.preSaleExpectedTokenAmount);
       });
 
       // when using RefundableCrowdsale the "vault" holds the funds
