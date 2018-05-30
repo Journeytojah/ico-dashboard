@@ -11,7 +11,7 @@ contract PixieToken is StandardToken, Whitelist {
 
   string public constant symbol = "PXE";
 
-  uint8 public constant decimals = 6;
+  uint8 public constant decimals = 18;
 
   uint256 public constant initialSupply = 100000000000 * (10 ** uint256(decimals)); // 100 Billion PXE * decimal places
 

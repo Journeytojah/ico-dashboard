@@ -113,13 +113,13 @@ contract.only('PixieCrowdsale', function ([owner, investor, wallet, purchaser, a
     console.log('Normal ICO tokens per ETH', (await this.crowdsale.rate()).toString(10));
   });
 
-  describe.only('PixieCrowdsale', function () {
+  describe('PixieCrowdsale', function () {
 
     beforeEach(async function () {
       await increaseTimeTo(this.preSaleCloseTime + duration.seconds(1)); // force time to move on to just after pre-sale
     });
 
-    describe.only('some basic calculations', function () {
+    describe('some basic calculations', function () {
       it('simple test to work out rates', async function () {
         let priceOfOneEthInUSD = new BigNumber("567.43");
         let priceOfOneTokenInUSD = new BigNumber("0.00125");
@@ -155,7 +155,7 @@ contract.only('PixieCrowdsale', function ([owner, investor, wallet, purchaser, a
       });
     });
 
-    describe.only('accepting payments', function () {
+    describe('accepting payments', function () {
       it('should accept payments', async function () {
         await this.crowdsale.send(this.value).should.be.fulfilled;
         await this.crowdsale.buyTokens(investor, {value: this.value, from: purchaser}).should.be.fulfilled;
@@ -234,54 +234,42 @@ contract.only('PixieCrowdsale', function ([owner, investor, wallet, purchaser, a
         capReached.should.equal(false);
 
         // 10000 ETHER
-        await this.crowdsale.buyTokens(purchaser, {value: this.maxContribution, from: purchaser});
+        await this.crowdsale.buyTokens(purchaser, {value: etherToWei(10000), from: purchaser});
         capReached = await this.crowdsale.capReached();
         capReached.should.equal(false);
 
         // 20000 ETHER
-        await this.crowdsale.buyTokens(investor, {value: this.maxContribution, from: investor});
+        await this.crowdsale.buyTokens(investor, {value: etherToWei(10000), from: investor});
         capReached = await this.crowdsale.capReached();
         capReached.should.equal(false);
 
         // 30000 ETHER
-        await this.crowdsale.buyTokens(authorized, {value: this.maxContribution, from: authorized});
+        await this.crowdsale.buyTokens(authorized, {value: etherToWei(10000), from: authorized});
         capReached = await this.crowdsale.capReached();
         capReached.should.equal(false);
 
         // 40000 ETHER
-        await this.crowdsale.buyTokens(authorizedTwo, {value: this.maxContribution, from: authorizedTwo});
-        capReached = await this.crowdsale.capReached();
-        capReached.should.equal(false);
-
-        // 50000 ETHER
-        await this.crowdsale.buyTokens(authorizedThree, {value: this.maxContribution, from: authorizedThree});
+        await this.crowdsale.buyTokens(authorizedTwo, {value: etherToWei(10000), from: authorizedTwo});
         capReached = await this.crowdsale.capReached();
         capReached.should.equal(false);
 
         // 60000 ETHER
-        await this.crowdsale.buyTokens(authorizedFour, {value: this.maxContribution, from: authorizedFour});
+        await this.crowdsale.buyTokens(authorizedThree, {value: etherToWei(20000), from: authorizedThree});
         capReached = await this.crowdsale.capReached();
         capReached.should.equal(false);
 
-        // 65k max so rejected
-        await assertRevert(this.crowdsale.buyTokens(authorizedFive, {
-          value: this.maxContribution,
-          from: authorizedFive
-        }));
+        // 80000 ETHER
+        await this.crowdsale.buyTokens(authorizedFour, {value: etherToWei(20000), from: authorizedFour});
         capReached = await this.crowdsale.capReached();
         capReached.should.equal(false);
 
-        // send another 5K ETHER which will reach cap
-        await this.crowdsale.buyTokens(authorizedFive, {value: etherToWei(5000), from: authorizedFive});
-
+        // 88116 max - reached cap
+        await this.crowdsale.buyTokens(authorizedFive, {value: etherToWei(8116), from: authorizedFive});
         capReached = await this.crowdsale.capReached();
         capReached.should.equal(true);
 
         // Ensure you cannot purchase anymore
-        await assertRevert(this.crowdsale.buyTokens(authorizedFive, {
-          value: this.minContribution,
-          from: authorizedFive
-        }));
+        await assertRevert(this.crowdsale.buyTokens(authorizedFive, {value: etherToWei(1), from: authorizedFive}));
       });
     });
 
