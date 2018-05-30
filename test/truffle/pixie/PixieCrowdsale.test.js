@@ -585,7 +585,7 @@ contract.only('PixieCrowdsale', function ([owner, investor, wallet, purchaser, a
     });
   });
 
-  describe('IndividualLimitsCrowdsale - min & max contributions', function () {
+  describe('IndividualLimitsCrowdsale - min', function () {
     beforeEach(async function () {
       await increaseTimeTo(this.preSaleCloseTime + duration.seconds(1)); // force time to move on to just after pre-sale
     });
@@ -599,14 +599,6 @@ contract.only('PixieCrowdsale', function ([owner, investor, wallet, purchaser, a
       it('should allow if exactly min limit', async function () {
         await this.crowdsale.send(this.minContribution).should.be.fulfilled;
         await this.crowdsale.buyTokens(investor, {value: this.minContribution, from: purchaser}).should.be.fulfilled;
-      });
-
-      it('should allow if over min limit but less than max limit', async function () {
-        await this.crowdsale.send(this.maxContribution.minus(this.minContribution)).should.be.fulfilled;
-        await this.crowdsale.buyTokens(investor, {
-          value: this.maxContribution.minus(this.minContribution),
-          from: purchaser
-        }).should.be.fulfilled;
       });
     });
 
@@ -710,13 +702,13 @@ contract.only('PixieCrowdsale', function ([owner, investor, wallet, purchaser, a
     it('should forward funds to wallet after end if softCap was reached', async function () {
       await increaseTimeTo(this.preSaleCloseTime + duration.seconds(1)); // force time to move on to just after pre-sale
 
-      // 10000 ETHER
-      await this.crowdsale.sendTransaction({value: this.maxContribution, from: purchaser});
+      // 7048 ETHER
+      await this.crowdsale.sendTransaction({value: etherToWei(7048), from: purchaser});
       let goalReached = await this.crowdsale.goalReached();
       goalReached.should.equal(false);
 
-      // 7500 ETHER to reach soft cap
-      await this.crowdsale.sendTransaction({value: etherToWei(7500), from: investor});
+      // +1 ETHER to reach soft cap
+      await this.crowdsale.sendTransaction({value: etherToWei(1), from: investor});
       goalReached = await this.crowdsale.goalReached();
       goalReached.should.equal(true);
 
@@ -726,7 +718,7 @@ contract.only('PixieCrowdsale', function ([owner, investor, wallet, purchaser, a
       await this.crowdsale.finalize({from: owner});
 
       const post = web3.eth.getBalance(wallet);
-      post.minus(pre).should.be.bignumber.equal(etherToWei(17500));
+      post.minus(pre).should.be.bignumber.equal(etherToWei(7049));
     });
   });
 
