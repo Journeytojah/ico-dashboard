@@ -31,14 +31,14 @@ contract PixieToken is StandardToken, Whitelist {
 
   function transfer(address _to, uint256 _value) public returns (bool) {
     // lock transfers until after ICO completes unless whitelisted
-    require(now > unlockTime || whitelist[msg.sender], "Unable to transfer as unlock time not passed or address not white listed");
+    require(now > unlockTime || whitelist[msg.sender], "Unable to transfer as unlock time not passed or address not whitelisted");
 
     return super.transfer(_to, _value);
   }
 
   function transferFrom(address _from, address _to, uint256 _value) public returns (bool) {
     // lock transfers until after ICO completes unless whitelisted
-    require(now > unlockTime || whitelist[msg.sender], "Unable to transfer as unlock time not passed or address not white listed");
+    require(now > unlockTime || whitelist[msg.sender], "Unable to transfer as unlock time not passed or address not whitelisted");
 
     return super.transferFrom(_from, _to, _value);
   }

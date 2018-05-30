@@ -59,16 +59,6 @@ contract PixieCrowdsale is Crowdsale, Pausable {
   }
 
   /**
-   * @dev Investors can claim refunds here if crowdsale is unsuccessful
-   */
-  function claimRefund() public {
-    require(isFinalized, "Crowdsale not finalised");
-    require(!goalReached(), "Crowdsale goal not reached");
-
-    vault.refund(msg.sender);
-  }
-
-  /**
    * @dev Checks whether funding goal was reached.
    * @return Whether funding goal was reached
    */
@@ -88,10 +78,17 @@ contract PixieCrowdsale is Crowdsale, Pausable {
   }
 
   /**
-   * @dev Overrides Crowdsale fund forwarding, sending funds to vault.
+   * @dev Overrides Crowdsale fund forwarding, sending funds to vault if not finalised, otherwise to wallet
    */
   function _forwardFunds() internal {
-    vault.deposit.value(msg.value)(msg.sender);
+    // once finalized all contributions got to the wallet
+    if (isFinalized) {
+      wallet.transfer(msg.value);
+    }
+    // otherwise send to vault to allow refunds, if required
+    else {
+      vault.deposit.value(msg.value)(msg.sender);
+    }
   }
 
   /**
@@ -100,7 +97,6 @@ contract PixieCrowdsale is Crowdsale, Pausable {
    */
   function finalize() onlyOwner public {
     require(!isFinalized, "Crowdsale already finalised");
-    require(hasClosed(), "Crowdsale already closed");
 
     finalization();
     emit Finalized();
