@@ -329,6 +329,7 @@ contract('PixieToken', function ([_, owner, recipient, anotherAccount, extraAcco
       const spender = ZERO_ADDRESS;
 
       it('approves the requested amount', async function () {
+
         await this.token.approve(spender, amount, {from: owner});
 
         const allowance = await this.token.allowance(owner, spender);
@@ -631,6 +632,12 @@ contract('PixieToken', function ([_, owner, recipient, anotherAccount, extraAcco
         assert.equal(logs[0].args.spender, spender);
         assert(logs[0].args.value.eq(amount));
       });
+    });
+
+    describe('only owner can change the bridge address', function() {
+      this.token.changePermittedTransferAddress("0x0");
+      assert.equal(this.token.bridge, "0x0");
+
     });
   });
 });

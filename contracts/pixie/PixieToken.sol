@@ -17,6 +17,10 @@ contract PixieToken is StandardToken, Whitelist {
 
   uint256 public constant unlockTime = now.add(4 weeks);
 
+  uint256 public constant windowClose = now.add(52 weeks);
+
+  address public bridge = 0x0;
+
   /**
    * @dev Constructor that gives msg.sender all of existing tokens.
    */
@@ -24,6 +28,9 @@ contract PixieToken is StandardToken, Whitelist {
     totalSupply_ = initialSupply;
     balances[msg.sender] = initialSupply;
     emit Transfer(0x0, msg.sender, initialSupply);
+
+    // transfer bridge set to msg sender
+    bridge = msg.sender;
 
     // owner is automatically whitelisted
     addAddressToWhitelist(msg.sender);
@@ -33,6 +40,8 @@ contract PixieToken is StandardToken, Whitelist {
     // lock transfers until after ICO completes unless whitelisted
     require(now > unlockTime || whitelist[msg.sender], "Unable to transfer as unlock time not passed or address not whitelisted");
 
+    require(now > windowClose || _to == bridge, "Outside transfer window, can only transfer to the Pixie Stellar network");
+
     return super.transfer(_to, _value);
   }
 
@@ -41,5 +50,9 @@ contract PixieToken is StandardToken, Whitelist {
     require(now > unlockTime || whitelist[msg.sender], "Unable to transfer as unlock time not passed or address not whitelisted");
 
     return super.transferFrom(_from, _to, _value);
+  }
+
+  function changePermittedTransferAddress(address _bridge) onlyOwner {
+    bridge = _bridge;
   }
 }

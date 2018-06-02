@@ -77,7 +77,6 @@
     "semver": "^5.3.0",
     "shelljs": "^0.7.6",
     "solidity-coverage": "^0.5.0",
-    "truffle": "^4.1.8",
     "truffle-flattener": "^1.2.5",
     "truffle-hdwallet-provider": "0.0.3",
     "url-loader": "^0.5.8",
