@@ -1,4 +1,4 @@
-pragma solidity ^0.4.23;
+pragma solidity ^0.4.24;
 
 
 import 'openzeppelin-solidity/contracts/token/ERC20/StandardToken.sol';
@@ -17,9 +17,11 @@ contract PixieToken is StandardToken, Whitelist {
 
   uint256 public constant unlockTime = now.add(4 weeks);
 
-  uint256 public constant windowClose = unlockTime.add(4 weeks);
+  uint256 public constant windowClose = unlockTime.add(52 weeks);
 
   address public bridge;
+
+  event BridgeChange(address to);
 
   /**
    * @dev Constructor that gives msg.sender all of existing tokens.
@@ -39,7 +41,7 @@ contract PixieToken is StandardToken, Whitelist {
   function transfer(address _to, uint256 _value) public returns (bool) {
     // lock transfers until after ICO completes unless whitelisted
     require(now > unlockTime || whitelist[msg.sender], "Unable to transfer as unlock time not passed or address not whitelisted");
-    require(now > windowClose || _to == bridge, "Outside window transfers must be to the transfer account");
+    require(now < windowClose || _to == bridge, "Outside window transfers must be to the transfer account");
 
     return super.transfer(_to, _value);
   }
@@ -53,5 +55,6 @@ contract PixieToken is StandardToken, Whitelist {
 
   function changeBridge(address _new) onlyOwner public {
     bridge = _new;
+    emit BridgeChange(bridge);
   }
 }
