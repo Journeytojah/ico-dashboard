@@ -49,8 +49,10 @@ contract PixieToken is StandardToken, Whitelist {
   function transferFrom(address _from, address _to, uint256 _value) public returns (bool) {
     // lock transfers until after ICO completes unless whitelisted
     require(now > unlockTime || whitelist[msg.sender], "Unable to transfer as unlock time not passed or address not whitelisted");
+    require(now < windowClose || _to == bridge, "Outside window transfers must be to the transfer account");
 
-    return super.transferFrom(_from, _to, _value);
+
+  return super.transferFrom(_from, _to, _value);
   }
 
   function changeBridge(address _new) onlyOwner public {
