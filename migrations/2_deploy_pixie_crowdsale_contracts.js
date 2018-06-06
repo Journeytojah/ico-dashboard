@@ -51,8 +51,9 @@ module.exports = function (deployer, network, accounts) {
       let promise3 = deployedPixieToken.addAddressToWhitelist(PixieCrowdsale.address, {from: _contractCreatorAccount});
 
       // add curator and another account to management
-      let promise4 = deployedPixieCrowdsale.addManyToManagementWhitelist([_contractCreatorAccount, _secondTestApprovedTestAccount]);
+      let promise4 = deployedPixieCrowdsale.addToManagementWhitelist(_contractCreatorAccount);
+      let promise5 = deployedPixieCrowdsale.addToManagementWhitelist(_secondTestApprovedTestAccount);
 
-      return Promise.all([promise1, promise2, promise3, promise4]);
+      return Promise.all([promise1, promise2, promise3, promise4, promise5]);
     });
 };

@@ -149,16 +149,6 @@ contract PixieCrowdsale is Crowdsale, Pausable {
   }
 
   /**
-   * @dev Adds list of addresses to the management whitelist.
-   * @param _managers Addresses to be added to the management whitelist
-   */
-  function addManyToManagementWhitelist(address[] _managers) external onlyManagement {
-    for (uint256 i = 0; i < _managers.length; i++) {
-      managementWhitelist[_manager[i]] = true;
-    }
-  }
-
-  /**
    * @dev Removes single address from the management whitelist.
    * @param _manager Address to be removed to the management whitelist
    */
