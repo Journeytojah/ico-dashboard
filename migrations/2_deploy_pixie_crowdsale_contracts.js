@@ -50,24 +50,10 @@ module.exports = function (deployer, network, accounts) {
       // Whitelist the crowdsale
       let promise3 = deployedPixieToken.addAddressToWhitelist(PixieCrowdsale.address, {from: _contractCreatorAccount});
 
-      return Promise.all([promise1, promise2, promise3]);
+      // add curator and another account to management
+      let promise4 = deployedPixieCrowdsale.addToManagementWhitelist(_contractCreatorAccount);
+      let promise5 = deployedPixieCrowdsale.addToManagementWhitelist(_secondTestApprovedTestAccount);
+
+      return Promise.all([promise1, promise2, promise3, promise4, promise5]);
     });
-
-  // await deployer.deploy(PixieToken);
-  // await deployer.deploy(PixieCrowdsale, _contractCreatorAccount, PixieToken.address);
-
-  // const deployedPixieToken = await PixieToken.deployed();
-  // const deployedPixieCrowdsale = await PixieCrowdsale.deployed();
-  //
-  // const _tokenInitialSupply = await deployedPixieToken.initialSupply();
-  // const crowdsaleSupply = _tokenInitialSupply.times(0.5); // sell upto 50%, i.e. 500 WEI
-  //
-  // await deployedPixieToken.transfer(PixieCrowdsale.address, crowdsaleSupply);
-  //
-  //
-  // // Whitelist various utility accounts
-  // await deployedPixieCrowdsale.addManyToWhitelist([_contractCreatorAccount, _secondTestApprovedTestAccount]);
-  //
-  // // Whitelist the crowdsale
-  // await deployedPixieToken.addAddressToWhitelist(PixieCrowdsale.address, {from: _contractCreatorAccount});
 };
