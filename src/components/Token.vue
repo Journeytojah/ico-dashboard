@@ -5,7 +5,7 @@
 
       <div class="row">
         <div class="col-lg-12">
-          <h4>Address</h4>
+          <h4>Token address:</h4>
           <eth-address :hex="tokenAddress"></eth-address>
         </div>
       </div>
@@ -20,6 +20,10 @@
         <div class="col-lg-4">
           <h4>Supply</h4>
           <p>{{ tokenTotalSupply }} {{ tokenSymbol }}</p>
+        </div>
+        <div class="col-lg-4">
+          <h4>Your balance:</h4>
+          <p>{{ balance }} {{ tokenSymbol }}</p>
         </div>
       </div>
 
@@ -55,7 +59,8 @@
         'tokenSymbol',
         'tokenAddress',
         'tokenTotalSupply',
-        'crowdsaleBalance'
+        'crowdsaleBalance',
+        'balance'
       ])
     }
   };

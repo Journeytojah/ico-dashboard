@@ -4,25 +4,25 @@
     <b-jumbotron header="Token Generation Event" lead="Building Internet 3.0">
       <div class="row">
         <div class="col-lg-6">
-          <h4>Owner</h4>
-          <eth-address :hex="owner"></eth-address>
+          <h4>Owner:</h4>
+          <eth-address :hex="tokenAddress"></eth-address>
         </div>
         <div class="col-lg-6">
           <div class="alert alert-success" role="alert">
             <strong>Crowdsale contract address:</strong>
-            <eth-address :hex="address"></eth-address>
+            <eth-address :hex="tokenAddress"></eth-address>
           </div>
         </div>
       </div>
 
       <h2 class="text-muted">{{ icoState }}</h2>
 
-      <p class="float-right"><strong>{{ raised }}</strong>
+      <p class="float-right"><strong>{{ weiRaised }}</strong>
         <eth-symbol></eth-symbol>
       </p>
 
-      <b-progress show-value :max="hardCap" class="mb-3 thermometer" height="50px">
-        <b-progress-bar variant="primary" :value="raised"></b-progress-bar>
+      <b-progress show-value :max="cap" class="mb-3 thermometer" height="50px">
+        <b-progress-bar variant="primary" :value="weiRaised"></b-progress-bar>
       </b-progress>
 
     </b-jumbotron>
@@ -31,7 +31,7 @@
       <div class="col-lg-5">
         <h4>Rate</h4>
         <p>
-          {{ rate }}
+          {{ rate }} 
           <eth-symbol></eth-symbol>
           per {{ tokenSymbol }} Token
         </p>
@@ -43,18 +43,18 @@
         </p>
 
         <h4>Min. Contribution</h4>
-        <p>{{ minContributionHuman }}
+        <p>{{ minimumContributionHuman }}
           <eth-symbol></eth-symbol>
         </p>
 
         <h4>Start Date</h4>
-        <p>{{ start | moment('from') }}</p>
+        <p>{{ openingTime }}</p>
 
-        <h4>Private Sale Close Date</h4>
-        <p>{{ privateSaleCloseTime | moment('from') }}</p>
+        <!-- <h4>Private Sale Close Date</h4> -->
+        <!-- <p>{{ privateSaleCloseTime | moment('from') }}</p> -->
 
         <h4>Pre-ICO Sale Close Date</h4>
-        <p>{{ preSaleCloseTime | moment('from') }}</p>
+        <p>{{ closingTime }}</p>
 
         <h4>Paused?</h4>
         <p>{{ paused }}</p>
@@ -80,7 +80,7 @@
         <p>NO MAX</p>
 
         <h4>End Date</h4>
-        <p>{{ end | moment('from') }}</p>
+        <p>{{ closingTime }}</p>
 
         <h4>Private Sale Rate</h4>
         <p>
@@ -102,11 +102,10 @@
 </template>
 
 <script>
-
   import { mapGetters, mapState } from 'vuex';
   import Progress from 'bootstrap-vue/es/components/progress/progress';
   import ProgressBar from 'bootstrap-vue/es/components/progress/progress-bar';
-  import EthSymbol from './EthSymbol';
+  import EthSymbol from './EthSymbol.vue';
   import EthAddress from './EthAddress.vue';
 
   export default {
@@ -116,20 +115,21 @@
       ...mapState([
         'address',
         'tokenName',
+        'tokenAddress',
         'rate',
-        'raised',
+        'weiRaised',
         'token',
         'hardCap',
         'hardCapHuman',
         'softCap',
         'softCapHuman',
-        'start',
-        'end',
+        'openingTime',
+        'closingTime',
         'tokenSymbol',
-        'minContribution',
-        'minContributionHuman',
-        'start',
-        'end',
+        'minimumContribution',
+        'minimumContributionHuman',
+        'openingTime',
+        'closingTime',
         'owner',
         'goalReached',
         'privateSaleCloseTime',

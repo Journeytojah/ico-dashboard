@@ -81,7 +81,7 @@
 
         this.accountInterval = setInterval(() => {
           this.$store.dispatch(actions.REFRESH_APP);
-        }, 5000);
+        }, 50000);
 
         // Find current network
         this.$store.dispatch(actions.GET_CURRENT_NETWORK);

@@ -12,6 +12,7 @@ import pixieCrowdsale from '../../build/contracts/PixieCrowdsale.json';
 const PixieToken = contract(pixieToken);
 PixieToken.setProvider(web3.currentProvider);
 
+
 const PixieCrowdsale = contract(pixieCrowdsale);
 PixieCrowdsale.setProvider(web3.currentProvider);
 
@@ -28,9 +29,22 @@ ConfigurableToken.setProvider(web3.currentProvider);
 const ConfigurableCrowdsale = contract(configurableCrowdsale);
 ConfigurableCrowdsale.setProvider(web3.currentProvider);
 
+// import artifacts
+import homepriseToken from '../../build/contracts/HomepriseToken.json';
+import homepriseCrowdsale from '../../build/contracts/HomepriseCrowdsale.json';
+
+// create contracts
+const HomepriseToken = contract(homepriseToken);
+HomepriseToken.setProvider(web3.currentProvider);
+
+const HomepriseCrowdsale = contract(homepriseCrowdsale);
+HomepriseCrowdsale.setProvider(web3.currentProvider);
+
 export {
   ConfigurableToken,
   ConfigurableCrowdsale,
   PixieToken,
-  PixieCrowdsale
+  PixieCrowdsale,
+  HomepriseToken,
+  HomepriseCrowdsale
 };

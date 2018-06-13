@@ -55,5 +55,6 @@ module.exports = function (deployer, network, accounts) {
       let promise5 = deployedPixieCrowdsale.addToManagementWhitelist(_secondTestApprovedTestAccount);
 
       return Promise.all([promise1, promise2, promise3, promise4, promise5]);
+      
     });
 };

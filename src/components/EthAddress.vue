@@ -9,9 +9,9 @@
     props: {
       hex: {
         required: false,
-        type: String
-      },
-    },
+        type: String,
+      }
+    }
   };
 
 </script>

@@ -1,6 +1,6 @@
 <template>
   <span id="eth-symbol">
-    WEI
+    ETH
   </span>
 </template>
 

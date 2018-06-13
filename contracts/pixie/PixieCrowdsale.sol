@@ -1,4 +1,4 @@
-pragma solidity ^0.4.23;
+ pragma solidity ^0.4.23;
 
 import "./PixieToken.sol";
 import "openzeppelin-solidity/contracts/crowdsale/Crowdsale.sol";
@@ -41,7 +41,7 @@ contract PixieCrowdsale is Crowdsale, Pausable {
   // at a rate of $567.43 per eth - soft cap of 4m (approx)
   uint256 public softCap = 7049 ether;
 
-  // at a rate of $567.43 per eth - soft cap of 50m (approx)
+  // at a rate of $567.43 per eth - hard cap of 50m (approx)
   uint256 public hardCap = 88116 ether;
 
   // Min contribution of 1 ETH

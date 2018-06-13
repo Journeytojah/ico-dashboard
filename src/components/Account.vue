@@ -8,7 +8,7 @@
           <eth-address :hex="account"></eth-address>
         </div>
 
-        <whitelisted :whitelisted="whitelisted"></whitelisted>
+        <!-- <whitelisted :whitelisted="whitelisted"></whitelisted> -->
 
         <div class="col-lg-4">
           <h4>Token Balance</h4>

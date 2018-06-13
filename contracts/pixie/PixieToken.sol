@@ -13,7 +13,7 @@ contract PixieToken is StandardToken, Whitelist {
 
   uint8 public constant decimals = 18;
 
-  uint256 public constant initialSupply = 100000000000 * (10 ** uint256(decimals)); // 100 Billion PXE ^ decimal
+  uint256 public constant initialSupply = 10000 * (10 ** uint256(decimals)); // 100 Billion PXE ^ decimal
 
   uint256 public constant unlockTime = now.add(4 weeks);
 
